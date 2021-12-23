@@ -1,9 +1,5 @@
 package resources.checker;
 
-import myExceptions.*;
-import resources.generated.GPUPDescriptor;
-import resources.generated.GPUPTarget;
-import resources.generated.GPUPTargetDependencies;
 import target.Graph;
 import target.Target;
 import javax.xml.bind.JAXBContext;

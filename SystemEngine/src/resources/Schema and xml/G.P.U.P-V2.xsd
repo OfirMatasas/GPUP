@@ -48,6 +48,18 @@
 			<xs:all>
 				<xs:element ref="GPUP-Configuration"/>
 				<xs:element ref="GPUP-Targets"/>
+				<xs:element name="GPUP-Serial-Sets" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence maxOccurs="unbounded">
+							<xs:element name="GPUP-Serial-set">
+								<xs:complexType>
+									<xs:attribute name="targets" type="xs:string" use="required"/>
+									<xs:attribute name="name" type="xs:string" use="required"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
 			</xs:all>
 		</xs:complexType>
 	</xs:element>
@@ -56,6 +68,7 @@
 			<xs:all>
 				<xs:element ref="GPUP-Graph-Name"/>
 				<xs:element ref="GPUP-Working-Directory"/>
+				<xs:element name="GPUP-Max-Parallelism" type="xs:int"/>
 			</xs:all>
 		</xs:complexType>
 	</xs:element>

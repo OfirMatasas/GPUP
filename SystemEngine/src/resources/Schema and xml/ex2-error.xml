@@ -1,16 +1,20 @@
-<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V1.xsd">
+<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V2.xsd">
 	<GPUP-Configuration>
 		<GPUP-Graph-Name>Test</GPUP-Graph-Name>
-		<GPUP-Working-Directory>C:\temp</GPUP-Working-Directory>
+		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
+		<GPUP-Max-Parallelism>4</GPUP-Max-Parallelism>
 	</GPUP-Configuration>
+	<GPUP-Serial-Sets>
+		<GPUP-Serial-set name="az" targets="A,Z"/>
+	</GPUP-Serial-Sets>
 	<GPUP-Targets>
 		<GPUP-Target name="A">
 			<GPUP-User-Data>freeText</GPUP-User-Data>
 			<GPUP-Target-Dependencies>
 				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
-			</GPUP-Target-Dependencies>
+			</GPUP-Target-Dependencies>			
 		</GPUP-Target>
-		<GPUP-Target name="B">
+		<GPUP-Target name="B">			
 			<GPUP-Target-Dependencies>
 				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
 				<GPUG-Dependency type="requiredFor">E</GPUG-Dependency>

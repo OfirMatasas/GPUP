@@ -1,0 +1,64 @@
+<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V2.xsd">
+	<GPUP-Configuration>
+		<GPUP-Graph-Name>XOO Example Java Project</GPUP-Graph-Name>
+		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
+		<GPUP-Max-Parallelism>4</GPUP-Max-Parallelism>
+	</GPUP-Configuration>
+	<GPUP-Targets>
+		<GPUP-Target name="ZOO">
+			<GPUP-User-Data>gpup.compilation.example.l3.Zoo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">DOO</GPUG-Dependency>
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>
+		<GPUP-Target name="POO">
+			<GPUP-User-Data>gpup.compilation.example.l3.Poo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">MOO</GPUG-Dependency>
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>	
+		<GPUP-Target name="NOO">
+			<GPUP-User-Data>gpup.compilation.example.l3.Noo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">FOO</GPUG-Dependency>
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>	
+		<GPUP-Target name="LOO">
+			<GPUP-User-Data>gpup.compilation.example.l3.Loo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">GOO</GPUG-Dependency>
+				<GPUG-Dependency type="dependsOn">KOO</GPUG-Dependency>				
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>
+		<GPUP-Target name="KOO">
+			<GPUP-User-Data>gpup.compilation.example.l2.Koo</GPUP-User-Data>				
+		</GPUP-Target>	
+		<GPUP-Target name="GOO">
+			<GPUP-User-Data>gpup.compilation.example.l2.Goo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">MOO</GPUG-Dependency>				
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>
+		<GPUP-Target name="DOO">
+			<GPUP-User-Data>gpup.compilation.example.l2.Doo</GPUP-User-Data>
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">FOO</GPUG-Dependency>				
+			</GPUP-Target-Dependencies>			
+		</GPUP-Target>
+		<GPUP-Target name="MOO">
+			<GPUP-User-Data>gpup.compilation.example.l1.Moo</GPUP-User-Data>				
+		</GPUP-Target>	
+		<GPUP-Target name="FOO">
+			<GPUP-User-Data>gpup.compilation.example.l1.Foo</GPUP-User-Data>			
+		</GPUP-Target>	
+		<GPUP-Target name="BOO">
+			<GPUP-User-Data>gpup.compilation.example.l1.Boo</GPUP-User-Data>				
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">FOO</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">DOO</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">GOO</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">ZOO</GPUG-Dependency>								
+			</GPUP-Target-Dependencies>						
+		</GPUP-Target>											
+	</GPUP-Targets>
+</GPUP-Descriptor>

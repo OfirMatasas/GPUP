@@ -1,7 +1,8 @@
-<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V1.xsd">
+<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V2.xsd">
 	<GPUP-Configuration>
 		<GPUP-Graph-Name>Womans Gradle</GPUP-Graph-Name>
 		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
+		<GPUP-Max-Parallelism>10</GPUP-Max-Parallelism>		
 	</GPUP-Configuration>
 	<GPUP-Targets>
 		<GPUP-Target name="A">
@@ -63,4 +64,9 @@
 			</GPUP-Target-Dependencies>
 		</GPUP-Target>		
 	</GPUP-Targets>
+	<GPUP-Serial-Sets>
+		<GPUP-Serial-set name="S1" targets="N,O,P,Q"/>
+		<GPUP-Serial-set name="S2" targets="K,L,M,R"/>		
+		<GPUP-Serial-set name="S3" targets="G,R,Q"/>		
+	</GPUP-Serial-Sets>	
 </GPUP-Descriptor>
