@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<ScrollPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.fxml.FXML.ShowDetailsController">
+   <content>
+      <AnchorPane fx:id="AnchorPane" prefHeight="467.0" prefWidth="656.0">
+         <children>
+            <ChoiceBox fx:id="TargetSerialSetChoiceBox" layoutX="424.0" layoutY="355.0" prefHeight="17.0" prefWidth="231.0" />
+            <ListView fx:id="SerialSetsListsView" layoutX="424.0" layoutY="390.0" prefHeight="163.0" prefWidth="231.0" />
+            <TableView fx:id="TargetsDetailsTable" prefHeight="328.0" prefWidth="757.0">
+              <columns>
+                <TableColumn fx:id="TargetNumber" minWidth="-1.0" prefWidth="22.5" text="#" />
+                <TableColumn fx:id="TargetName" prefWidth="90.0" text="Target Name" />
+                  <TableColumn fx:id="TargetProperty" prefWidth="93.0" text="Property" />
+                  <TableColumn fx:id="TargetDirectDependsOn" prefWidth="122.0" text="Direct Depends-on" />
+                  <TableColumn fx:id="TargetAllDependsOn" prefWidth="105.0" text="All Depends on" />
+                  <TableColumn fx:id="TargetDirectRequiredFor" prefWidth="118.5" text="Direct Required-for" />
+                  <TableColumn fx:id="TargetAllRequiredFor" prefWidth="104.5" text="All Required-for" />
+                  <TableColumn fx:id="TargetSerialSets" prefWidth="99.0" text="Serial Sets" />
+              </columns>
+            </TableView>
+            <TableView fx:id="TargetPropertiesTable" layoutY="354.0" prefHeight="96.0" prefWidth="322.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="354.0">
+              <columns>
+                <TableColumn fx:id="RootsProperty" text="Roots" />
+                <TableColumn fx:id="MiddlesProperty" resizable="false" text="Middles" />
+                  <TableColumn fx:id="LeavesProperty" resizable="false" text="Leaves" />
+                  <TableColumn fx:id="IndependetsProperty" resizable="false" text="Independets" />
+              </columns>
+            </TableView>
+            <Label fx:id="SerialSetsLabel" layoutX="510.0" layoutY="329.0" text="Serial Sets :" />
+            <Label fx:id="GraphProperties" layoutX="131.0" layoutY="329.0" text="Graph Properties" />
+            <PieChart fx:id="PropertiesPie" layoutX="812.0" layoutY="42.0" prefHeight="245.0" prefWidth="267.0" style="-fx-background-color: black;" title="Graph Properties" />
+         </children>
+      </AnchorPane>
+   </content>
+</ScrollPane>

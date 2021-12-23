@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+
+<GridPane fx:id="ConnectionsGridPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="477.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.fxml.FXML.ConnectionsController">
+  <columnConstraints>
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" prefHeight="450.0" vgrow="ALWAYS" />
+  </rowConstraints>
+   <children>
+      <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="10.0" prefHeight="97.0" prefWidth="300.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+         <content>
+            <AnchorPane fx:id="TargetsConnectionAnchorPane" maxWidth="539.0" minWidth="239.0" prefHeight="475.0" prefWidth="239.0">
+               <children>
+                  <Label fx:id="ShowConnectionLabel" layoutX="11.0" layoutY="21.0" prefHeight="17.0" prefWidth="200.0" text="Show Connection Between 2 targets" AnchorPane.leftAnchor="11.0" />
+                  <Label fx:id="OriginTargetLabel" layoutX="11.0" layoutY="66.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Origin target" />
+                  <Label fx:id="DestinationTargetLabel" layoutX="11.0" layoutY="119.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="108.0" text="Destination target" />
+                  <ChoiceBox fx:id="OriginTargetChoiceBox" layoutX="120.0" layoutY="62.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
+                  <ChoiceBox fx:id="DestinationTargetChoiceBox" layoutX="120.0" layoutY="115.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
+                  <ScrollPane fx:id="ListViewScrollPane" layoutX="14.0" layoutY="152.0" prefHeight="202.0" prefWidth="231.0">
+                     <content>
+                        <ListView fx:id="ConnectionsListView" prefHeight="200.0" prefWidth="229.0" />
+                     </content>
+                  </ScrollPane>
+               </children>
+            </AnchorPane>
+         </content>
+      </ScrollPane>
+      <ScrollPane GridPane.columnIndex="1">
+         <content>
+            <AnchorPane fx:id="CheckCirclesAnchorPane" minWidth="-Infinity" prefHeight="313.0" prefWidth="287.0">
+               <children>
+                  <ChoiceBox fx:id="CircleTargetChoiceBox" layoutX="111.0" layoutY="64.0" maxWidth="150.0" minWidth="100.0" prefHeight="25.0" prefWidth="200.0" />
+                  <Label fx:id="CheckCirclesLabel" layoutX="104.0" layoutY="25.0" prefHeight="17.0" prefWidth="80.0" text="Check Circles" />
+                  <Label fx:id="ChooseCheckCircleLabel" layoutX="14.0" layoutY="64.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
+                  <ListView fx:id="CirclesListView" layoutX="111.0" layoutY="97.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
+               </children>
+            </AnchorPane>
+         </content>
+      </ScrollPane>
+      <ScrollPane GridPane.columnIndex="2">
+         <content>
+            <AnchorPane fx:id="WhatIfAnchorPane" minWidth="-Infinity" prefHeight="313.0" prefWidth="287.0">
+               <children>
+                  <ChoiceBox fx:id="WhatIfChoiceBox" layoutX="111.0" layoutY="64.0" maxWidth="150.0" minWidth="100.0" prefHeight="25.0" prefWidth="200.0" />
+                  <Label fx:id="WhatIFLabel" layoutX="104.0" layoutY="25.0" prefHeight="17.0" prefWidth="80.0" text="What if" />
+                  <Label fx:id="ChooseWhatIfTarget" layoutX="14.0" layoutY="64.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
+                  <ListView fx:id="WhatIfListView" layoutX="111.0" layoutY="199.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
+                  <RadioButton fx:id="DependsOnRadioButton" layoutX="111.0" layoutY="120.0" mnemonicParsing="false" text="Depends on">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="What_If_Value" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton fx:id="RequiredForRadioButton" layoutX="111.0" layoutY="160.0" mnemonicParsing="false" text="Required for" toggleGroup="$What_If_Value" />
+               </children>
+            </AnchorPane>
+         </content>
+      </ScrollPane>
+   </children>
+</GridPane>

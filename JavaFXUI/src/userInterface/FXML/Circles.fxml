@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<ScrollPane fx:id="CheckCirclesScrollPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.fxml.FXML.CheckCirclesController">
+   <content>
+      <AnchorPane fx:id="CheckCirclesAnchorPane" minWidth="-Infinity" prefHeight="313.0" prefWidth="287.0">
+         <children>
+            <ChoiceBox fx:id="TargetChoiceBox" layoutX="111.0" layoutY="64.0" maxWidth="150.0" minWidth="100.0" prefHeight="25.0" prefWidth="200.0" />
+            <Label fx:id="CheckCirclesLabel" layoutX="104.0" layoutY="25.0" prefHeight="17.0" prefWidth="80.0" text="Check Circles" />
+            <Label fx:id="ChooseTargetLabel" layoutX="14.0" layoutY="64.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
+            <ListView fx:id="CirclesListView" layoutX="111.0" layoutY="97.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </AnchorPane>
+   </content>
+</ScrollPane>

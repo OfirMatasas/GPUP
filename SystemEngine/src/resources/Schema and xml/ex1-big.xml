@@ -1,0 +1,66 @@
+<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V1.xsd">
+	<GPUP-Configuration>
+		<GPUP-Graph-Name>Womans Gradle</GPUP-Graph-Name>
+		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
+	</GPUP-Configuration>
+	<GPUP-Targets>
+		<GPUP-Target name="A">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>		
+		</GPUP-Target>
+		<GPUP-Target name="B"/>
+		<GPUP-Target name="C"/>
+		<GPUP-Target name="D"/>
+		<GPUP-Target name="E"/>						
+		<GPUP-Target name="K"/>						
+		<GPUP-Target name="L"/>						
+		<GPUP-Target name="M"/>						
+		<GPUP-Target name="N"/>						
+		<GPUP-Target name="O"/>						
+		<GPUP-Target name="P"/>						
+		<GPUP-Target name="Q"/>						
+		<GPUP-Target name="R"/>																						
+		<GPUP-Target name="F">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">A</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">B</GPUG-Dependency>				
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">H</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>
+		</GPUP-Target>
+		<GPUP-Target name="G">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
+			</GPUP-Target-Dependencies>
+		</GPUP-Target>
+		<GPUP-Target name="H">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">B</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">F</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">K</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">M</GPUG-Dependency>																				
+			</GPUP-Target-Dependencies>
+		</GPUP-Target>
+		<GPUP-Target name="I">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">E</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">M</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">N</GPUG-Dependency>																				
+			</GPUP-Target-Dependencies>
+		</GPUP-Target>
+		<GPUP-Target name="J">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">E</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">N</GPUG-Dependency>								
+				<GPUG-Dependency type="dependsOn">O</GPUG-Dependency>								
+				<GPUG-Dependency type="dependsOn">P</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>
+		</GPUP-Target>		
+	</GPUP-Targets>
+</GPUP-Descriptor>

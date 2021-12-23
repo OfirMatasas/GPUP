@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.PrimaryController">
+   <content>
+      <BorderPane fx:id="mainBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="750.0">
+         <center>
+            <ScrollPane fx:id="statusBar" fitToHeight="true" fitToWidth="true" minHeight="50.0" BorderPane.alignment="CENTER" />
+         </center>
+         <left>
+            <VBox minHeight="50.0" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="graphDetailsButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#graphDetailsButtonPressed" prefHeight="500.0" text="Graph Details" />
+                  <Button fx:id="connectionsButton" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#connectionsButtonPressed" prefHeight="500.0" text="Connections" />
+                  <Button fx:id="taskButton" layoutX="10.0" layoutY="35.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#taskButtonPressed" prefHeight="500.0" text="Task" />
+               </children>
+            </VBox>
+         </left>
+         <top>
+            <MenuBar BorderPane.alignment="CENTER">
+              <menus>
+                  <Menu fx:id="file" mnemonicParsing="false" text="File">
+                     <items>
+                        <MenuItem fx:id="loadXMLButton" mnemonicParsing="false" onAction="#loadXMLButtonPressed" text="Load XML" />
+                        <MenuItem fx:id="saveProgressButton" mnemonicParsing="false" onAction="#saveProgressPressed" text="Save progress" />
+                     </items>
+                  </Menu>
+                  <Menu fx:id="animations" mnemonicParsing="false" text="Animations">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="Enable">
+                           <graphic>
+                              <CheckBox fx:id="enableAnimations" mnemonicParsing="false" onAction="#enableAnimationsPressed" />
+                           </graphic>
+                        </MenuItem>
+                     </items>
+                  </Menu>
+                  <Menu fx:id="themes" mnemonicParsing="false" text="Themes">
+                     <items>
+                        <RadioMenuItem fx:id="defaultTheme" mnemonicParsing="false" onAction="#defaultThemePressed" text="Default" />
+                        <RadioMenuItem fx:id="darkModeTheme" mnemonicParsing="false" onAction="#darkModeThemePressed" text="Dark mode" />
+                        <RadioMenuItem fx:id="rainbowTheme" mnemonicParsing="false" onAction="#rainbowThemePressed" text="Rainbow mode" />
+                     </items>
+                  </Menu>
+                  <Menu fx:id="Help" mnemonicParsing="false" text="Help">
+                     <items>
+                        <MenuItem fx:id="about" mnemonicParsing="false" onAction="#aboutPressed" text="About" />
+                     </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+         </top>
+         <bottom>
+            <AnchorPane fx:id="StatusBar" prefHeight="19.0" prefWidth="231.0" BorderPane.alignment="CENTER" />
+         </bottom>
+      </BorderPane>
+   </content>
+</ScrollPane>
