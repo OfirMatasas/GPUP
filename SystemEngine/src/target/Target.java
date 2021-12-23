@@ -13,6 +13,7 @@ public class Target implements Serializable {
     //--------------------------------------------------Members-----------------------------------------------------//
     private final Set<Target> dependsOnTargets;
     private final Set<Target> requiredForTargets;
+    private Set<String> serialSets;
     private TargetProperty targetProperty;
     private String targetName;
     private String extraInformation;
@@ -22,6 +23,7 @@ public class Target implements Serializable {
         this.dependsOnTargets = new HashSet<>();
         this.requiredForTargets = new HashSet<>();
         this.targetProperty = TargetProperty.INDEPENDENT;
+        this.serialSets = new HashSet<>();
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//

@@ -13,7 +13,6 @@ import resources.checker.ResourceChecker;
 import target.Graph;
 
 import java.io.File;
-import java.util.Optional;
 
 public class PrimaryController {
 
@@ -123,11 +122,11 @@ public class PrimaryController {
             return;
 
         try{
-            rc.extractFromXMLToGraph(selectedFile.toPath());
+            graph = rc.extractFromXMLToGraph(selectedFile.toPath());
             alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("File loaded Successfully");
             alert.setHeaderText(null);
-            alert.setContentText("File loaded Successfully");
+            alert.setContentText("The graph " + graph.getGraphName() + " loaded successfully!");
             alert.showAndWait();
         }
         catch(Exception ex)

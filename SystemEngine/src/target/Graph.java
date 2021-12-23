@@ -8,15 +8,19 @@ public class Graph implements Serializable {
     private String graphName;
     private Map<String, Target> graphTargets;
     private Map<Target.TargetProperty, Set<Target>> targetsByProperties;
+    private Map<String, Set<String>> serialSetsMap;
+    private Set<String> serialSetsNames;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
         this.graphTargets = new HashMap<>();
         this.targetsByProperties = new HashMap<>();
-        targetsByProperties.put(Target.TargetProperty.LEAF, new HashSet<>());
-        targetsByProperties.put(Target.TargetProperty.INDEPENDENT, new HashSet<>());
-        targetsByProperties.put(Target.TargetProperty.ROOT, new HashSet<>());
-        targetsByProperties.put(Target.TargetProperty.MIDDLE, new HashSet<>());
+        this.targetsByProperties.put(Target.TargetProperty.LEAF, new HashSet<>());
+        this.targetsByProperties.put(Target.TargetProperty.INDEPENDENT, new HashSet<>());
+        this.targetsByProperties.put(Target.TargetProperty.ROOT, new HashSet<>());
+        this.targetsByProperties.put(Target.TargetProperty.MIDDLE, new HashSet<>());
+        this.serialSetsNames = new HashSet<>();
+        this.serialSetsMap = new HashMap<>();
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//
@@ -33,9 +37,25 @@ public class Graph implements Serializable {
         return graphTargets.get(targetName.toLowerCase());
     }
 
+    public Set<String> getSerialSetsNames() {
+        return serialSetsNames;
+    }
+
+    public Map<String, Set<String>> getSerialSetsMap() {
+        return serialSetsMap;
+    }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
         this.graphName = graphName;
+    }
+
+    public void setSerialSetsMap(Map<String, Set<String>> serialSetsMap) {
+        this.serialSetsMap = serialSetsMap;
+    }
+
+    public void setSerialSetsNames(Set<String> serialSetsNames) {
+        this.serialSetsNames = serialSetsNames;
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//

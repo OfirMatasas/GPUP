@@ -1,7 +1,12 @@
 package resources.checker;
 
+import myExceptions.*;
+import resources.generated.GPUPDescriptor;
+import resources.generated.GPUPTarget;
+import resources.generated.GPUPTargetDependencies;
 import target.Graph;
 import target.Target;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -14,10 +19,11 @@ import java.util.*;
 public class ResourceChecker
 {
     private String workingDirectoryString;
+    private Set<String> serialSets;
 
     private enum DependencyType { requiredFor, dependsOn};
 
-    public Graph extractFromXMLToGraph(Path path) throws NotXMLFile, FileNotFound, DoubledTarget, InvalidConnectionBetweenTargets, EmptyGraph, IOException, NotDirectory {
+    public Graph extractFromXMLToGraph(Path path) throws NotXMLFile, FileNotFound, DoubledTarget, InvalidConnectionBetweenTargets, EmptyGraph, IOException, NotDirectory, InvalidThreadsNumber, NotUniqueSerialName, TargetNotExisted {
         if(!path.getFileName().toString().endsWith(".xml"))
             throw new NotXMLFile(path.getFileName().toString());
         else if(!Files.isExecutable(path))
@@ -51,7 +57,7 @@ public class ResourceChecker
         return descriptor;
     }
 
-    private Graph checkResource(GPUPDescriptor descriptor) throws InvalidConnectionBetweenTargets, DoubledTarget, EmptyGraph, IOException, NotDirectory {
+    private Graph checkResource(GPUPDescriptor descriptor) throws InvalidConnectionBetweenTargets, DoubledTarget, EmptyGraph, IOException, NotDirectory, InvalidThreadsNumber, NotUniqueSerialName, TargetNotExisted {
         List<GPUPTarget> gpupTargetsAsList = descriptor.getGPUPTargets().getGPUPTarget();
         Graph graph = FillTheGraphWithTargets(gpupTargetsAsList);
         graph.setGraphName(descriptor.getGPUPConfiguration().getGPUPGraphName());
@@ -68,6 +74,9 @@ public class ResourceChecker
 
         if(descriptor.getGPUPTargets() == null || descriptor.getGPUPTargets().getGPUPTarget() == null)
             throw new EmptyGraph();
+
+        if(descriptor.getGPUPConfiguration().getGPUPMaxParallelism() < 1)
+            throw new InvalidThreadsNumber();
 
         for(GPUPTarget currentgpupTarget : gpupTargetsAsList)
         {
@@ -93,7 +102,52 @@ public class ResourceChecker
             }
         }
 
+        //Get all serial sets names and fill them up with targets' names
+        graph.setSerialSetsNames(GetAllSerialSetsNames(descriptor.getGPUPSerialSets()));
+        graph.setSerialSetsMap(ConnectAllTargetsToSerialSets(descriptor.getGPUPSerialSets(), graph.getGraphTargets()));
+
         return graph;
+    }
+
+    private Set<String> GetAllSerialSetsNames(GPUPDescriptor.GPUPSerialSets gpupSerialSets) throws NotUniqueSerialName {
+        Set<String> serialSetsNamesSet = new HashSet();
+        String currentSerialSetName;
+
+        for(GPUPDescriptor.GPUPSerialSets.GPUPSerialSet currentSerialSet : gpupSerialSets.getGPUPSerialSet())
+        {
+            currentSerialSetName = currentSerialSet.getName();
+
+            if(serialSetsNamesSet.contains(currentSerialSetName))
+                throw new NotUniqueSerialName(currentSerialSetName);
+
+            serialSetsNamesSet.add(currentSerialSetName);
+        }
+        return serialSetsNamesSet;
+    }
+
+    private Map<String, Set<String>> ConnectAllTargetsToSerialSets(GPUPDescriptor.GPUPSerialSets gpupSerialSets, Map<String, Target> mappedTargets) throws TargetNotExisted {
+        Map<String, Set<String>> mappedSerialSets = new HashMap<>();
+        Set<String> currentSerialSet = new HashSet<>();
+        String currentSerialSetName;
+        String[] targets;
+
+        for(GPUPDescriptor.GPUPSerialSets.GPUPSerialSet currentGPUPSerialSet : gpupSerialSets.getGPUPSerialSet())
+        {
+            targets = currentGPUPSerialSet.getTargets().split(",");
+            currentSerialSetName = currentGPUPSerialSet.getName();
+
+            for(String currentTargetName : targets)
+            {
+                if (currentSerialSet.contains(currentTargetName))
+                    continue;
+                else if(!mappedTargets.containsKey(currentTargetName.toLowerCase()))
+                    throw new TargetNotExisted(currentTargetName, currentSerialSetName);
+
+                currentSerialSet.add(currentTargetName);
+            }
+            mappedSerialSets.put(currentSerialSetName, currentSerialSet);
+        }
+        return mappedSerialSets;
     }
 
     private Graph FillTheGraphWithTargets(List<GPUPTarget> lst) throws DoubledTarget {
