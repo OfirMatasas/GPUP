@@ -1,9 +1,13 @@
 package controllers;
 
+import bodyComponentsPaths.BodyComponentsPaths;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -13,12 +17,15 @@ import resources.checker.ResourceChecker;
 import target.Graph;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
+import java.util.Optional;
 
 public class PrimaryController {
-
+    //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
-    private Boolean confirmExit;
-    Graph graph;
+    private Graph graph = null;
 
     @FXML
     private BorderPane mainBorderPane;
@@ -76,24 +83,10 @@ public class PrimaryController {
     private SimpleStringProperty selectedFileProperty;
     private SimpleBooleanProperty isFileSelected;
 
+    //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML
     void aboutPressed(ActionEvent event)
     {
-
-    }
-
-    @FXML
-    void connectionsButtonPressed(ActionEvent event) {
-
-    }
-
-    @FXML
-    void darkModeThemePressed(ActionEvent event) {
-
-    }
-
-    @FXML
-    void defaultThemePressed(ActionEvent event) {
 
     }
 
@@ -103,14 +96,8 @@ public class PrimaryController {
     }
 
     @FXML
-    void graphDetailsButtonPressed(ActionEvent event) {
-
-    }
-
-    @FXML
     void loadXMLButtonPressed(ActionEvent event)
     {
-        Alert alert;
         ResourceChecker rc = new ResourceChecker();
         FileChooser fileChooser = new FileChooser();
         File selectedFile;
@@ -121,36 +108,110 @@ public class PrimaryController {
         if(selectedFile == null)
             return;
 
+        if(!OverrideGraph())
+            return;
+
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
-            alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("File loaded Successfully");
-            alert.setHeaderText(null);
-            alert.setContentText("The graph " + graph.getGraphName() + " loaded successfully!");
-            alert.showAndWait();
+            FileLoadedSuccessfully();
         }
         catch(Exception ex)
         {
-            alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error loading file");
-            alert.setHeaderText(null);
-            alert.setContentText(ex.getMessage());
-            alert.showAndWait();
+            ErrorPopup(ex, "Error loading file");
         }
-    }
-
-    @FXML
-    void rainbowThemePressed(ActionEvent event) {
-
     }
 
     @FXML
     void saveProgressPressed(ActionEvent event) {
 
     }
+    //--------------------------------------------------Themes-----------------------------------------------------//
+    @FXML
+    void defaultThemePressed(ActionEvent event) {
+        Scene scene = primaryStage.getScene();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("src/userInterface/Stylesheets/LightMode.css")).toExternalForm());
+    }
+
+    @FXML
+    void darkModeThemePressed(ActionEvent event) {
+        Scene scene = primaryStage.getScene();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("src/userInterface/Stylesheets/DarkMode.css")).toExternalForm());
+    }
+
+    @FXML
+    void rainbowThemePressed(ActionEvent event) {
+
+    }
+    //--------------------------------------------------Sidebar-----------------------------------------------------//
+    @FXML
+    void connectionsButtonPressed(ActionEvent event) {
+
+    }
+
+    @FXML
+    void graphDetailsButtonPressed(ActionEvent event) throws Exception
+    {
+        Platform.runLater(()->{
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            String componentName = BodyComponentsPaths.SHOW_DETAILS;
+            URL url = getClass().getResource(componentName);
+            fxmlLoader.setLocation(url);
+            ScrollPane newPane = null;
+            try {
+                newPane = (ScrollPane) fxmlLoader.load(url.openStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mainBorderPane.setCenter(newPane);
+
+        });
+    }
+
 
     @FXML
     void taskButtonPressed(ActionEvent event) {
 
+    }
+
+    //--------------------------------------------------Methods-----------------------------------------------------//
+    public void setPrimaryStage(Stage stage){
+        this.primaryStage = stage;
+    }
+
+    private Boolean OverrideGraph()
+    {
+        if(graph == null)
+            return true;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Override existed graph");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to override the graph " + graph.getGraphName() + "?");
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No");
+        alert.getButtonTypes().setAll(yesButton, noButton );
+        Optional<ButtonType> result = alert.showAndWait();
+
+        return result.get() == yesButton;
+    }
+
+    private void FileLoadedSuccessfully()
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("File loaded Successfully");
+        alert.setHeaderText(null);
+        alert.setContentText("The graph " + graph.getGraphName() + " loaded successfully!");
+        alert.showAndWait();
+    }
+
+    private void ErrorPopup(Exception ex, String title)
+    {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(ex.getMessage());
+        alert.showAndWait();
     }
 }

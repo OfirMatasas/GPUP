@@ -96,15 +96,16 @@ public class ResourceChecker
                 secondTargetName = secondTarget.getTargetName();
 
                 if(!checkValidConnectionBetweenTwoTargets(currentTarget, secondTarget, dep.getType()))
-                {
                     throw new InvalidConnectionBetweenTargets(currentTargetName, secondTargetName);
-                }
             }
         }
 
         //Get all serial sets names and fill them up with targets' names
-        graph.setSerialSetsNames(GetAllSerialSetsNames(descriptor.getGPUPSerialSets()));
-        graph.setSerialSetsMap(ConnectAllTargetsToSerialSets(descriptor.getGPUPSerialSets(), graph.getGraphTargets()));
+        if (descriptor.getGPUPSerialSets() != null)
+        {
+            graph.setSerialSetsNames(GetAllSerialSetsNames(descriptor.getGPUPSerialSets()));
+            graph.setSerialSetsMap(ConnectAllTargetsToSerialSets(descriptor.getGPUPSerialSets(), graph.getGraphTargets()));
+        }
 
         return graph;
     }
