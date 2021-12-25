@@ -120,6 +120,9 @@ public class PrimaryController {
 
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            updatePanesAndControllers();
+            showDetailsController.setGraph(graph);
+            connectionsController.setGraph(graph);
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
         }
@@ -130,12 +133,12 @@ public class PrimaryController {
     }
 
     private void RefreshCurrentCenterPane() throws Exception {
-        if(mainBorderPane.getCenter() == graphDetailsPane)
+//        if(mainBorderPane.getCenter() == graphDetailsPane)
             graphDetailsButtonPressed(new ActionEvent());
-        else if(mainBorderPane.getCenter() == connectionsPane)
-            connectionsButtonPressed(new ActionEvent());
-        else if(mainBorderPane.getCenter() == taskPane)
-            taskButtonPressed(new ActionEvent());
+//        else if(mainBorderPane.getCenter() == connectionsPane)
+//            connectionsButtonPressed(new ActionEvent());
+//        else if(mainBorderPane.getCenter() == taskPane)
+//            taskButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -165,18 +168,6 @@ public class PrimaryController {
     @FXML
     void connectionsButtonPressed(ActionEvent event) {
         Platform.runLater(()->{
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            URL url = getClass().getResource(BodyComponentsPaths.CONNECTIONS);
-            fxmlLoader.setLocation(url);
-            try {
-                if(connectionsPane == null)
-                    connectionsPane = fxmlLoader.load(url.openStream());
-
-                if(connectionsButton == null)
-                    connectionsController = fxmlLoader.getController();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             mainBorderPane.setCenter(connectionsPane);
         });
     }
@@ -185,19 +176,6 @@ public class PrimaryController {
     void graphDetailsButtonPressed(ActionEvent event) throws Exception
     {
         Platform.runLater(()->{
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            String componentName = BodyComponentsPaths.SHOW_DETAILS;
-            URL url = getClass().getResource(componentName);
-            fxmlLoader.setLocation(url);
-            try {
-                graphDetailsPane = (ScrollPane) fxmlLoader.load(url.openStream());
-                showDetailsController =  fxmlLoader.getController();
-
-                if(graph != null)
-                    showDetailsController.setGraph(graph);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             mainBorderPane.setCenter(graphDetailsPane);
         });
     }
@@ -205,18 +183,6 @@ public class PrimaryController {
     @FXML
     void taskButtonPressed(ActionEvent event) {
         Platform.runLater(()->{
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            URL url = getClass().getResource(BodyComponentsPaths.TASK);
-            fxmlLoader.setLocation(url);
-            try {
-                if(taskPane == null)
-                    taskPane = fxmlLoader.load(url.openStream());
-
-                if(taskController == null)
-                    taskController = fxmlLoader.getController();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             mainBorderPane.setCenter(taskPane);
         });
     }
@@ -259,5 +225,44 @@ public class PrimaryController {
         alert.setHeaderText(null);
         alert.setContentText(ex.getMessage());
         alert.showAndWait();
+    }
+
+    private void updatePanesAndControllers()
+    {
+        FXMLLoader fxmlLoader;
+        URL url;
+
+        //GraphDetails
+        fxmlLoader = new FXMLLoader();
+        url = getClass().getResource(BodyComponentsPaths.SHOW_DETAILS);
+        fxmlLoader.setLocation(url);
+        try {
+            graphDetailsPane = fxmlLoader.load(url.openStream());
+            showDetailsController = fxmlLoader.getController();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //Connections
+        fxmlLoader = new FXMLLoader();
+        url = getClass().getResource(BodyComponentsPaths.CONNECTIONS);
+        fxmlLoader.setLocation(url);
+        try {
+            connectionsPane = fxmlLoader.load(url.openStream());
+            connectionsController = fxmlLoader.getController();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //Task
+        fxmlLoader = new FXMLLoader();
+        url = getClass().getResource(BodyComponentsPaths.TASK);
+        fxmlLoader.setLocation(url);
+        try {
+            taskPane = fxmlLoader.load(url.openStream());
+            taskController = fxmlLoader.getController();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -13,7 +13,7 @@ import target.Graph;
 import target.Target;
 
 public class ShowDetailsController {
-    private Graph graph;
+    private Graph graph = null;
     private final ObservableList<TargetDetails> targetDetailsList = FXCollections.observableArrayList();
     private final ObservableList<GraphPositionsInformation> graphPositionsList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsNameList = FXCollections.observableArrayList();
@@ -48,7 +48,7 @@ public class ShowDetailsController {
         TargetSerialSetChoiceBox.setOnAction((event) -> {
             serialSetsInformationList.clear();
             serialSetsInformationList.addAll(graph.getSerialSetsMap().get(TargetSerialSetChoiceBox.getValue()));
-            SerialSetsListsView.setItems(serialSetsInformationList);
+            SerialSetsListsView.setItems(serialSetsInformationList.sorted());
         });
     }
 
@@ -145,6 +145,7 @@ public class ShowDetailsController {
                 graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT)
         );
 
+        graphPositionsList.clear();
         graphPositionsList.add(graphPositionsInformation);
         TargetPositionsTable.setItems(graphPositionsList);
     }
@@ -155,7 +156,7 @@ public class ShowDetailsController {
         for(String currentSerialSetName : graph.getSerialSetsNames())
             serialSetsNameList.add(i++, currentSerialSetName);
 
-        TargetSerialSetChoiceBox.setItems(serialSetsNameList);
+        TargetSerialSetChoiceBox.setItems(serialSetsNameList.sorted());
         TargetSerialSetChoiceBox.setTooltip(new Tooltip("Choose a serial set"));
     }
 }
