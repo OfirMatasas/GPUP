@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import resources.checker.ResourceChecker;
@@ -26,6 +27,12 @@ public class PrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
     private Graph graph = null;
+    private ShowDetailsController showDetailsController;
+    private TaskController taskController;
+    private ConnectionsController connectionsController;
+    private ScrollPane graphDetailsPane;
+    private GridPane connectionsPane = null;
+    private GridPane taskPane = null;
 
     @FXML
     private BorderPane mainBorderPane;
@@ -113,12 +120,22 @@ public class PrimaryController {
 
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
         }
         catch(Exception ex)
         {
             ErrorPopup(ex, "Error loading file");
         }
+    }
+
+    private void RefreshCurrentCenterPane() throws Exception {
+        if(mainBorderPane.getCenter() == graphDetailsPane)
+            graphDetailsButtonPressed(new ActionEvent());
+        else if(mainBorderPane.getCenter() == connectionsPane)
+            connectionsButtonPressed(new ActionEvent());
+        else if(mainBorderPane.getCenter() == taskPane)
+            taskButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -147,7 +164,21 @@ public class PrimaryController {
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     @FXML
     void connectionsButtonPressed(ActionEvent event) {
+        Platform.runLater(()->{
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            URL url = getClass().getResource(BodyComponentsPaths.CONNECTIONS);
+            fxmlLoader.setLocation(url);
+            try {
+                if(connectionsPane == null)
+                    connectionsPane = fxmlLoader.load(url.openStream());
 
+                if(connectionsButton == null)
+                    connectionsController = fxmlLoader.getController();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mainBorderPane.setCenter(connectionsPane);
+        });
     }
 
     @FXML
@@ -158,21 +189,36 @@ public class PrimaryController {
             String componentName = BodyComponentsPaths.SHOW_DETAILS;
             URL url = getClass().getResource(componentName);
             fxmlLoader.setLocation(url);
-            ScrollPane newPane = null;
             try {
-                newPane = (ScrollPane) fxmlLoader.load(url.openStream());
+                graphDetailsPane = (ScrollPane) fxmlLoader.load(url.openStream());
+                showDetailsController =  fxmlLoader.getController();
+
+                if(graph != null)
+                    showDetailsController.setGraph(graph);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            mainBorderPane.setCenter(newPane);
-
+            mainBorderPane.setCenter(graphDetailsPane);
         });
     }
 
-
     @FXML
     void taskButtonPressed(ActionEvent event) {
+        Platform.runLater(()->{
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            URL url = getClass().getResource(BodyComponentsPaths.TASK);
+            fxmlLoader.setLocation(url);
+            try {
+                if(taskPane == null)
+                    taskPane = fxmlLoader.load(url.openStream());
 
+                if(taskController == null)
+                    taskController = fxmlLoader.getController();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mainBorderPane.setCenter(taskPane);
+        });
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//

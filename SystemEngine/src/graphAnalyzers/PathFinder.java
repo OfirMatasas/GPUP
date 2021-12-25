@@ -2,9 +2,9 @@ package graphAnalyzers;
 
 import target.Graph;
 import target.Target;
+
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 public class PathFinder {
@@ -21,14 +21,14 @@ public class PathFinder {
         sourceTarget = graph.getTarget(sourceTargetName);
         destinationTarget = graph.getTarget(destTargetName);
 
-        if (sourceTarget.getTargetProperty().equals(destinationTarget.getTargetProperty()))
+        if (sourceTarget.getTargetPosition().equals(destinationTarget.getTargetPosition()))
         {
-            if(sourceTarget.getTargetProperty().equals(Target.TargetProperty.ROOT)
-                    || sourceTarget.getTargetProperty().equals(Target.TargetProperty.LEAF))
+            if(sourceTarget.getTargetPosition().equals(Target.TargetPosition.ROOT)
+                    || sourceTarget.getTargetPosition().equals(Target.TargetPosition.LEAF))
                 return false;
         }
-        else if(sourceTarget.getTargetProperty().equals(Target.TargetProperty.INDEPENDENT)
-                || destinationTarget.getTargetProperty().equals(Target.TargetProperty.INDEPENDENT))
+        else if(sourceTarget.getTargetPosition().equals(Target.TargetPosition.INDEPENDENT)
+                || destinationTarget.getTargetPosition().equals(Target.TargetPosition.INDEPENDENT))
             return false;
 
         return true;

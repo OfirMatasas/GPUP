@@ -19,7 +19,6 @@ import java.util.*;
 public class ResourceChecker
 {
     private String workingDirectoryString;
-    private Set<String> serialSets;
 
     private enum DependencyType { requiredFor, dependsOn};
 
@@ -33,7 +32,7 @@ public class ResourceChecker
         GPUPDescriptor descriptor = fromXmlFileToObject(path);
         Graph graph = checkResource(descriptor);
 
-        graph.calculateProperties();
+        graph.calculatePositions();
 
         return graph;
     }
@@ -64,13 +63,7 @@ public class ResourceChecker
         Target currentTarget, secondTarget;
         String currentTargetName, secondTargetName;
 
-        workingDirectoryString = descriptor.getGPUPConfiguration().getGPUPWorkingDirectory();
-        Path workingDirectoryPath = new File(workingDirectoryString).toPath();
-
-        if(!Files.exists(workingDirectoryPath))
-            Files.createDirectories(workingDirectoryPath);
-        else if(!Files.isDirectory(workingDirectoryPath))
-            throw new NotDirectory(workingDirectoryString);
+        setWorkingDirectory(descriptor);
 
         if(descriptor.getGPUPTargets() == null || descriptor.getGPUPTargets().getGPUPTarget() == null)
             throw new EmptyGraph();
@@ -89,6 +82,7 @@ public class ResourceChecker
             for(GPUPTargetDependencies.GPUGDependency dep :
                     currentgpupTarget.getGPUPTargetDependencies().getGPUGDependency())
             {
+                //Check if the target exists in the graph
                 secondTarget = graph.getTarget(dep.getValue());
                 if(secondTarget == null)
                     throw new InvalidConnectionBetweenTargets(currentTargetName, dep.getValue());
@@ -101,13 +95,31 @@ public class ResourceChecker
         }
 
         //Get all serial sets names and fill them up with targets' names
+        setAllSerialSets(descriptor, graph);
+
+        //Calculate all depends-on and all required-for for all targets
+        graph.calculateAllDependsOn();
+        graph.calculateAllRequiredFor();
+
+        return graph;
+    }
+
+    private void setAllSerialSets(GPUPDescriptor descriptor, Graph graph) throws NotUniqueSerialName, TargetNotExisted {
         if (descriptor.getGPUPSerialSets() != null)
         {
             graph.setSerialSetsNames(GetAllSerialSetsNames(descriptor.getGPUPSerialSets()));
-            graph.setSerialSetsMap(ConnectAllTargetsToSerialSets(descriptor.getGPUPSerialSets(), graph.getGraphTargets()));
+            graph.setSerialSetsMap(ConnectAllTargetsToSerialSets(descriptor.getGPUPSerialSets(), graph));
         }
+    }
 
-        return graph;
+    private void setWorkingDirectory(GPUPDescriptor descriptor) throws NotDirectory, IOException {
+        workingDirectoryString = descriptor.getGPUPConfiguration().getGPUPWorkingDirectory();
+        Path workingDirectoryPath = new File(workingDirectoryString).toPath();
+
+        if(!Files.exists(workingDirectoryPath))
+            Files.createDirectories(workingDirectoryPath);
+        else if(!Files.isDirectory(workingDirectoryPath))
+            throw new NotDirectory(workingDirectoryString);
     }
 
     private Set<String> GetAllSerialSetsNames(GPUPDescriptor.GPUPSerialSets gpupSerialSets) throws NotUniqueSerialName {
@@ -126,14 +138,15 @@ public class ResourceChecker
         return serialSetsNamesSet;
     }
 
-    private Map<String, Set<String>> ConnectAllTargetsToSerialSets(GPUPDescriptor.GPUPSerialSets gpupSerialSets, Map<String, Target> mappedTargets) throws TargetNotExisted {
+    private Map<String, Set<String>> ConnectAllTargetsToSerialSets(GPUPDescriptor.GPUPSerialSets gpupSerialSets, Graph graph) throws TargetNotExisted {
         Map<String, Set<String>> mappedSerialSets = new HashMap<>();
-        Set<String> currentSerialSet = new HashSet<>();
+        Set<String> currentSerialSet;
         String currentSerialSetName;
         String[] targets;
 
         for(GPUPDescriptor.GPUPSerialSets.GPUPSerialSet currentGPUPSerialSet : gpupSerialSets.getGPUPSerialSet())
         {
+            currentSerialSet = new HashSet<>();
             targets = currentGPUPSerialSet.getTargets().split(",");
             currentSerialSetName = currentGPUPSerialSet.getName();
 
@@ -141,10 +154,11 @@ public class ResourceChecker
             {
                 if (currentSerialSet.contains(currentTargetName))
                     continue;
-                else if(!mappedTargets.containsKey(currentTargetName.toLowerCase()))
+                else if(!graph.getGraphTargets().containsKey(currentTargetName.toLowerCase()))
                     throw new TargetNotExisted(currentTargetName, currentSerialSetName);
 
                 currentSerialSet.add(currentTargetName);
+                graph.getTarget(currentTargetName).addSerialSet(currentSerialSetName);
             }
             mappedSerialSets.put(currentSerialSetName, currentSerialSet);
         }

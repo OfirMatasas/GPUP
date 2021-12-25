@@ -7,18 +7,18 @@ public class Graph implements Serializable {
     //--------------------------------------------------Members-----------------------------------------------------//
     private String graphName;
     private Map<String, Target> graphTargets;
-    private Map<Target.TargetProperty, Set<Target>> targetsByProperties;
+    private Map<Target.TargetPosition, Set<Target>> targetsByPositions;
     private Map<String, Set<String>> serialSetsMap;
     private Set<String> serialSetsNames;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
         this.graphTargets = new HashMap<>();
-        this.targetsByProperties = new HashMap<>();
-        this.targetsByProperties.put(Target.TargetProperty.LEAF, new HashSet<>());
-        this.targetsByProperties.put(Target.TargetProperty.INDEPENDENT, new HashSet<>());
-        this.targetsByProperties.put(Target.TargetProperty.ROOT, new HashSet<>());
-        this.targetsByProperties.put(Target.TargetProperty.MIDDLE, new HashSet<>());
+        this.targetsByPositions = new HashMap<>();
+        this.targetsByPositions.put(Target.TargetPosition.LEAF, new HashSet<>());
+        this.targetsByPositions.put(Target.TargetPosition.INDEPENDENT, new HashSet<>());
+        this.targetsByPositions.put(Target.TargetPosition.ROOT, new HashSet<>());
+        this.targetsByPositions.put(Target.TargetPosition.MIDDLE, new HashSet<>());
         this.serialSetsNames = new HashSet<>();
         this.serialSetsMap = new HashMap<>();
     }
@@ -59,9 +59,9 @@ public class Graph implements Serializable {
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
-    public int numberOfTargetsByProperty(Target.TargetProperty property)
+    public int numberOfTargetsByProperty(Target.TargetPosition position)
     {
-        return targetsByProperties.get(property).size();
+        return targetsByPositions.get(position).size();
     }
 
     public Boolean isEmpty()
@@ -73,44 +73,56 @@ public class Graph implements Serializable {
         for(Target currentTarget : newTargets)
             graphTargets.put(currentTarget.getTargetName().toLowerCase(), currentTarget);
 
-        calculateProperties();
+        calculatePositions();
     }
 
-    public void calculateProperties()
+    public void calculatePositions()
     {
         clearTargetsByProperties();
         Integer valCount = 0;
-        Target.TargetProperty currentTargetProperty;
+        Target.TargetPosition currentTargetProperty;
 
         for(Target currentTarget : graphTargets.values())
         {
             if(currentTarget.getDependsOnTargets().size() == 0
                     && currentTarget.getRequiredForTargets().size() == 0)
             {//Independent
-                currentTargetProperty = Target.TargetProperty.INDEPENDENT;
+                currentTargetProperty = Target.TargetPosition.INDEPENDENT;
             }
             else if(currentTarget.getDependsOnTargets().size() == 0)
             {//Leaf
-                currentTargetProperty = Target.TargetProperty.LEAF;
+                currentTargetProperty = Target.TargetPosition.LEAF;
             }
             else if(currentTarget.getRequiredForTargets().size() == 0)
             {//Root
-                currentTargetProperty = Target.TargetProperty.ROOT  ;
+                currentTargetProperty = Target.TargetPosition.ROOT  ;
             }
             else
             {//Middle
-                currentTargetProperty = Target.TargetProperty.MIDDLE;
+                currentTargetProperty = Target.TargetPosition.MIDDLE;
             }
-            targetsByProperties.get(currentTargetProperty).add(currentTarget);
-            currentTarget.setTargetProperty(currentTargetProperty);
+            targetsByPositions.get(currentTargetProperty).add(currentTarget);
+            currentTarget.setTargetPosition(currentTargetProperty);
         }
+    }
+
+    public void calculateAllDependsOn()
+    {
+        for(Target currentTarget : graphTargets.values())
+            currentTarget.calculateAllDependsOnTargets(currentTarget);
+    }
+
+    public void calculateAllRequiredFor()
+    {
+        for(Target currentTarget : graphTargets.values())
+            currentTarget.calculateAllRequiredForTargets(currentTarget);
     }
 
     private void clearTargetsByProperties()
     {
-        targetsByProperties.get(Target.TargetProperty.ROOT).clear();
-        targetsByProperties.get(Target.TargetProperty.MIDDLE).clear();
-        targetsByProperties.get(Target.TargetProperty.LEAF).clear();
-        targetsByProperties.get(Target.TargetProperty.INDEPENDENT).clear();
+        targetsByPositions.get(Target.TargetPosition.ROOT).clear();
+        targetsByPositions.get(Target.TargetPosition.MIDDLE).clear();
+        targetsByPositions.get(Target.TargetPosition.LEAF).clear();
+        targetsByPositions.get(Target.TargetPosition.INDEPENDENT).clear();
     }
 }

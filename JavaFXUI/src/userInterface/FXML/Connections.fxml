@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 
-<GridPane fx:id="ConnectionsGridPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="477.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.fxml.FXML.ConnectionsController">
+<GridPane fx:id="ConnectionsGridPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="477.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
   <columnConstraints>
       <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
       <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />

@@ -7,23 +7,27 @@ import java.util.Set;
 
 public class Target implements Serializable {
     //--------------------------------------------------Enums-------------------------------------------------------//
-    public enum TargetProperty { LEAF, MIDDLE, ROOT, INDEPENDENT }
+    public enum TargetPosition { LEAF, MIDDLE, ROOT, INDEPENDENT }
     public enum Connection { REQUIRED_FOR, DEPENDS_ON }
 
     //--------------------------------------------------Members-----------------------------------------------------//
     private final Set<Target> dependsOnTargets;
     private final Set<Target> requiredForTargets;
-    private Set<String> serialSets;
-    private TargetProperty targetProperty;
+    private final Set<String> serialSets;
+    private TargetPosition targetPosition;
     private String targetName;
     private String extraInformation;
+    private final Set<String> allDependsOnTargets;
+    private final Set<String> allRequiredForTargets;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Target() {
         this.dependsOnTargets = new HashSet<>();
         this.requiredForTargets = new HashSet<>();
-        this.targetProperty = TargetProperty.INDEPENDENT;
+        this.targetPosition = TargetPosition.INDEPENDENT;
         this.serialSets = new HashSet<>();
+        this.allDependsOnTargets = new HashSet<>();
+        this.allRequiredForTargets = new HashSet<>();
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//
@@ -31,20 +35,28 @@ public class Target implements Serializable {
         return targetName;
     }
 
-    public String getExtraInformation() {
-        return extraInformation;
-    }
-
     public Set<Target> getDependsOnTargets() {
         return dependsOnTargets;
+    }
+
+    public Set<String> getSerialSets() {
+        return serialSets;
     }
 
     public Set<Target> getRequiredForTargets() {
         return requiredForTargets;
     }
 
-    public TargetProperty getTargetProperty() {
-        return targetProperty;
+    public TargetPosition getTargetPosition() {
+        return targetPosition;
+    }
+
+    public Set<String> getAllDependsOnTargets() {
+        return allDependsOnTargets;
+    }
+
+    public Set<String> getAllRequiredForTargets() {
+        return allRequiredForTargets;
     }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
@@ -56,14 +68,34 @@ public class Target implements Serializable {
         this.extraInformation = extraInformation;
     }
 
-    public void setTargetProperty(TargetProperty targetProperty) {
-        this.targetProperty = targetProperty;
+    public void setTargetPosition(TargetPosition targetPosition) {
+        this.targetPosition = targetPosition;
     }
+
+    public void addSerialSet(String newSerialSet) { serialSets.add(newSerialSet); }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void addToDependsOn(Target dependsOn) { dependsOnTargets.add(dependsOn); }
 
     public void addToRequiredFor(Target requiredFor) { requiredForTargets.add(requiredFor); }
+
+    public void calculateAllDependsOnTargets(Target target)
+    {
+        for(Target currentTarget : target.getDependsOnTargets())
+        {
+            allDependsOnTargets.add(currentTarget.getTargetName());
+            calculateAllDependsOnTargets(currentTarget);
+        }
+    }
+
+    public void calculateAllRequiredForTargets(Target target)
+    {
+        for(Target currentTarget : target.getRequiredForTargets())
+        {
+            allRequiredForTargets.add(currentTarget.getTargetName());
+            calculateAllRequiredForTargets(currentTarget);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

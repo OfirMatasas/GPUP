@@ -20,7 +20,7 @@
               <columns>
                 <TableColumn fx:id="TargetNumber" minWidth="-1.0" prefWidth="22.5" text="#" />
                 <TableColumn fx:id="TargetName" prefWidth="90.0" text="Target Name" />
-                  <TableColumn fx:id="TargetProperty" prefWidth="93.0" text="Property" />
+                  <TableColumn fx:id="TargetPosition" prefWidth="93.0" text="Position" />
                   <TableColumn fx:id="TargetDirectDependsOn" prefWidth="122.0" text="Direct Depends-on" />
                   <TableColumn fx:id="TargetAllDependsOn" prefWidth="105.0" text="All Depends on" />
                   <TableColumn fx:id="TargetDirectRequiredFor" prefWidth="118.5" text="Direct Required-for" />
@@ -28,12 +28,12 @@
                   <TableColumn fx:id="TargetSerialSets" prefWidth="99.0" text="Serial Sets" />
               </columns>
             </TableView>
-            <TableView fx:id="TargetPropertiesTable" layoutY="354.0" prefHeight="96.0" prefWidth="322.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="354.0">
+            <TableView fx:id="TargetPositionsTable" layoutY="354.0" prefHeight="96.0" prefWidth="322.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="354.0">
               <columns>
                 <TableColumn fx:id="RootsProperty" text="Roots" />
                 <TableColumn fx:id="MiddlesProperty" resizable="false" text="Middles" />
                   <TableColumn fx:id="LeavesProperty" resizable="false" text="Leaves" />
-                  <TableColumn fx:id="IndependetsProperty" resizable="false" text="Independets" />
+                  <TableColumn fx:id="IndependentsProperty" resizable="false" text="Independents" />
               </columns>
             </TableView>
             <Label fx:id="SerialSetsLabel" layoutX="510.0" layoutY="329.0" text="Serial Sets :" />
