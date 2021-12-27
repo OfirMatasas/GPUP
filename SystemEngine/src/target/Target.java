@@ -85,6 +85,9 @@ public class Target implements Serializable {
     {
         for(Target currentTarget : target.getDependsOnTargets())
         {
+            if(allDependsOnTargets.contains(currentTarget.getTargetName()))
+                continue;
+
             allDependsOnTargets.add(currentTarget.getTargetName());
             calculateAllDependsOnTargets(currentTarget);
         }
@@ -94,6 +97,9 @@ public class Target implements Serializable {
     {
         for(Target currentTarget : target.getRequiredForTargets())
         {
+            if(allRequiredForTargets.contains(currentTarget.getTargetName()))
+                continue;
+
             allRequiredForTargets.add(currentTarget.getTargetName());
             calculateAllRequiredForTargets(currentTarget);
         }

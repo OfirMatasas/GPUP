@@ -29,8 +29,8 @@ public class CircleFinder {
 
             if(circled)
             {
-                circlePath = current.getTargetName() + " -> " + circlePath;
-                circlePath = target.getTargetName() + " -> " + circlePath;
+                circlePath = current.getTargetName() + " ↓ " + circlePath;
+                circlePath = target.getTargetName() + " ↓ " + circlePath;
                 break;
             }
         }
@@ -56,7 +56,7 @@ public class CircleFinder {
             if(circled)
             {
                 if(!nextTarget.equals(origin))
-                    circlePath =  nextTarget.getTargetName() +  " -> " + circlePath;
+                    circlePath =  nextTarget.getTargetName() +  " ↓ " + circlePath;
 
                 break;
             }
