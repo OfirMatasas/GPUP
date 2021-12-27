@@ -1,5 +1,6 @@
 package controllers;
 
+import graphAnalyzers.CircleFinder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -10,6 +11,7 @@ import javafx.scene.layout.GridPane;
 import target.Graph;
 import target.Target;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public class ConnectionsController {
@@ -57,7 +59,7 @@ public class ConnectionsController {
     private AnchorPane CheckCirclesAnchorPane;
 
     @FXML
-    private ChoiceBox<?> CircleTargetChoiceBox;
+    private ChoiceBox<String> CircleTargetChoiceBox;
 
     @FXML
     private Label CheckCirclesLabel;
@@ -66,7 +68,7 @@ public class ConnectionsController {
     private Label ChooseCheckCircleLabel;
 
     @FXML
-    private ListView<?> CirclesListView;
+    private ListView<String> CirclesListView;
 
     @FXML
     private AnchorPane WhatIfAnchorPane;
@@ -98,6 +100,10 @@ public class ConnectionsController {
 
         setAllTargetsList();
         setRelationChoiceBox();
+        setCircleListView();
+    }
+
+    private void setCircleListView() {
     }
 
     private void setRelationChoiceBox()
@@ -117,6 +123,9 @@ public class ConnectionsController {
 
         OriginTargetChoiceBox.setItems(allTargetsList.sorted());
         OriginTargetChoiceBox.setTooltip(new Tooltip("Choose an origin target"));
+
+        CircleTargetChoiceBox.setItems(allTargetsList.sorted());
+        CircleTargetChoiceBox.setTooltip(new Tooltip("Choose a target"));
     }
 
     public void OriginTargetChosen(ActionEvent actionEvent) {
@@ -148,5 +157,20 @@ public class ConnectionsController {
 
     public void DestinationTargetChosen(ActionEvent actionEvent) {
 
+    }
+
+    public void CheckIfTargetCircled(ActionEvent actionEvent) {
+        CircleFinder circleFinder = new CircleFinder();
+        circleFinder.checkIfCircled(graph.getTarget(CircleTargetChoiceBox.getValue()));
+
+        String circlePath = circleFinder.getCirclePath();
+        ObservableList<String> circleList = FXCollections.observableArrayList();
+
+        if(circlePath == null)
+            circleList.add("Not in a circle");
+        else
+            circleList.addAll(Arrays.asList(circlePath.split(" ")));
+
+        CirclesListView.setItems(circleList);
     }
 }
