@@ -16,6 +16,7 @@ public class Target implements Serializable {
     private final Set<String> serialSets;
     private TargetPosition targetPosition;
     private String targetName;
+
     private String extraInformation;
     private final Set<String> allDependsOnTargets;
     private final Set<String> allRequiredForTargets;
@@ -58,6 +59,7 @@ public class Target implements Serializable {
     public Set<String> getAllRequiredForTargets() {
         return allRequiredForTargets;
     }
+    public String getExtraInformation() {return extraInformation;}
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setTargetName(String targetName) {

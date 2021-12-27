@@ -35,6 +35,7 @@ public class ShowDetailsController {
         TargetDirectRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("directRequiredFor"));
         TargetAllRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("allRequiredFor"));
         TargetSerialSets.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("serialSets"));
+        TargetExtraInformation.setCellValueFactory(new PropertyValueFactory<TargetDetails,String>("extraInformation"));
     }
 
     private void initializeGraphPositions() {
@@ -104,6 +105,9 @@ public class ShowDetailsController {
     private TableColumn<GraphPositionsInformation, Integer> IndependentsProperty;
 
     @FXML
+    private TableColumn<TargetDetails, String> TargetExtraInformation;
+
+    @FXML
     private Label SerialSetsLabel;
 
     @FXML
@@ -127,7 +131,7 @@ public class ShowDetailsController {
         for (Target currentTarget : graph.getGraphTargets().values()) {
             currentTargetDetails = new TargetDetails(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
                     currentTarget.getDependsOnTargets().size(), currentTarget.getAllDependsOnTargets().size(),
-                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getSerialSets().size());
+                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getSerialSets().size(), currentTarget.getExtraInformation());
 
             targetDetailsList.add(currentTargetDetails);
             ++i;
