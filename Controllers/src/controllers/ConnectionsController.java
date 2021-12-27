@@ -123,6 +123,7 @@ public class ConnectionsController {
         this.originTargetName = (String)OriginTargetChoiceBox.getValue();
         RelationChoiceBox.setValue(null);
         RelationChoiceBox.setDisable(false);
+        DestinationTargetChoiceBox.setDisable(true);
         destinationTargets.clear();
     }
 
