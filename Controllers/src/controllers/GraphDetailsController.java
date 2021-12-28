@@ -39,10 +39,10 @@ public class GraphDetailsController {
     }
 
     private void initializeGraphPositions() {
-        RootsProperty.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("roots"));
-        MiddlesProperty.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("middles"));
-        LeavesProperty.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("leaves"));
-        IndependentsProperty.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("independents"));
+        RootsPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("roots"));
+        MiddlesPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("middles"));
+        LeavesPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("leaves"));
+        IndependentsPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("independents"));
     }
 
     private void initializeSerialSetChoiceBox() {
@@ -93,16 +93,16 @@ public class GraphDetailsController {
     private TableView<GraphPositionsInformation> TargetPositionsTable;
 
     @FXML
-    private TableColumn<GraphPositionsInformation, Integer> RootsProperty;
+    private TableColumn<GraphPositionsInformation, Integer> RootsPosition;
 
     @FXML
-    private TableColumn<GraphPositionsInformation, Integer> MiddlesProperty;
+    private TableColumn<GraphPositionsInformation, Integer> MiddlesPosition;
 
     @FXML
-    private TableColumn<GraphPositionsInformation, Integer> LeavesProperty;
+    private TableColumn<GraphPositionsInformation, Integer> LeavesPosition;
 
     @FXML
-    private TableColumn<GraphPositionsInformation, Integer> IndependentsProperty;
+    private TableColumn<GraphPositionsInformation, Integer> IndependentsPosition;
 
     @FXML
     private TableColumn<TargetDetails, String> TargetExtraInformation;
@@ -111,11 +111,10 @@ public class GraphDetailsController {
     private Label SerialSetsLabel;
 
     @FXML
-    private Label GraphProperties;
+    private Label GraphPositions;
 
     @FXML
-    private PieChart PropertiesPie;
-
+    private PieChart PositionsPie;
 
     public void setGraph(Graph graph) {
         this.graph = graph;

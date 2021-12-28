@@ -19,26 +19,26 @@
               <columns>
                 <TableColumn fx:id="TargetNumber" prefWidth="22.5" text="#" />
                 <TableColumn fx:id="TargetName" prefWidth="90.0" text="Target Name" />
+                  <TableColumn fx:id="TargetExtraInformation" prefWidth="136.0" text="Extra Information" />
                   <TableColumn fx:id="TargetPosition" prefWidth="93.0" text="Position" />
                   <TableColumn fx:id="TargetDirectDependsOn" prefWidth="122.0" text="Direct Depends-on" />
                   <TableColumn fx:id="TargetAllDependsOn" prefWidth="105.0" text="All Depends on" />
                   <TableColumn fx:id="TargetDirectRequiredFor" prefWidth="118.5" text="Direct Required-for" />
                   <TableColumn fx:id="TargetAllRequiredFor" prefWidth="104.5" text="All Required-for" />
                   <TableColumn fx:id="TargetSerialSets" minWidth="0.0" prefWidth="79.0" text="Serial Sets" />
-                  <TableColumn fx:id="TargetExtraInformation" prefWidth="136.0" text="Extra Information" />
               </columns>
             </TableView>
             <TableView fx:id="TargetPositionsTable" layoutY="362.0" maxWidth="800.0" prefHeight="68.0" prefWidth="325.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="362.0">
               <columns>
-                <TableColumn fx:id="RootsProperty" maxWidth="200.0" text="Roots" />
-                <TableColumn fx:id="MiddlesProperty" maxWidth="200.0" resizable="false" text="Middles" />
-                  <TableColumn fx:id="LeavesProperty" maxWidth="200.0" prefWidth="62.5" resizable="false" text="Leaves" />
-                  <TableColumn fx:id="IndependentsProperty" maxWidth="200.0" prefWidth="101.0" resizable="false" text="Independents" />
+                <TableColumn fx:id="RootsPosition" maxWidth="200.0" text="Roots" />
+                <TableColumn fx:id="MiddlesPosition" maxWidth="200.0" resizable="false" text="Middles" />
+                  <TableColumn fx:id="LeavesPosition" maxWidth="200.0" prefWidth="62.5" resizable="false" text="Leaves" />
+                  <TableColumn fx:id="IndependentsPosition" maxWidth="200.0" prefWidth="101.0" resizable="false" text="Independents" />
               </columns>
             </TableView>
             <Label fx:id="SerialSetsLabel" layoutX="510.0" layoutY="341.0" text="Serial Sets :" />
-            <Label fx:id="GraphProperties" layoutX="116.0" layoutY="341.0" text="Graph Properties" />
-            <PieChart fx:id="PropertiesPie" layoutX="889.0" layoutY="45.0" prefHeight="245.0" prefWidth="267.0" style="-fx-background-color: black;" title="Graph Properties" />
+            <Label fx:id="GraphPositions" layoutX="116.0" layoutY="341.0" text="Graph Positions" />
+            <PieChart fx:id="PositionsPie" layoutX="889.0" layoutY="45.0" prefHeight="245.0" prefWidth="267.0" style="-fx-background-color: black;" title="Graph Properties" />
          </children>
       </AnchorPane>
    </content>

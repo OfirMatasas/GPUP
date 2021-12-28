@@ -236,7 +236,9 @@ public class PrimaryController {
     }
 
     private void UpdateButtons() {
-
+        graphDetailsButton.setDisable(false);
+        connectionsButton.setDisable(false);
+        taskButton.setDisable(false);
     }
 
     private void UpdateConnectionsControllerAndPane()
