@@ -23,6 +23,7 @@ public class Main extends Application
         primaryStage.setScene(new Scene(root));
         primaryStage.getScene().getStylesheets().addAll(Objects.requireNonNull(getClass().getResource("Stylesheets/DarkMode.css")).toExternalForm());
         primaryStage.getIcons().add(new Image("/resourcers/GPUP logo.png"));
+
         //Set the Stage
         PrimaryController primaryController = loader.getController();
         primaryController.setPrimaryStage(primaryStage);
