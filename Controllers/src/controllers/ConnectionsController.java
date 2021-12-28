@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 public class ConnectionsController {
+    public ToggleGroup whatIfValue;
     private Graph graph = null;
     private final ObservableList<String> allTargetsList = FXCollections.observableArrayList();
     private final ObservableList<String> relationsList = FXCollections.observableArrayList();
@@ -109,9 +110,6 @@ public class ConnectionsController {
     @FXML
     private RadioButton RequiredForRadioButton;
 
-    public ConnectionsController() {
-    }
-
     public void setGraph(Graph graph)
     {
         this.graph = graph;
@@ -132,8 +130,6 @@ public class ConnectionsController {
         RelationChoiceBox.setItems(relationsList);
         OriginTargetChoiceBox.setTooltip(new Tooltip("Choose relation between targets"));
     }
-
-
 
     private void setAllTargetsList()
     {
@@ -221,7 +217,7 @@ public class ConnectionsController {
 
     public void WhatIfTargetSelected(ActionEvent actionEvent)
     {
-        String selectedTarget = WhatIfChoiceBox.getValue().toString();
+        String selectedTarget = WhatIfChoiceBox.getValue();
         ObservableList<String> otherTargets = FXCollections.observableArrayList();
 
         if(DependsOnRadioButton.isSelected())

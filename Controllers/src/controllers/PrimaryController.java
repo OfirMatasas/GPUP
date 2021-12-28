@@ -1,7 +1,6 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -211,24 +210,18 @@ public class PrimaryController {
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     @FXML
     void connectionsButtonPressed(ActionEvent event) {
-        Platform.runLater(()->{
-            mainBorderPane.setCenter(connectionsPane);
-        });
+        mainBorderPane.setCenter(connectionsPane);
     }
 
     @FXML
     void graphDetailsButtonPressed(ActionEvent event) throws Exception
     {
-        Platform.runLater(()->{
-            mainBorderPane.setCenter(graphDetailsPane);
-        });
+        mainBorderPane.setCenter(graphDetailsPane);
     }
 
     @FXML
     void taskButtonPressed(ActionEvent event) {
-        Platform.runLater(()->{
-            mainBorderPane.setCenter(taskPane);
-        });
+        mainBorderPane.setCenter(taskPane);
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//

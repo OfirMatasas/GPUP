@@ -49,7 +49,7 @@ public class Main extends Application
             ButtonType yesButton = new ButtonType("Yes");
             ButtonType noButton = new ButtonType("No");
 
-            alert.getButtonTypes().setAll(yesButton, noButton );
+            alert.getButtonTypes().setAll(yesButton, noButton);
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() != yesButton){
                 event.consume();
