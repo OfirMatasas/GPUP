@@ -12,7 +12,7 @@ import javafx.scene.layout.AnchorPane;
 import target.Graph;
 import target.Target;
 
-public class ShowDetailsController {
+public class GraphDetailsController {
     private Graph graph = null;
     private final ObservableList<TargetDetails> targetDetailsList = FXCollections.observableArrayList();
     private final ObservableList<GraphPositionsInformation> graphPositionsList = FXCollections.observableArrayList();
