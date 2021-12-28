@@ -273,6 +273,7 @@ public class PrimaryController {
         UpdateConnectionsControllerAndPane();
         UpdateTaskControllerAndPane();
         UpdateButtons();
+        UpdatePanesStyles();
     }
 
     private void UpdateButtons() {
@@ -318,5 +319,15 @@ public class PrimaryController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void UpdatePanesStyles()
+    {
+        if(defaultTheme.isSelected())
+            defaultThemePressed(new ActionEvent());
+        else if(darkModeTheme.isSelected())
+            darkModeThemePressed(new ActionEvent());
+        else
+            rainbowThemePressed(new ActionEvent());
     }
 }
