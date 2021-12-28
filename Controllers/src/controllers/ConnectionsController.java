@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import target.Graph;
 import target.Target;
 
@@ -22,6 +23,12 @@ public class ConnectionsController {
     private final ObservableList<String> destinationTargets = FXCollections.observableArrayList();
     private String originTargetName;
     private String relation;
+
+    @FXML
+    private ScrollPane scrollPane;
+
+    @FXML
+    private Pane pane;
 
     @FXML
     private GridPane ConnectionsGridPane;
@@ -88,6 +95,10 @@ public class ConnectionsController {
 
     @FXML
     private RadioButton DependsOnRadioButton;
+
+
+    @FXML
+    private ListView<?> showConnectionBetweenListView;
 
     @FXML
     private ToggleGroup What_If_Value;
@@ -164,6 +175,7 @@ public class ConnectionsController {
     }
 
     public void DestinationTargetChosen(ActionEvent actionEvent) {
+
 
     }
 
