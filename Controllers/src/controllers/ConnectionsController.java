@@ -3,6 +3,7 @@ package controllers;
 import graphAnalyzers.CircleFinder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -74,7 +75,7 @@ public class ConnectionsController {
     private AnchorPane WhatIfAnchorPane;
 
     @FXML
-    private ChoiceBox<?> WhatIfChoiceBox;
+    private ChoiceBox<String> WhatIfChoiceBox;
 
     @FXML
     private Label WhatIFLabel;
@@ -83,7 +84,7 @@ public class ConnectionsController {
     private Label ChooseWhatIfTarget;
 
     @FXML
-    private ListView<?> WhatIfListView;
+    private ListView<String> WhatIfListView;
 
     @FXML
     private RadioButton DependsOnRadioButton;
@@ -115,17 +116,24 @@ public class ConnectionsController {
         OriginTargetChoiceBox.setTooltip(new Tooltip("Choose relation between targets"));
     }
 
+
+
     private void setAllTargetsList()
     {
         int i = 0;
         for(Target currentTargetName : graph.getGraphTargets().values())
             allTargetsList.add(i++, currentTargetName.getTargetName());
 
-        OriginTargetChoiceBox.setItems(allTargetsList.sorted());
+        final SortedList<String> sorted = allTargetsList.sorted();
+
+        OriginTargetChoiceBox.setItems(sorted);
         OriginTargetChoiceBox.setTooltip(new Tooltip("Choose an origin target"));
 
-        CircleTargetChoiceBox.setItems(allTargetsList.sorted());
+        CircleTargetChoiceBox.setItems(sorted);
         CircleTargetChoiceBox.setTooltip(new Tooltip("Choose a target"));
+
+        WhatIfChoiceBox.setItems(sorted);
+        WhatIfChoiceBox.setTooltip(new Tooltip("Choose a target"));
     }
 
     public void OriginTargetChosen(ActionEvent actionEvent) {
@@ -172,5 +180,23 @@ public class ConnectionsController {
             circleList.addAll(Arrays.asList(circlePath.split(" ")));
 
         CirclesListView.setItems(circleList);
+    }
+
+    public void WhatIfTargetSelected(ActionEvent actionEvent)
+    {
+        String selectedTarget = WhatIfChoiceBox.getValue().toString();
+        ObservableList<String> otherTargets = FXCollections.observableArrayList();
+
+        if(DependsOnRadioButton.isSelected())
+            otherTargets.addAll(graph.getTarget(selectedTarget).getAllDependsOnTargets());
+        else if(RequiredForRadioButton.isSelected())
+            otherTargets.addAll(graph.getTarget(selectedTarget).getAllRequiredForTargets());
+
+        WhatIfListView.setItems(otherTargets);
+    }
+
+    public void WhatIfRadioButtonSelected(ActionEvent actionEvent) {
+        if(WhatIfChoiceBox.getValue() != null)
+            WhatIfTargetSelected(actionEvent);
     }
 }
