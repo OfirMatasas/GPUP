@@ -1,24 +1,24 @@
 
 /*---------------------------------------------------Sidebar-----------------------------------------------------*/
 .PrimarySidebarButton{
-    -fx-background-color: #bacff8;
-    -fx-text-fill: black;
+    -fx-background-color: #175088;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 /*--------------------------------------------Primary Toolbar & Footer--------------------------------------------*/
 .PrimaryToolbar, .PrimaryFooter{
-    -fx-background-color: #bacff8;
+    -fx-background-color: #175088;
 }
 
 .PrimaryToolbar .label, .PrimaryFooter .label{
-    -fx-text-fill: black;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 /*--------------------------------------------------Menu Items-----------------------------------------------------*/
 .menu-item .label {
-    -fx-text-fill: black;
+    -fx-text-fill: white;
 }
 
 .menu-item:focused {
@@ -30,5 +30,5 @@
 }
 
 .context-menu {
-    -fx-background-color: #bacff8;
+    -fx-background-color: #175088;
 }

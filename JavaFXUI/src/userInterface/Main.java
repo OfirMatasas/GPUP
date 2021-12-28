@@ -11,7 +11,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class Main extends Application
@@ -22,7 +21,7 @@ public class Main extends Application
         FXMLLoader loader = new FXMLLoader(getClass().getResource("PrimaryScene.fxml"));
         Parent root = loader.load();
         primaryStage.setScene(new Scene(root));
-        primaryStage.getScene().getStylesheets().addAll(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_THEME)).toExternalForm());
+        primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LIGHT_MAIN_THEME);
         primaryStage.getIcons().add(new Image("/resourcers/GPUP logo.png"));
 
         //Set the Stage
