@@ -1,6 +1,7 @@
 package controllers;
 
 import graphAnalyzers.CircleFinder;
+import graphAnalyzers.PathFinder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -13,6 +14,7 @@ import javafx.scene.layout.Pane;
 import target.Graph;
 import target.Target;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -23,6 +25,7 @@ public class ConnectionsController {
     private final ObservableList<String> destinationTargets = FXCollections.observableArrayList();
     private String originTargetName;
     private String relation;
+    private String destionationTargetName;
 
     @FXML
     private ScrollPane scrollPane;
@@ -98,13 +101,16 @@ public class ConnectionsController {
 
 
     @FXML
-    private ListView<?> showConnectionBetweenListView;
+    private ListView<String> showConnectionBetweenListView;
 
     @FXML
     private ToggleGroup What_If_Value;
 
     @FXML
     private RadioButton RequiredForRadioButton;
+
+    public ConnectionsController() {
+    }
 
     public void setGraph(Graph graph)
     {
@@ -175,7 +181,26 @@ public class ConnectionsController {
     }
 
     public void DestinationTargetChosen(ActionEvent actionEvent) {
+        Target origin,destination;
+        ArrayList<String> paths = new ArrayList<String>();
+        ObservableList<String> pathsTargets = FXCollections.observableArrayList();
+        PathFinder pathFinder = new PathFinder();
 
+        destionationTargetName = DestinationTargetChoiceBox.getValue();
+        origin = graph.getTarget(originTargetName);
+        destination = graph.getTarget(destionationTargetName);
+
+       if(pathFinder.prechecksForTargetsConnection(originTargetName,destionationTargetName,graph))
+       {
+           if(relation == "Depends On")
+               paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.DEPENDS_ON);
+           else
+               paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.REQUIRED_FOR);
+       }
+
+        pathsTargets.addAll(paths);
+
+        showConnectionBetweenListView.setItems(pathsTargets);
 
     }
 
