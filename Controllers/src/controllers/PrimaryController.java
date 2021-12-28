@@ -156,16 +156,20 @@ public class PrimaryController {
     //--------------------------------------------------Themes-----------------------------------------------------//
     @FXML
     void defaultThemePressed(ActionEvent event) {
-        Scene scene = primaryStage.getScene();
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("src/userInterface/Stylesheets/LightMode.css")).toExternalForm());
+        Platform.runLater(()-> {
+            Scene scene = primaryStage.getScene();
+            scene.getStylesheets().clear();
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_THEME)).toExternalForm());
+        });
     }
 
     @FXML
     void darkModeThemePressed(ActionEvent event) {
-        Scene scene = primaryStage.getScene();
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("src/userInterface/Stylesheets/DarkMode.css")).toExternalForm());
+        Platform.runLater(() -> {
+            Scene scene = primaryStage.getScene();
+            scene.getStylesheets().clear();
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_THEME)).toExternalForm());
+        });
     }
 
     @FXML

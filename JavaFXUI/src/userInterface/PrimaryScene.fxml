@@ -7,6 +7,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.effect.Bloom?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -15,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.PrimaryController">
+<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="Infinity" maxWidth="Infinity" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.PrimaryController">
    <content>
       <BorderPane fx:id="mainBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="750.0">
          <center>
@@ -23,7 +24,7 @@
                <content>
                   <HBox fx:id="HboxForLogo" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
-                        <ImageView fx:id="PrimaryLogo" fitHeight="587.0" fitWidth="609.0" opacity="0.55" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="PrimaryLogo" fitHeight="550.0" fitWidth="609.0" opacity="0.55" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../resourcers/GPUP logo.png" />
                            </image>
@@ -64,9 +65,12 @@
                   </Menu>
                   <Menu fx:id="themes" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="Themes">
                      <items>
-                        <RadioMenuItem fx:id="defaultTheme" mnemonicParsing="false" onAction="#defaultThemePressed" styleClass="PrimaryToolbarItemOption" text="Default" />
-                        <RadioMenuItem fx:id="darkModeTheme" mnemonicParsing="false" onAction="#darkModeThemePressed" styleClass="PrimaryToolbarItemOption" text="Dark mode" />
-                        <RadioMenuItem fx:id="rainbowTheme" mnemonicParsing="false" onAction="#rainbowThemePressed" styleClass="PrimaryToolbarItemOption" text="Rainbow mode" />
+                        <RadioMenuItem fx:id="defaultTheme" mnemonicParsing="false" onAction="#defaultThemePressed" styleClass="PrimaryToolbarItemOption" selected="true" text="Default">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="templates" />
+                           </toggleGroup></RadioMenuItem>
+                        <RadioMenuItem fx:id="darkModeTheme" mnemonicParsing="false" onAction="#darkModeThemePressed" styleClass="PrimaryToolbarItemOption" text="Dark mode" toggleGroup="$templates" />
+                        <RadioMenuItem fx:id="rainbowTheme" mnemonicParsing="false" onAction="#rainbowThemePressed" styleClass="PrimaryToolbarItemOption" text="Rainbow mode" toggleGroup="$templates" />
                      </items>
                   </Menu>
                   <Menu fx:id="Help" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="Help">

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="ConnectionsGridPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
+<GridPane fx:id="ConnectionsGridPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="571.0" prefWidth="996.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
   <columnConstraints>
       <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
       <ColumnConstraints hgrow="ALWAYS" maxWidth="300.0" minWidth="10.0" />
@@ -27,11 +27,11 @@
                <children>
                   <Label fx:id="ShowConnectionLabel" layoutX="11.0" layoutY="21.0" prefHeight="17.0" prefWidth="200.0" text="Show Connection Between 2 targets" AnchorPane.leftAnchor="11.0" />
                   <Label fx:id="OriginTargetLabel" layoutX="11.0" layoutY="66.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Origin target" />
-                  <ChoiceBox fx:id="OriginTargetChoiceBox" onAction="#OriginTargetChosen"  layoutX="120.0" layoutY="62.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
+                  <ChoiceBox fx:id="OriginTargetChoiceBox" layoutX="120.0" layoutY="62.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OriginTargetChosen" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
                   <Label fx:id="RelationLabel" layoutX="11.0" layoutY="99.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="108.0" text="Relation" />
-                  <ChoiceBox fx:id="RelationChoiceBox" onAction="#RelationChosen" disable="true" layoutX="120.0" layoutY="95.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="150.0" />
+                  <ChoiceBox fx:id="RelationChoiceBox" disable="true" layoutX="120.0" layoutY="95.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#RelationChosen" prefHeight="25.0" prefWidth="150.0" />
                   <Label fx:id="DestinationTargetLabel" layoutX="11.0" layoutY="131.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="108.0" text="Destination target" />
-                  <ChoiceBox fx:id="DestinationTargetChoiceBox" onAction="#DestinationTargetChosen" disable="true" layoutX="120.0" layoutY="127.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
+                  <ChoiceBox fx:id="DestinationTargetChoiceBox" disable="true" layoutX="120.0" layoutY="127.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#DestinationTargetChosen" prefHeight="25.0" prefWidth="150.0" AnchorPane.leftAnchor="120.0" />
                   <ScrollPane fx:id="ListViewScrollPane" layoutX="14.0" layoutY="176.0" prefHeight="202.0" prefWidth="231.0">
                      <content>
                         <ListView fx:id="ConnectionsListView" prefHeight="200.0" prefWidth="229.0" />
@@ -45,7 +45,7 @@
          <content>
             <AnchorPane fx:id="CheckCirclesAnchorPane" minWidth="-Infinity" prefHeight="313.0" prefWidth="287.0">
                <children>
-                  <ChoiceBox fx:id="CircleTargetChoiceBox" onAction="#CheckIfTargetCircled" layoutX="111.0" layoutY="64.0" maxWidth="150.0" minWidth="100.0" prefHeight="25.0" prefWidth="200.0" />
+                  <ChoiceBox fx:id="CircleTargetChoiceBox" layoutX="111.0" layoutY="64.0" maxWidth="150.0" minWidth="100.0" onAction="#CheckIfTargetCircled" prefHeight="25.0" prefWidth="200.0" />
                   <Label fx:id="CheckCirclesLabel" layoutX="104.0" layoutY="25.0" prefHeight="17.0" prefWidth="80.0" text="Check Circles" />
                   <Label fx:id="ChooseCheckCircleLabel" layoutX="14.0" layoutY="64.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
                   <ListView fx:id="CirclesListView" layoutX="111.0" layoutY="97.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />

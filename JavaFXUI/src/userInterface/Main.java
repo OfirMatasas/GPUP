@@ -1,5 +1,6 @@
 package userInterface;
 
+import bodyComponentsPaths.BodyComponentsPaths;
 import controllers.PrimaryController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -21,7 +22,7 @@ public class Main extends Application
         FXMLLoader loader = new FXMLLoader(getClass().getResource("PrimaryScene.fxml"));
         Parent root = loader.load();
         primaryStage.setScene(new Scene(root));
-        primaryStage.getScene().getStylesheets().addAll(Objects.requireNonNull(getClass().getResource("Stylesheets/DarkMode.css")).toExternalForm());
+        primaryStage.getScene().getStylesheets().addAll(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_THEME)).toExternalForm());
         primaryStage.getIcons().add(new Image("/resourcers/GPUP logo.png"));
 
         //Set the Stage
