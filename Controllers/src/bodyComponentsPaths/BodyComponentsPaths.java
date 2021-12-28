@@ -9,5 +9,5 @@ public class BodyComponentsPaths
 
     public static String LIGHT_THEME = "/userInterface/Stylesheets/LightMode.css";
     public static String DARK_THEME = "/userInterface/Stylesheets/DarkMode.css";
-    public static String RAINBOW_THEME = " ";
+    public static String RAINBOW_THEME = "/userInterface/Stylesheets/CenterRainbowMode.css";
 }
