@@ -17,28 +17,28 @@
             <ListView fx:id="SerialSetsListsView" layoutX="424.0" layoutY="394.0" prefHeight="163.0" prefWidth="231.0" />
             <TableView fx:id="TargetsDetailsTable" prefHeight="334.0" prefWidth="873.0">
               <columns>
-                <TableColumn fx:id="TargetNumber" styleClass="table-column" prefWidth="22.5" text="#" />
-                <TableColumn fx:id="TargetName" styleClass="table-column" prefWidth="90.0" text="Target Name" />
-                  <TableColumn fx:id="TargetExtraInformation" styleClass="table-column" prefWidth="136.0" text="Extra Information" />
-                  <TableColumn fx:id="TargetPosition" styleClass="table-column" prefWidth="93.0" text="Position" />
-                  <TableColumn fx:id="TargetDirectDependsOn" styleClass="table-column" prefWidth="122.0" text="Direct Depends-on" />
-                  <TableColumn fx:id="TargetAllDependsOn" styleClass="table-column" prefWidth="105.0" text="All Depends on" />
-                  <TableColumn fx:id="TargetDirectRequiredFor" styleClass="table-column" prefWidth="118.5" text="Direct Required-for" />
-                  <TableColumn fx:id="TargetAllRequiredFor" styleClass="table-column" prefWidth="104.5" text="All Required-for" />
-                  <TableColumn fx:id="TargetSerialSets" styleClass="table-column" minWidth="0.0" prefWidth="79.0" text="Serial Sets" />
+                <TableColumn fx:id="TargetNumber" prefWidth="22.5" styleClass="table-column" text="#" />
+                <TableColumn fx:id="TargetName" prefWidth="90.0" styleClass="table-column" text="Target Name" />
+                  <TableColumn fx:id="TargetExtraInformation" prefWidth="136.0" styleClass="table-column" text="Extra Information" />
+                  <TableColumn fx:id="TargetPosition" prefWidth="93.0" styleClass="table-column" text="Position" />
+                  <TableColumn fx:id="TargetDirectDependsOn" prefWidth="122.0" styleClass="table-column" text="Direct Depends-on" />
+                  <TableColumn fx:id="TargetAllDependsOn" prefWidth="105.0" styleClass="table-column" text="All Depends on" />
+                  <TableColumn fx:id="TargetDirectRequiredFor" prefWidth="118.5" styleClass="table-column" text="Direct Required-for" />
+                  <TableColumn fx:id="TargetAllRequiredFor" prefWidth="104.5" styleClass="table-column" text="All Required-for" />
+                  <TableColumn fx:id="TargetSerialSets" minWidth="0.0" prefWidth="79.0" styleClass="table-column" text="Serial Sets" />
               </columns>
             </TableView>
             <TableView fx:id="TargetPositionsTable" layoutY="362.0" maxWidth="800.0" prefHeight="68.0" prefWidth="325.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="362.0">
               <columns>
-                <TableColumn fx:id="RootsPosition" styleClass="table-column" maxWidth="200.0" text="Roots" />
-                <TableColumn fx:id="MiddlesPosition" styleClass="table-column" maxWidth="200.0" resizable="false" text="Middles" />
-                  <TableColumn fx:id="LeavesPosition" styleClass="table-column" maxWidth="200.0" prefWidth="62.5" resizable="false" text="Leaves" />
-                  <TableColumn fx:id="IndependentsPosition" styleClass="table-column" maxWidth="200.0" prefWidth="101.0" resizable="false" text="Independents" />
+                <TableColumn fx:id="RootsPosition" maxWidth="200.0" styleClass="table-column" text="Roots" />
+                <TableColumn fx:id="MiddlesPosition" maxWidth="200.0" resizable="false" styleClass="table-column" text="Middles" />
+                  <TableColumn fx:id="LeavesPosition" maxWidth="200.0" prefWidth="62.5" resizable="false" styleClass="table-column" text="Leaves" />
+                  <TableColumn fx:id="IndependentsPosition" maxWidth="200.0" prefWidth="101.0" resizable="false" styleClass="table-column" text="Independents" />
               </columns>
             </TableView>
             <Label fx:id="SerialSetsLabel" layoutX="510.0" layoutY="341.0" text="Serial Sets :" />
             <Label fx:id="GraphPositions" layoutX="116.0" layoutY="341.0" text="Graph Positions" />
-            <PieChart fx:id="PositionsPie" layoutX="889.0" layoutY="45.0" prefHeight="245.0" prefWidth="267.0" style="-fx-background-color: black;" title="Graph Properties" />
+            <PieChart fx:id="PositionsPie" layoutX="705.0" layoutY="340.0" prefHeight="298.0" prefWidth="322.0" title="Graph Properties" />
          </children>
       </AnchorPane>
    </content>

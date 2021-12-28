@@ -6,11 +6,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import target.Graph;
 import target.Target;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GraphDetailsController {
     private Graph graph = null;
@@ -24,6 +27,7 @@ public class GraphDetailsController {
         initializeGraphDetails();
         initializeGraphPositions();
         initializeSerialSetChoiceBox();
+
     }
 
     private void initializeGraphDetails() {
@@ -35,7 +39,7 @@ public class GraphDetailsController {
         TargetDirectRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("directRequiredFor"));
         TargetAllRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("allRequiredFor"));
         TargetSerialSets.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("serialSets"));
-        TargetExtraInformation.setCellValueFactory(new PropertyValueFactory<TargetDetails,String>("extraInformation"));
+        TargetExtraInformation.setCellValueFactory(new PropertyValueFactory<TargetDetails, String>("extraInformation"));
     }
 
     private void initializeGraphPositions() {
@@ -121,6 +125,7 @@ public class GraphDetailsController {
         setTargetDetailsTable();
         setGraphPositionsTable();
         setTargetSerialSetChoiceBox();
+        initializePie();
     }
 
     private void setTargetDetailsTable() {
@@ -139,8 +144,7 @@ public class GraphDetailsController {
         TargetsDetailsTable.setItems(targetDetailsList);
     }
 
-    private void setGraphPositionsTable()
-    {
+    private void setGraphPositionsTable() {
         GraphPositionsInformation graphPositionsInformation = new GraphPositionsInformation(
                 graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT),
                 graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE),
@@ -153,13 +157,38 @@ public class GraphDetailsController {
         TargetPositionsTable.setItems(graphPositionsList);
     }
 
-    private void setTargetSerialSetChoiceBox()
-    {
+    private void setTargetSerialSetChoiceBox() {
         int i = 0;
-        for(String currentSerialSetName : graph.getSerialSetsNames())
+        for (String currentSerialSetName : graph.getSerialSetsNames())
             serialSetsNameList.add(i++, currentSerialSetName);
 
         TargetSerialSetChoiceBox.setItems(serialSetsNameList.sorted());
         TargetSerialSetChoiceBox.setTooltip(new Tooltip("Choose a serial set"));
     }
+
+    public void initializePie() {
+
+        double roots,middles,independents,leaf;
+        roots= this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT);
+        middles= this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE);
+        independents= this.graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT);
+        leaf= this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF);
+        final double sum = roots + middles + independents + leaf;
+
+        ObservableList<Data> pieChartData= FXCollections.observableArrayList(
+        new Data("Roots" , roots),
+        new Data("Middles" ,middles),
+        new Data("Independents" , independents),
+        new Data("Leaves" ,leaf));
+
+        PositionsPie.setData(pieChartData);
+        PositionsPie.setTitle("Graph Position Pie");
+        final String[] percentage = new String[1];
+        PositionsPie.getData().forEach(data -> {
+                    percentage[0] = (String.format("%.2f%%", data.getPieValue()/sum*100));
+                    Tooltip tooltip = new Tooltip(percentage[0]);
+                    Tooltip.install(data.getNode(), tooltip);
+                });
+    }
 }
+

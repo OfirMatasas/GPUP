@@ -197,7 +197,6 @@ public class ConnectionsController {
         pathsTargets.addAll(paths);
 
         showConnectionBetweenListView.setItems(pathsTargets);
-
     }
 
     public void CheckIfTargetCircled(ActionEvent actionEvent) {
