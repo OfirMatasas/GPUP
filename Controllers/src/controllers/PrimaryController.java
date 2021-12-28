@@ -37,6 +37,9 @@ public class PrimaryController {
     private GridPane taskPane = null;
 
     @FXML
+    private ToggleGroup templates;
+
+    @FXML
     private BorderPane mainBorderPane;
 
     @FXML
@@ -159,6 +162,7 @@ public class PrimaryController {
         Scene scene = primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
+
 
         if(graph == null)
             return;

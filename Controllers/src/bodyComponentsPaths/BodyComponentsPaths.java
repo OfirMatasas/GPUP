@@ -11,6 +11,6 @@ public class BodyComponentsPaths
     public static String LIGHT_CENTER_THEME = "/userInterface/Stylesheets/CenterLightMode.css";
     public static String DARK_MAIN_THEME = "/userInterface/Stylesheets/DarkMode.css";
     public static String DARK_CENTER_THEME = "/userInterface/Stylesheets/CenterDarkMode.css";
-    public static String RAINBOW_MAIN_THEME = "/userInterface/Stylesheets/CenterRainbowMode.css";
+    public static String RAINBOW_MAIN_THEME = "/userInterface/Stylesheets/RainbowMode.css";
     public static String RAINBOW_CENTER_THEME = "/userInterface/Stylesheets/CenterRainbowMode.css";
 }

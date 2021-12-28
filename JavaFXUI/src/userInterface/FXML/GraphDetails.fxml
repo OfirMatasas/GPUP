@@ -30,10 +30,10 @@
             </TableView>
             <TableView fx:id="TargetPositionsTable" layoutY="362.0" maxWidth="800.0" prefHeight="68.0" prefWidth="325.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="362.0">
               <columns>
-                <TableColumn fx:id="RootsPosition" maxWidth="200.0" text="Roots" />
-                <TableColumn fx:id="MiddlesPosition" maxWidth="200.0" resizable="false" text="Middles" />
-                  <TableColumn fx:id="LeavesPosition" maxWidth="200.0" prefWidth="62.5" resizable="false" text="Leaves" />
-                  <TableColumn fx:id="IndependentsPosition" maxWidth="200.0" prefWidth="101.0" resizable="false" text="Independents" />
+                <TableColumn fx:id="RootsPosition" styleClass="table-column" maxWidth="200.0" text="Roots" />
+                <TableColumn fx:id="MiddlesPosition" styleClass="table-column" maxWidth="200.0" resizable="false" text="Middles" />
+                  <TableColumn fx:id="LeavesPosition" styleClass="table-column" maxWidth="200.0" prefWidth="62.5" resizable="false" text="Leaves" />
+                  <TableColumn fx:id="IndependentsPosition" styleClass="table-column" maxWidth="200.0" prefWidth="101.0" resizable="false" text="Independents" />
               </columns>
             </TableView>
             <Label fx:id="SerialSetsLabel" layoutX="510.0" layoutY="341.0" text="Serial Sets :" />

@@ -4,11 +4,11 @@
     -fx-base: #ff00c5;
     -fx-control-inner-background: derive(-fx-base, 35%);
     -fx-control-inner-background-alt: -fx-control-inner-background ;
-    -fx-background-color: #469eff;
+    -fx-background-color: #ff8fe9;
 }
 
 .label{
-    -fx-text-fill: yellow;
+    -fx-text-fill: #ff00c5;
 }
 
 .text-field {
@@ -24,7 +24,7 @@
 }
 
 .separator *.line {
-    -fx-background-color: #2c32de;
+    -fx-background-color: #ff0000;
     -fx-border-style: solid;
     -fx-border-width: 1px;
 }
@@ -55,7 +55,7 @@
 }
 
 .choice-box {
-    -fx-background-color: yellow;
+    -fx-background-color: ff00c5;
 }
 
 .list-cell:even,
