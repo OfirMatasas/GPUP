@@ -37,6 +37,9 @@ public class PrimaryController {
     private GridPane taskPane = null;
 
     @FXML
+    private ToggleGroup templates;
+
+    @FXML
     private BorderPane mainBorderPane;
 
     @FXML
@@ -156,25 +159,54 @@ public class PrimaryController {
     //--------------------------------------------------Themes-----------------------------------------------------//
     @FXML
     void defaultThemePressed(ActionEvent event) {
-        Platform.runLater(()-> {
-            Scene scene = primaryStage.getScene();
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_THEME)).toExternalForm());
-        });
+        Scene scene = primaryStage.getScene();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
+
+
+        if(graph == null)
+            return;
+
+        graphDetailsPane.getStylesheets().clear();
+        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        connectionsPane.getStylesheets().clear();
+        connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        taskPane.getStylesheets().clear();
+        taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
 
     @FXML
     void darkModeThemePressed(ActionEvent event) {
-        Platform.runLater(() -> {
-            Scene scene = primaryStage.getScene();
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_THEME)).toExternalForm());
-        });
+        Scene scene = primaryStage.getScene();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
+
+        if(graph == null)
+            return;
+
+        graphDetailsPane.getStylesheets().clear();
+        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        connectionsPane.getStylesheets().clear();
+        connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        taskPane.getStylesheets().clear();
+        taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
     }
 
     @FXML
     void rainbowThemePressed(ActionEvent event) {
+        Scene scene = primaryStage.getScene();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
 
+        if(graph == null)
+            return;
+
+        graphDetailsPane.getStylesheets().clear();
+        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        connectionsPane.getStylesheets().clear();
+        connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        taskPane.getStylesheets().clear();
+        taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     @FXML
@@ -245,6 +277,7 @@ public class PrimaryController {
         UpdateConnectionsControllerAndPane();
         UpdateTaskControllerAndPane();
         UpdateButtons();
+        UpdatePanesStyles();
     }
 
     private void UpdateButtons() {
@@ -290,5 +323,15 @@ public class PrimaryController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void UpdatePanesStyles()
+    {
+        if(defaultTheme.isSelected())
+            defaultThemePressed(new ActionEvent());
+        else if(darkModeTheme.isSelected())
+            darkModeThemePressed(new ActionEvent());
+        else
+            rainbowThemePressed(new ActionEvent());
     }
 }

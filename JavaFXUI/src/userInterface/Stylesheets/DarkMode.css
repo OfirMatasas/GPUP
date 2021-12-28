@@ -4,6 +4,7 @@
     -fx-background-color: #121724;
     -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-border-color: black;
 }
 
 /*--------------------------------------------Primary Toolbar & Footer--------------------------------------------*/
