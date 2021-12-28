@@ -17,15 +17,15 @@
             <ListView fx:id="SerialSetsListsView" layoutX="424.0" layoutY="394.0" prefHeight="163.0" prefWidth="231.0" />
             <TableView fx:id="TargetsDetailsTable" prefHeight="334.0" prefWidth="873.0">
               <columns>
-                <TableColumn fx:id="TargetNumber" prefWidth="22.5" text="#" />
-                <TableColumn fx:id="TargetName" prefWidth="90.0" text="Target Name" />
-                  <TableColumn fx:id="TargetExtraInformation" prefWidth="136.0" text="Extra Information" />
-                  <TableColumn fx:id="TargetPosition" prefWidth="93.0" text="Position" />
-                  <TableColumn fx:id="TargetDirectDependsOn" prefWidth="122.0" text="Direct Depends-on" />
-                  <TableColumn fx:id="TargetAllDependsOn" prefWidth="105.0" text="All Depends on" />
-                  <TableColumn fx:id="TargetDirectRequiredFor" prefWidth="118.5" text="Direct Required-for" />
-                  <TableColumn fx:id="TargetAllRequiredFor" prefWidth="104.5" text="All Required-for" />
-                  <TableColumn fx:id="TargetSerialSets" minWidth="0.0" prefWidth="79.0" text="Serial Sets" />
+                <TableColumn fx:id="TargetNumber" styleClass="table-column" prefWidth="22.5" text="#" />
+                <TableColumn fx:id="TargetName" styleClass="table-column" prefWidth="90.0" text="Target Name" />
+                  <TableColumn fx:id="TargetExtraInformation" styleClass="table-column" prefWidth="136.0" text="Extra Information" />
+                  <TableColumn fx:id="TargetPosition" styleClass="table-column" prefWidth="93.0" text="Position" />
+                  <TableColumn fx:id="TargetDirectDependsOn" styleClass="table-column" prefWidth="122.0" text="Direct Depends-on" />
+                  <TableColumn fx:id="TargetAllDependsOn" styleClass="table-column" prefWidth="105.0" text="All Depends on" />
+                  <TableColumn fx:id="TargetDirectRequiredFor" styleClass="table-column" prefWidth="118.5" text="Direct Required-for" />
+                  <TableColumn fx:id="TargetAllRequiredFor" styleClass="table-column" prefWidth="104.5" text="All Required-for" />
+                  <TableColumn fx:id="TargetSerialSets" styleClass="table-column" minWidth="0.0" prefWidth="79.0" text="Serial Sets" />
               </columns>
             </TableView>
             <TableView fx:id="TargetPositionsTable" layoutY="362.0" maxWidth="800.0" prefHeight="68.0" prefWidth="325.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="362.0">
