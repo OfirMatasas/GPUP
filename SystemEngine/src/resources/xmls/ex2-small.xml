@@ -27,7 +27,7 @@
 			<GPUP-User-Data>freeText</GPUP-User-Data>
 		</GPUP-Target>
 		<GPUP-Target name="E">
-			<GPUP-User-Data>freeText</GPUP-User-Data>
+			<GPUP-User-Data>freeText freeText freeText freeText freeText freeText </GPUP-User-Data>
 			<GPUP-Target-Dependencies>
 				<GPUG-Dependency type="dependsOn">D</GPUG-Dependency>
 				<GPUG-Dependency type="dependsOn">C</GPUG-Dependency>
