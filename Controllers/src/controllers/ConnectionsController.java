@@ -208,6 +208,7 @@ public class ConnectionsController {
             circleList.addAll(Arrays.asList(circlePath.split(" ")));
 
         CirclesListView.setItems(circleList);
+
     }
 
     public void WhatIfTargetSelected(ActionEvent actionEvent)

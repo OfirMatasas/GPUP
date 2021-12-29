@@ -1,6 +1,7 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -136,6 +137,7 @@ public class PrimaryController {
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
+            //taskController.setGraph(graph);
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
         }
@@ -146,12 +148,12 @@ public class PrimaryController {
     }
 
     private void RefreshCurrentCenterPane() throws Exception {
-//        if(mainBorderPane.getCenter() == graphDetailsPane)
+        if(mainBorderPane.getCenter() == graphDetailsPane)
             graphDetailsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == connectionsPane)
-//            connectionsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == taskPane)
-//            taskButtonPressed(new ActionEvent());
+        else if(mainBorderPane.getCenter() == connectionsPane)
+            connectionsButtonPressed(new ActionEvent());
+        else if(mainBorderPane.getCenter() == taskPane)
+            taskButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -224,6 +226,7 @@ public class PrimaryController {
 
     @FXML
     void taskButtonPressed(ActionEvent event) {
+
         mainBorderPane.setCenter(taskPane);
     }
 
@@ -267,13 +270,14 @@ public class PrimaryController {
         alert.showAndWait();
     }
 
-    private void updatePanesAndControllers()
-    {
+    private void updatePanesAndControllers() {
+
         UpdateGraphDetailsControllerAndPane();
         UpdateConnectionsControllerAndPane();
         UpdateTaskControllerAndPane();
         UpdateButtons();
         UpdatePanesStyles();
+
     }
 
     private void UpdateButtons() {
