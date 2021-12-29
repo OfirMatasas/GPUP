@@ -1,4 +1,4 @@
-#AnchorPane, #ConnectionsGridPane {
+#AnchorPane, #pane {
     -fx-accent: #1e74c6;
     -fx-focus-color: -fx-accent;
     -fx-base: #373e43;
