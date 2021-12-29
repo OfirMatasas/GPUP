@@ -116,16 +116,12 @@ public class ConnectionsController {
 
         setAllTargetsList();
         setRelationChoiceBox();
-        setCircleListView();
-    }
-
-    private void setCircleListView() {
     }
 
     private void setRelationChoiceBox()
     {
-        relationsList.add(0, "Depends On");
-        relationsList.add(1, "Required For");
+        relationsList.add(0, "Depends on");
+        relationsList.add(1, "Required for");
 
         RelationChoiceBox.setItems(relationsList);
         OriginTargetChoiceBox.setTooltip(new Tooltip("Choose relation between targets"));
