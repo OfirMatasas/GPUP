@@ -21,6 +21,8 @@ import target.Graph;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,7 +35,7 @@ public class PrimaryController {
     private ConnectionsController connectionsController;
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
-    private GridPane taskPane = null;
+    private BorderPane taskPane = null;
 
     @FXML
     private ToggleGroup templates;
@@ -120,6 +122,7 @@ public class PrimaryController {
         File selectedFile;
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
+
 
         selectedFile = fileChooser.showOpenDialog(primaryStage);
         if(selectedFile == null)

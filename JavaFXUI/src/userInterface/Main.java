@@ -41,20 +41,20 @@ public class Main extends Application
 //
 //        primaryStage.show();
 
-        primaryStage.setOnCloseRequest(event -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Exit dialog");
-            alert.setHeaderText(null);
-            alert.setContentText("Are you sure you want to exit?");
-            ButtonType yesButton = new ButtonType("Yes");
-            ButtonType noButton = new ButtonType("No");
-
-            alert.getButtonTypes().setAll(yesButton, noButton);
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() != yesButton){
-                event.consume();
-            }
-        });
+//        primaryStage.setOnCloseRequest(event -> {
+//            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+//            alert.setTitle("Exit dialog");
+//            alert.setHeaderText(null);
+//            alert.setContentText("Are you sure you want to exit?");
+//            ButtonType yesButton = new ButtonType("Yes");
+//            ButtonType noButton = new ButtonType("No");
+//
+//            alert.getButtonTypes().setAll(yesButton, noButton);
+//            Optional<ButtonType> result = alert.showAndWait();
+//            if (result.get() != yesButton){
+//                event.consume();
+//            }
+//        });
     }
 
     public static void main(String[] args)

@@ -2,36 +2,89 @@ package controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 
 public class TaskController {
 
     @FXML
-    private GridPane TaskGridPane;
+    private BorderPane taskBorderPane;
 
     @FXML
-    private GridPane TaskToolbarGridPane;
+    private ToolBar toolBar;
 
     @FXML
-    private ToolBar TaskLeftToolbar;
+    private HBox toolBarHbox;
 
     @FXML
-    private Button RunButton;
+    private Button runButton;
 
     @FXML
     private Button PauseButton;
 
     @FXML
-    private Button StopButton;
+    private Button stopButton;
 
     @FXML
-    private ToolBar RightToolbar;
+    private Button selectAllButton;
 
     @FXML
-    private Button SelectAllButton;
+    private Button deselectAllButton;
 
     @FXML
-    private Button DeselectAllButton;
+    private Pane leftPane;
+
+    @FXML
+    private ComboBox<?> taskSelection;
+
+    @FXML
+    private ComboBox<?> targetSelection;
+
+    @FXML
+    private ComboBox<?> affectedTargets;
+
+    @FXML
+    private ListView<?> currentSelectedTargetListView;
+
+    @FXML
+    private TabPane tabPane;
+
+    @FXML
+    private Tab tableViewTabPane;
+
+    @FXML
+    private TableView<?> taskTargetDetailsTableView;
+
+    @FXML
+    private TableColumn<?, ?> numberColumn;
+
+    @FXML
+    private TableColumn<?, ?> targetNameColumn;
+
+    @FXML
+    private TableColumn<?, ?> positionColumn;
+
+    @FXML
+    private TableColumn<?, ?> directDependsOnColumn;
+
+    @FXML
+    private TableColumn<?, ?> directRequiredForColumn;
+
+    @FXML
+    private TableColumn<?, ?> executionTimeStatus;
+
+    @FXML
+    private TableColumn<?, ?> finalStatus;
+
+    @FXML
+    private Tab graphViewTabPane;
 
 }
