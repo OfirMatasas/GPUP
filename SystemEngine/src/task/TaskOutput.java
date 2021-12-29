@@ -3,8 +3,8 @@ package task;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
-import java.io.IOException;
-import java.io.OutputStream;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,25 +17,26 @@ import java.util.Map;
 
 public class TaskOutput
 {
-    private String directoryPath;
+    private Path directoryPath;
     private ArrayList<OutputStream> outputStreams;
-    private TargetSummary targetSummary;
     private GraphSummary graphSummary;
 
-    public TaskOutput(String directoryPath, ArrayList<OutputStream> outputStreams, TargetSummary targetSummary, GraphSummary graphSummary) {
-        this.directoryPath = directoryPath;
-        this.outputStreams = outputStreams;
-        this.targetSummary = targetSummary;
+    public TaskOutput(String taskType, GraphSummary graphSummary) throws OpeningFileCrash, FileNotFoundException {
+        createNewDirectoryOfTaskLogs(taskType);
+        this.outputStreams = new ArrayList<>();
         this.graphSummary = graphSummary;
+        outputStreams.add(new FileOutputStream(directoryPath.toString()));
+        outputStreams.add(new PrintStream(System.out));
     }
 
-    public void outputStartingTaskOnTarget()
+    public void outputStartingTaskOnTarget(String targetName)
     {
         try
         {
+            TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
             Duration time = targetSummary.getPredictedTime();
 
-            String targetName, targetExtraInfo, totalTimeFormatted;
+            String targetExtraInfo, totalTimeFormatted;
 
             targetName = "Task on target " + targetSummary.getTargetName() + " just started.\r\n";
             for(OutputStream os : outputStreams)
@@ -54,16 +55,17 @@ public class TaskOutput
                 os.write(totalTimeFormatted.getBytes(StandardCharsets.UTF_8));
         }
         catch (Exception e) {
-            System.out.println("Couldn't write to file " + targetSummary.getTargetName() + ".log");
+            System.out.println("Couldn't write to file " + targetName + ".log");
         }
     }
 
-    public void outputEndingTaskOnTarget()
+    public void outputEndingTaskOnTarget(String targetName)
     {
         try
         {
+            TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
             Duration time = targetSummary.getTime();
-            String targetName, totalTimeFormatted, result;
+            String totalTimeFormatted, result;
 
             targetName = "Task on target " + targetSummary.getTargetName() + " ended.\n";
             for(OutputStream os : outputStreams)
@@ -113,7 +115,7 @@ public class TaskOutput
                 os.write("------------------------------------------\n".getBytes(StandardCharsets.UTF_8));
         }
         catch (Exception e) {
-            System.out.println("Couldn't write to file " + targetSummary.getTargetName() + ".log");
+            System.out.println("Couldn't write to file " + graphSummary.getTargetsSummaryMap().get(targetName).getTargetName() + ".log");
         }
     }
 
@@ -165,15 +167,16 @@ public class TaskOutput
         }
     }
 
-    public void outputTargetTaskSummary(TargetSummary targetSummary)
+    public void outputTargetTaskSummary(String targetName)
     {
         try {
+            TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
             Duration time = targetSummary.getTime();
 
             for(OutputStream os : outputStreams)
                 os.write("-----------------------\n".getBytes(StandardCharsets.UTF_8));
 
-            String targetName, timeSpentFormatted;
+            String timeSpentFormatted;
             String result = "Target's result status: ";
 
             targetName = "Target's name :" + targetSummary.getTargetName() + "\n";
@@ -200,23 +203,44 @@ public class TaskOutput
         }
     }
 
-    public Path createNewDirectoryOfTaskLogs(String taskName, Path workingDirectory) throws OpeningFileCrash {
-        directoryPath = workingDirectory.toString();
+    public void createNewDirectoryOfTaskLogs(String taskType) throws OpeningFileCrash {
+        directoryPath = Paths.get(graphSummary.getWorkingDirectory());
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
         Date date = new Date();
 
-        directoryPath += "\\" + taskName + " - " + formatter.format(date).toString();
-
-        Path path = Paths.get(directoryPath);
+        directoryPath = Paths.get(directoryPath + taskType + " - " + formatter.format(date).toString());
         try {
-            Files.createDirectories(path);
-            return path;
-        } catch (IOException e) {
+            Files.createDirectories(directoryPath);
+\        } catch (IOException e) {
             throw new OpeningFileCrash(directoryPath);
         }
     }
 
     public void printStartOfTaskOnGraph(String graphName) {
         System.out.println("Task started on graph " + graphName + "!");
+    }
+
+    public Path getDirectoryPath() {
+        return directoryPath;
+    }
+
+    public void setDirectoryPath(Path directoryPath) {
+        this.directoryPath = directoryPath;
+    }
+
+    public ArrayList<OutputStream> getOutputStreams() {
+        return outputStreams;
+    }
+
+    public void setOutputStreams(ArrayList<OutputStream> outputStreams) {
+        this.outputStreams = outputStreams;
+    }
+
+    public GraphSummary getGraphSummary() {
+        return graphSummary;
+    }
+
+    public void setGraphSummary(GraphSummary graphSummary) {
+        this.graphSummary = graphSummary;
     }
 }

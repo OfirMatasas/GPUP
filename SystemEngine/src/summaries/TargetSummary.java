@@ -10,7 +10,6 @@ import java.util.Set;
 
 public class TargetSummary implements Serializable
 {
-
     private Boolean isRoot;
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished }
