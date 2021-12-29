@@ -15,7 +15,7 @@
          <children>
             <ChoiceBox fx:id="TargetSerialSetChoiceBox" layoutX="424.0" layoutY="360.0" prefHeight="17.0" prefWidth="231.0" />
             <ListView fx:id="SerialSetsListsView" layoutX="424.0" layoutY="394.0" prefHeight="163.0" prefWidth="231.0" />
-            <TableView fx:id="TargetsDetailsTable" prefHeight="334.0" prefWidth="873.0">
+            <TableView fx:id="TargetsDetailsTable" prefHeight="334.0" prefWidth="873.0" >
               <columns>
                 <TableColumn fx:id="TargetNumber" prefWidth="22.5" styleClass="table-column" text="#" />
                 <TableColumn fx:id="TargetName" prefWidth="90.0" styleClass="table-column" text="Target Name" />

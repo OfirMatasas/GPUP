@@ -69,3 +69,13 @@
     -fx-alignment: center;
     -fx-text-alignment: center;
 }
+
+#TargetPositionsTable .table-column .label {
+
+    -fx-alignment: center;
+}
+
+#TargetsDetailsTable .table-column .label {
+
+    -fx-alignment: center;
+}
