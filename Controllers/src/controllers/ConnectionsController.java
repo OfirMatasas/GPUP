@@ -16,9 +16,11 @@ import target.Target;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 public class ConnectionsController {
+    //--------------------------------------------------Members-----------------------------------------------------//
     public ToggleGroup whatIfValue;
     private Graph graph = null;
     private final ObservableList<String> allTargetsList = FXCollections.observableArrayList();
@@ -26,7 +28,7 @@ public class ConnectionsController {
     private final ObservableList<String> destinationTargets = FXCollections.observableArrayList();
     private String originTargetName;
     private String relation;
-    private String destionationTargetName;
+    private String destinationTargetName;
 
     @FXML
     private ScrollPane scrollPane;
@@ -65,9 +67,6 @@ public class ConnectionsController {
     private ScrollPane ListViewScrollPane;
 
     @FXML
-    private ListView<?> ConnectionsListView;
-
-    @FXML
     private AnchorPane CheckCirclesAnchorPane;
 
     @FXML
@@ -100,7 +99,6 @@ public class ConnectionsController {
     @FXML
     private RadioButton DependsOnRadioButton;
 
-
     @FXML
     private ListView<String> showConnectionBetweenListView;
 
@@ -110,12 +108,14 @@ public class ConnectionsController {
     @FXML
     private RadioButton RequiredForRadioButton;
 
+    //--------------------------------------------------Settings-----------------------------------------------------//
     public void setGraph(Graph graph)
     {
         this.graph = graph;
 
         setAllTargetsList();
         setRelationChoiceBox();
+        SetTooltips();
     }
 
     private void setRelationChoiceBox()
@@ -124,7 +124,6 @@ public class ConnectionsController {
         relationsList.add(1, "Required for");
 
         RelationChoiceBox.setItems(relationsList);
-        OriginTargetChoiceBox.setTooltip(new Tooltip("Choose relation between targets"));
     }
 
     private void setAllTargetsList()
@@ -136,29 +135,36 @@ public class ConnectionsController {
         final SortedList<String> sorted = allTargetsList.sorted();
 
         OriginTargetChoiceBox.setItems(sorted);
-        OriginTargetChoiceBox.setTooltip(new Tooltip("Choose an origin target"));
-
         CircleTargetChoiceBox.setItems(sorted);
+        WhatIfChoiceBox.setItems(sorted);
+    }
+
+    private void SetTooltips()
+    {
+        OriginTargetChoiceBox.setTooltip(new Tooltip("Choose an origin target"));
+        RelationChoiceBox.setTooltip(new Tooltip("Choose a relation between the targets"));
+        DestinationTargetChoiceBox.setTooltip(new Tooltip("Choose a destination target"));
+
         CircleTargetChoiceBox.setTooltip(new Tooltip("Choose a target"));
 
-        WhatIfChoiceBox.setItems(sorted);
         WhatIfChoiceBox.setTooltip(new Tooltip("Choose a target"));
     }
 
+    //--------------------------------------------Targets Connection-----------------------------------------------//
     public void OriginTargetChosen(ActionEvent actionEvent) {
-        this.originTargetName = (String)OriginTargetChoiceBox.getValue();
-        RelationChoiceBox.setValue(null);
+        originTargetName = OriginTargetChoiceBox.getValue();
         RelationChoiceBox.setDisable(false);
         DestinationTargetChoiceBox.setDisable(true);
         destinationTargets.clear();
+        showConnectionBetweenListView.getItems().clear();
     }
 
     public void RelationChosen(ActionEvent actionEvent) {
         this.relation = RelationChoiceBox.getValue();
-        int i = 0;
         Set<String> destinationSet;
+        int i = 0;
 
-        if(relation == "Depends On")
+        if(Objects.equals(relation, RelationChoiceBox.getItems().get(0)))
             destinationSet = graph.getTarget(this.originTargetName).getAllDependsOnTargets();
         else
             destinationSet = graph.getTarget(this.originTargetName).getAllRequiredForTargets();
@@ -168,7 +174,6 @@ public class ConnectionsController {
             destinationTargets.add(i++, currentTargetName);
 
         DestinationTargetChoiceBox.setItems(destinationTargets.sorted());
-        DestinationTargetChoiceBox.setTooltip(new Tooltip("Choose a destination target"));
         DestinationTargetChoiceBox.setDisable(false);
     }
 
@@ -178,23 +183,21 @@ public class ConnectionsController {
         ObservableList<String> pathsTargets = FXCollections.observableArrayList();
         PathFinder pathFinder = new PathFinder();
 
-        destionationTargetName = DestinationTargetChoiceBox.getValue();
+        destinationTargetName = DestinationTargetChoiceBox.getValue();
         origin = graph.getTarget(originTargetName);
-        destination = graph.getTarget(destionationTargetName);
+        destination = graph.getTarget(destinationTargetName);
 
-       if(pathFinder.prechecksForTargetsConnection(originTargetName,destionationTargetName,graph))
-       {
-           if(relation == "Depends On")
-               paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.DEPENDS_ON);
-           else
-               paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.REQUIRED_FOR);
-       }
+       if(Objects.equals(relation, RelationChoiceBox.getItems().get(0)))
+           paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.DEPENDS_ON);
+       else
+           paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.REQUIRED_FOR);
 
         pathsTargets.addAll(paths);
 
         showConnectionBetweenListView.setItems(pathsTargets);
     }
 
+    //--------------------------------------------------Circle-----------------------------------------------------//
     public void CheckIfTargetCircled(ActionEvent actionEvent) {
         CircleFinder circleFinder = new CircleFinder();
         circleFinder.checkIfCircled(graph.getTarget(CircleTargetChoiceBox.getValue()));
@@ -223,6 +226,7 @@ public class ConnectionsController {
         WhatIfListView.setItems(otherTargets);
     }
 
+    //--------------------------------------------------What-if-----------------------------------------------------//
     public void WhatIfRadioButtonSelected(ActionEvent actionEvent) {
         if(WhatIfChoiceBox.getValue() != null)
             WhatIfTargetSelected(actionEvent);

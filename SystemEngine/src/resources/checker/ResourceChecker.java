@@ -70,6 +70,7 @@ public class ResourceChecker
 
         if(descriptor.getGPUPConfiguration().getGPUPMaxParallelism() < 1)
             throw new InvalidThreadsNumber();
+        graph.setParallelThreads(descriptor.getGPUPConfiguration().getGPUPMaxParallelism());
 
         for(GPUPTarget currentgpupTarget : gpupTargetsAsList)
         {
