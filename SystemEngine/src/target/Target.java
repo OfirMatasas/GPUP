@@ -5,18 +5,17 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Target implements Serializable {
+public class Target implements Serializable
+{
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum TargetPosition { LEAF, MIDDLE, ROOT, INDEPENDENT }
-    public static enum Connection { REQUIRED_FOR, DEPENDS_ON }
-
+    public enum Connection { REQUIRED_FOR, DEPENDS_ON }
     //--------------------------------------------------Members-----------------------------------------------------//
     private final Set<Target> dependsOnTargets;
     private final Set<Target> requiredForTargets;
     private final Set<String> serialSets;
     private TargetPosition targetPosition;
     private String targetName;
-
     private String extraInformation;
     private final Set<String> allDependsOnTargets;
     private final Set<String> allRequiredForTargets;

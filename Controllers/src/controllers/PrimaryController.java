@@ -16,8 +16,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import resources.checker.ResourceChecker;
+import summaries.GraphSummary;
 import target.Graph;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,6 +36,7 @@ public class PrimaryController {
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
     private BorderPane taskPane = null;
+    private GraphSummary graphSummary;
 
     @FXML
     private ToggleGroup templates;
@@ -122,8 +123,6 @@ public class PrimaryController {
         File selectedFile;
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
-
-
         selectedFile = fileChooser.showOpenDialog(primaryStage);
         if(selectedFile == null)
             return;
@@ -136,6 +135,8 @@ public class PrimaryController {
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
+            taskController.setGraph(graph);
+            graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
         }

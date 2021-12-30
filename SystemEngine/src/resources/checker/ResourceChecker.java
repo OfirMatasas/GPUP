@@ -6,7 +6,6 @@ import resources.generated.GPUPTarget;
 import resources.generated.GPUPTargetDependencies;
 import target.Graph;
 import target.Target;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -70,6 +69,7 @@ public class ResourceChecker
 
         if(descriptor.getGPUPConfiguration().getGPUPMaxParallelism() < 1)
             throw new InvalidThreadsNumber();
+        graph.setParallelThreads(descriptor.getGPUPConfiguration().getGPUPMaxParallelism());
 
         for(GPUPTarget currentgpupTarget : gpupTargetsAsList)
         {
