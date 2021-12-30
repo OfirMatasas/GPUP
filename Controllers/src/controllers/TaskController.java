@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -149,7 +150,7 @@ public class TaskController {
     }
 
     @FXML
-    void graphViewTabPressed(ActionEvent event) {
+    void graphViewTabPressed(Event event) {
 
         this.footerPane.setVisible(false);
 
@@ -161,7 +162,7 @@ public class TaskController {
     }
 
     @FXML
-    void logViewTabPressed(ActionEvent event) {
+    void logViewTabPressed(Event event) {
 
     }
 
@@ -191,7 +192,7 @@ public class TaskController {
     }
 
     @FXML
-    void tableViewTabPressed(ActionEvent event) {
+    void tableViewTabPressed(Event event) {
 
     }
 
