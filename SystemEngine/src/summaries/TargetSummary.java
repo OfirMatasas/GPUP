@@ -13,7 +13,7 @@ public class TargetSummary implements Serializable
     private Boolean isRoot;
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished }
-    public enum ResultStatus { Success, Warning, Failure }
+    public enum ResultStatus { Success, Warning, Failure, Undefined }
 
     //--------------------------------------------------Members-----------------------------------------------------//
     private Duration actualTime, predictedTime;
@@ -23,7 +23,7 @@ public class TargetSummary implements Serializable
     private RuntimeStatus runtimeStatus;
     private boolean isSkipped, running;
     private Instant timeStarted;
-    private Set<String> skippedTargets;
+    private Set<String> skippedByTargets;
     private final Set<String> openedTargets;
 
     //------------------------------------------------Constructors--------------------------------------------------//
@@ -52,8 +52,8 @@ public class TargetSummary implements Serializable
         return running;
     }
 
-    public Set<String> getSkippedTargets() {
-        return skippedTargets;
+    public Set<String> getSkippedByTargets() {
+        return skippedByTargets;
     }
 
     public Duration getPredictedTime() {
@@ -126,20 +126,21 @@ public class TargetSummary implements Serializable
         actualTime = Duration.between(timeStarted, timeEnded);
     }
 
-    public Boolean checkIfFailedBefore()
-    {
-        if(skippedTargets == null)
-        {
-            skippedTargets = new HashSet<>();
-            return false;
-        }
+//    public Boolean checkIfFailedBefore()
+//    {
+//        if(skippedTargets != null)
+//            return true;
+//
+//        skippedTargets = new HashSet<>();
+//        return false;
+//    }
 
-        return true;
-    }
-
-    public void addNewSkippedTarget(String skippedTargetName)
+    public void addNewSkippedByTarget(String skippedByTargetName)
     {
-        skippedTargets.add(skippedTargetName);
+        if(skippedByTargets == null)
+            skippedByTargets = new HashSet<String>();
+
+        skippedByTargets.add(skippedByTargetName);
     }
 
     public void checkForOpenTargets(Target executedTarget, GraphSummary graphSummary)

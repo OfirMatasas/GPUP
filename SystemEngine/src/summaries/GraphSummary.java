@@ -8,17 +8,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class GraphSummary implements Serializable {
     //--------------------------------------------------Members-----------------------------------------------------//
     private final String graphName;
     private Duration totalTime;
     private Instant timeStarted;
-    private Map<String, TargetSummary> targetsSummaryMap;
+    private final Map<String, TargetSummary> targetsSummaryMap;
     private Map<TargetSummary.ResultStatus, Integer> allResultStatus;
     private Boolean firstRun;
     private Integer skippedTargets;
-    private String workingDirectory;
+    private final String workingDirectory;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public GraphSummary(Graph graph, String workingDirectory) {
@@ -77,28 +78,66 @@ public class GraphSummary implements Serializable {
             setRunningTargets(requiredForTarget, runningOrNot);
     }
 
-    public void setAllRequiredForTargetsOnSkipped(Target lastSkippedTarget, TargetSummary failedTargetSummary)
+    public synchronized void UpdateTargetSummary(Target target, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus)
     {
-        TargetSummary targetSummary;
+        TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
 
+        targetSummary.setResultStatus(resultStatus);
+        targetSummary.setRuntimeStatus(runtimeStatus);
+
+        if(resultStatus.equals(TargetSummary.ResultStatus.Failure))
+            setAllRequiredForTargetsOnSkipped(target, target);
+    }
+
+    public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets)
+    {
+        TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
+
+        for(Target dependedTarget : target.getDependsOnTargets())
+        {
+            //The depended target is not "in the game"
+            if(!runningTargets.contains(dependedTarget.getTargetName()))
+                continue;
+
+            TargetSummary dependedTargetSummary = getTargetsSummaryMap().get(dependedTarget.getTargetName());
+
+            if(dependedTargetSummary.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
+            {
+                if(dependedTargetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Failure))
+                    return false;
+                //The target finished with success / with warnings
+                continue;
+            }
+            //The target is not finished its run
+            return false;
+        }
+
+        //Runnable
+        UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
+        return true;
+    }
+
+    public void setAllRequiredForTargetsOnSkipped(Target failedTarget, Target lastSkippedTarget)
+    {
+        TargetSummary newSkippedTargetSummary;
         for(Target newSkippedTarget : lastSkippedTarget.getRequiredForTargets())
         {
-            targetSummary = this.targetsSummaryMap.get(newSkippedTarget.getTargetName());
+            newSkippedTargetSummary = targetsSummaryMap.get(newSkippedTarget.getTargetName());
 
-            if(!targetSummary.isSkipped())
-            {
-                this.skippedTargets++;
-                targetSummary.setSkipped(true);
-            }
+            if(newSkippedTargetSummary.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped))
+                continue;
 
-            failedTargetSummary.addNewSkippedTarget(newSkippedTarget.getTargetName());
-            setAllRequiredForTargetsOnSkipped(newSkippedTarget, failedTargetSummary);
+            newSkippedTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Skipped);
+            newSkippedTargetSummary.setResultStatus(TargetSummary.ResultStatus.Failure);
+            newSkippedTargetSummary.addNewSkippedByTarget(failedTarget.getTargetName());
+
+            setAllRequiredForTargetsOnSkipped(failedTarget, lastSkippedTarget);
         }
     }
 
-    public void setSkippedTargetsToZero()
+    public Boolean isSkipped(String targetName)
     {
-        this.skippedTargets = 0;
+        return targetsSummaryMap.get(targetName).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped);
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
@@ -120,8 +159,8 @@ public class GraphSummary implements Serializable {
 
         for(TargetSummary current : this.targetsSummaryMap.values())
         {
-            if(!current.isRunning())
-                continue;
+//            if(!current.isRunning())
+//                continue;
 
             switch (current.getResultStatus())
             {
@@ -144,7 +183,7 @@ public class GraphSummary implements Serializable {
         }
 
         this.allResultStatus.put(TargetSummary.ResultStatus.Success, succeeded);
-        this.allResultStatus.put(TargetSummary.ResultStatus.Failure, failed - this.skippedTargets);
+        this.allResultStatus.put(TargetSummary.ResultStatus.Failure, failed);
         this.allResultStatus.put(TargetSummary.ResultStatus.Warning, warning);
     }
 

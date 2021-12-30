@@ -22,11 +22,11 @@ public class TaskOutput
     private GraphSummary graphSummary;
 
     public TaskOutput(String taskType, GraphSummary graphSummary) throws OpeningFileCrash, FileNotFoundException {
-        createNewDirectoryOfTaskLogs(taskType);
-        this.outputStreams = new ArrayList<>();
+//        createNewDirectoryOfTaskLogs(taskType);
+//        this.outputStreams = new ArrayList<>();
         this.graphSummary = graphSummary;
-        outputStreams.add(new FileOutputStream(directoryPath.toString()));
-        outputStreams.add(new PrintStream(System.out));
+//        outputStreams.add(new FileOutputStream(directoryPath.toString()));
+//        outputStreams.add(new PrintStream(System.out));
     }
 
     public void outputStartingTaskOnTarget(String targetName)
@@ -95,21 +95,21 @@ public class TaskOutput
                     os.write(("\n").getBytes(StandardCharsets.UTF_8));
             }
 
-            //Output the new skipped targets after current execution
-            if(!targetSummary.isSkipped() && targetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Failure)
-                    && !targetSummary.getRoot())
-            {
-                for(OutputStream os : outputStreams)
-                    os.write("Targets that have been skipped: ".getBytes(StandardCharsets.UTF_8));
-                for(String skippedTargetName : targetSummary.getSkippedTargets())
-                {
-                    String skippedTargetNameSpaced = skippedTargetName + " ";
-                    for(OutputStream os : outputStreams)
-                        os.write(skippedTargetNameSpaced.getBytes(StandardCharsets.UTF_8));
-                }
-                for(OutputStream os : outputStreams)
-                    os.write(("\n").getBytes(StandardCharsets.UTF_8));
-            }
+//            //Output the new skipped targets after current execution
+//            if(!targetSummary.isSkipped() && targetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Failure)
+//                    && !targetSummary.getRoot())
+//            {
+//                for(OutputStream os : outputStreams)
+//                    os.write("Targets that have been skipped: ".getBytes(StandardCharsets.UTF_8));
+//                for(String skippedTargetName : targetSummary.getSkippedTargets())
+//                {
+//                    String skippedTargetNameSpaced = skippedTargetName + " ";
+//                    for(OutputStream os : outputStreams)
+//                        os.write(skippedTargetNameSpaced.getBytes(StandardCharsets.UTF_8));
+//                }
+//                for(OutputStream os : outputStreams)
+//                    os.write(("\n").getBytes(StandardCharsets.UTF_8));
+//            }
 
             for(OutputStream os : outputStreams)
                 os.write("------------------------------------------\n".getBytes(StandardCharsets.UTF_8));
@@ -156,7 +156,7 @@ public class TaskOutput
                 if(currentTarget.isRunning())
                 {
                     for(OutputStream os : outputStreams)
-                        outputTargetTaskSummary(currentTarget);
+                        outputTargetTaskSummary(currentTarget.getTargetName());
                 }
             }
             for(OutputStream os : outputStreams)
@@ -211,7 +211,7 @@ public class TaskOutput
         directoryPath = Paths.get(directoryPath + taskType + " - " + formatter.format(date).toString());
         try {
             Files.createDirectories(directoryPath);
-\        } catch (IOException e) {
+        } catch (IOException e) {
             throw new OpeningFileCrash(directoryPath);
         }
     }

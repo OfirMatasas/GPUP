@@ -30,7 +30,7 @@
                <children>
                   <ToolBar fx:id="TaskLeftToolbar" maxHeight="35.0" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="441.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <items>
-                        <Button fx:id="RunButton" mnemonicParsing="false" text="Run" />
+                        <Button fx:id="RunButton" onAction="#startTask" mnemonicParsing="false" text="Run" />
                         <Button fx:id="PauseButton" layoutX="10.0" layoutY="12.0" mnemonicParsing="false" text="Pause" />
                         <Button fx:id="StopButton" layoutX="66.0" layoutY="12.0" mnemonicParsing="false" text="Stop" />
                      </items>

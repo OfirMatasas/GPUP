@@ -133,6 +133,7 @@ public class PrimaryController {
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
+            taskController.setGraph(graph);
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
