@@ -65,6 +65,10 @@ public class GraphSummary implements Serializable {
 
     public String getWorkingDirectory() { return workingDirectory; }
 
+    public void setSkippedTargetsToZero() {
+        this.skippedTargets = 0;
+    }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setFirstRun(Boolean firstRun) {
         this.firstRun = firstRun;
@@ -129,6 +133,7 @@ public class GraphSummary implements Serializable {
 
             newSkippedTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Skipped);
             newSkippedTargetSummary.setResultStatus(TargetSummary.ResultStatus.Failure);
+            newSkippedTargetSummary.setSkipped(true);
             newSkippedTargetSummary.addNewSkippedByTarget(failedTarget.getTargetName());
 
             setAllRequiredForTargetsOnSkipped(failedTarget, lastSkippedTarget);
@@ -159,8 +164,14 @@ public class GraphSummary implements Serializable {
 
         for(TargetSummary current : this.targetsSummaryMap.values())
         {
-//            if(!current.isRunning())
-//                continue;
+            if(!current.isRunning())
+                continue;
+
+            if(current.isSkipped())
+            {
+                skippedTargets++;
+                continue;
+            }
 
             switch (current.getResultStatus())
             {
@@ -186,6 +197,4 @@ public class GraphSummary implements Serializable {
         this.allResultStatus.put(TargetSummary.ResultStatus.Failure, failed);
         this.allResultStatus.put(TargetSummary.ResultStatus.Warning, warning);
     }
-
-
 }

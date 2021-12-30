@@ -1,4 +1,4 @@
-#AnchorPane, #pane {
+#AnchorPane, #pane, #taskBorderPane {
     -fx-accent: #8319c7;
     -fx-focus-color: -fx-accent;
     -fx-base: #ff00c5;

@@ -7,16 +7,14 @@ import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
+import target.Target;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class TaskThread extends Thread {
     //--------------------------------------------------Enums-------------------------------------------------------//
@@ -33,6 +31,7 @@ public class TaskThread extends Thread {
     //Local use
     private final ExecutorService executor;
     private final TaskOutput taskOutput;
+    private BlockingQueue<String> targetsQueue;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
@@ -50,8 +49,8 @@ public class TaskThread extends Thread {
     @Override
     public void run()
     {
-        Queue<String> targetsQueue = new LinkedList<>(targetsSet);
         String currTarget;
+        taskPreparations();
 
         //Starting task on graph
         printStartOfTaskOnGraph(graph.getGraphName());
@@ -124,12 +123,12 @@ public class TaskThread extends Thread {
         failed = "Number of targets failed: " + results.get(TargetSummary.ResultStatus.Failure) + "\n";
         System.out.println(failed);
 
-//        skipped = "Number of targets skipped: " + graphSummary.getSkippedTargets() + "\n";
-//        System.out.println(skipped);
+        skipped = "Number of targets skipped: " + graphSummary.getSkippedTargets() + "\n";
+        System.out.println(skipped);
 
         for(TargetSummary currentTarget : graphSummary.getTargetsSummaryMap().values())
         {
-//            if(currentTarget.isRunning())
+            if(currentTarget.isRunning())
                 outputTargetTaskSummary(currentTarget);
         }
         System.out.println("----------------------------------\n");
@@ -156,6 +155,29 @@ public class TaskThread extends Thread {
         {
             timeSpentFormatted = String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
             System.out.println(timeSpentFormatted);
+        }
+    }
+
+    private void taskPreparations()
+    {
+        TargetSummary currentTargetSummary;
+        this.targetsQueue = new ArrayBlockingQueue<String>(targetsSet.size());
+
+        //Resetting the graph summary
+        for(Target currentTarget : graph.getGraphTargets().values())
+        {
+            graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).setRunning(false);
+        }
+        graphSummary.setSkippedTargetsToZero();
+
+        //Initializing graph summary for current run
+        for(String currentTarget : targetsSet)
+        {
+            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTarget);
+            targetsQueue.add(currentTarget);
+
+            currentTargetSummary.setRunning(true);
+//            currentTargetSummary.setOpenedTargetsToZero();
         }
     }
 }

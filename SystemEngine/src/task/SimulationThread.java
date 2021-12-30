@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-public class SimulationThread extends TaskKind {
+public class SimulationThread implements Runnable {
     private TaskParameters targetParameters;
     private final Graph graph;
     private final GraphSummary graphSummary;
@@ -30,12 +30,12 @@ public class SimulationThread extends TaskKind {
         this.targetName = targetName;
         this.taskOutput = taskOutput;
         this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
-
         UpdateWorkingTime();
     }
 
     @Override
     public void run() {
+        Thread.currentThread().setName(targetName + " Thread");
         Target target = graph.getTarget(targetName);
         TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
         long sleepingTime = targetSummary.getPredictedTime().toMillis();

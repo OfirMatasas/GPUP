@@ -2,42 +2,26 @@ package controllers;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Slider;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.GridPane;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
 import java.io.FileNotFoundException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import target.Graph;
 
 public class TaskController {
-    Graph graph;
-    Map<String, TaskParameters> taskParametersMap;
-
     private Graph graph;
+    private Map<String, TaskParameters> taskParametersMap;
 
     @FXML
     private BorderPane taskBorderPane;
@@ -191,8 +175,16 @@ public class TaskController {
     }
 
     @FXML
-    void runPressed(ActionEvent event) {
+    void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
+        Set<String> targetSet = new HashSet<String>();
 
+        getTaskParametersForAllTargets();
+        for (Target target : graph.getGraphTargets().values())
+            targetSet.add(target.getTargetName());
+
+        TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
+                targetSet, 10);
+        taskThread.start();
     }
 
     @FXML
@@ -221,23 +213,7 @@ public class TaskController {
     }
 
     public void setGraph(Graph graph) {
-
-        this.graph=graph;
-    }
-    public void setGraph(Graph graph) {
         this.graph = graph;
-    }
-
-    public void startTask(ActionEvent actionEvent) throws FileNotFoundException, OpeningFileCrash {
-        Set<String> targetSet = new HashSet<String>();
-
-        getTaskParametersForAllTargets();
-        for(Target target : graph.getGraphTargets().values())
-            targetSet.add(target.getTargetName());
-
-        TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                targetSet, 10);
-        taskThread.start();
     }
 
     private void getTaskParametersForAllTargets()

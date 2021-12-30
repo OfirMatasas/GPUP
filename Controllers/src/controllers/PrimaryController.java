@@ -1,7 +1,6 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -12,18 +11,16 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -148,12 +145,12 @@ public class PrimaryController {
     }
 
     private void RefreshCurrentCenterPane() throws Exception {
-        if(mainBorderPane.getCenter() == graphDetailsPane)
+//        if(mainBorderPane.getCenter() == graphDetailsPane)
             graphDetailsButtonPressed(new ActionEvent());
-        else if(mainBorderPane.getCenter() == connectionsPane)
-            connectionsButtonPressed(new ActionEvent());
-        else if(mainBorderPane.getCenter() == taskPane)
-            taskButtonPressed(new ActionEvent());
+//        else if(mainBorderPane.getCenter() == connectionsPane)
+//            connectionsButtonPressed(new ActionEvent());
+//        else if(mainBorderPane.getCenter() == taskPane)
+//            taskButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -219,14 +216,13 @@ public class PrimaryController {
     }
 
     @FXML
-    void graphDetailsButtonPressed(ActionEvent event) throws Exception
+    void graphDetailsButtonPressed(ActionEvent event)
     {
         mainBorderPane.setCenter(graphDetailsPane);
     }
 
     @FXML
     void taskButtonPressed(ActionEvent event) {
-
         mainBorderPane.setCenter(taskPane);
     }
 
@@ -271,13 +267,11 @@ public class PrimaryController {
     }
 
     private void updatePanesAndControllers() {
-
         UpdateGraphDetailsControllerAndPane();
         UpdateConnectionsControllerAndPane();
         UpdateTaskControllerAndPane();
         UpdateButtons();
         UpdatePanesStyles();
-
     }
 
     private void UpdateButtons() {
