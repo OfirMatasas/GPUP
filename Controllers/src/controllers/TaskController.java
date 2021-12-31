@@ -1,8 +1,12 @@
 package controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -14,14 +18,18 @@ import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
 
+import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-public class TaskController {
+public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap;
+
+
 
     @FXML
     private BorderPane taskBorderPane;
@@ -51,13 +59,13 @@ public class TaskController {
     private Pane leftPane;
 
     @FXML
-    private ComboBox<?> taskSelection;
+    private ComboBox<String> taskSelection;
 
     @FXML
-    private ComboBox<?> targetSelection;
+    private ComboBox<String> targetSelection;
 
     @FXML
-    private ComboBox<?> affectedTargets;
+    private ComboBox<String> affectedTargets;
 
     @FXML
     private ListView<?> currentSelectedTargetListView;
@@ -111,6 +119,9 @@ public class TaskController {
     private Label successRateLabel;
 
     @FXML
+    private TextField processingTimeTextArea;
+
+    @FXML
     private Label successRateWithWarnings;
 
     @FXML
@@ -138,14 +149,21 @@ public class TaskController {
     private Label successRateWithWarningsValueLabel;
 
     @FXML
+    private Tab logPane;
+
+    @FXML
     void affectedTargetsPressed(ActionEvent event) {
 
     }
 
     @FXML
+    private Label currentSelectedTargetLabel;
+
+    @FXML
     void deselectAllPressed(ActionEvent event) {
 
     }
+
 
     @FXML
     void graphViewTabPressed(Event event) {}
@@ -199,17 +217,54 @@ public class TaskController {
     }
 
     @FXML
-    void targetSelectionPressed(ActionEvent event) {
-
-    }
+    void targetSelectionPressed(ActionEvent event) {}
 
     @FXML
     void taskSelectionPressed(ActionEvent event) {
 
+        if(!taskSelection.getSelectionModel().isEmpty())
+        {
+            if(taskSelection.getValue().equals("Simulation"))
+                 setForSimulationTask(false);
+            else
+                setForSimulationTask(true);
+
+
+            enableAffectedButtons();
+        }
+    }
+
+    private void setForSimulationTask(boolean flag) {
+
+        this.proccesingTimeLabel.setDisable(flag);
+        this.limitedPermanentLabel.setDisable(flag);
+        this.successRateLabel.setDisable(flag);
+        this.successRateWithWarnings.setDisable(flag);
+
+        this.processingTimeTextArea.setDisable(flag);
+        this.limitedRadioButton.setDisable(flag);
+        this.permanentRadioButton.setDisable(flag);
+
+
+        this.successRateSlider.setDisable(flag);
+        this.successRatewithWarningsSlider.setDisable(flag);
+
+        this.successRateValueLabel.setDisable(flag);
+        this.successRateWithWarningsValueLabel.setDisable(flag);
+    }
+
+    private void enableAffectedButtons() {
+
+        this.targetSelection.setDisable(false);
+        this.affectedTargets.setDisable(false);
+        this.currentSelectedTargetLabel.setDisable(false);
+        this.currentSelectedTargetListView.setDisable(false);
     }
 
     public void setGraph(Graph graph) {
         this.graph = graph;
+
+        setAllTargetsList();
     }
 
     private void getTaskParametersForAllTargets()
@@ -257,4 +312,25 @@ public class TaskController {
 
         return taskParameters;
     }
+
+    private void setAllTargetsList()
+    {
+        int i = 0;
+        ObservableList<String> allTargetsList = FXCollections.observableArrayList();
+
+        for(Target currentTargetName : graph.getGraphTargets().values())
+            allTargetsList.add(i++, currentTargetName.getTargetName());
+
+        final SortedList<String> sorted = allTargetsList.sorted();
+        targetSelection.getItems().addAll(sorted);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources)
+    {
+        ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
+        taskSelection.setItems(taskSelectionList);
+    }
 }
+
+
