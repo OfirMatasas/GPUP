@@ -5,50 +5,42 @@ import myExceptions.FileNotFound;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
-import target.Graph;
 import target.Target;
-
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 public class SimulationThread implements Runnable {
-    private TaskParameters targetParameters;
-    private final Graph graph;
+    private final TaskParameters targetParameters;
     private final GraphSummary graphSummary;
-    private final TaskOutput taskOutput;
-    private Path filePath;
+//    private final TaskOutput taskOutput;
+//    private Path filePath;
+    private final Target target;
     private final String targetName;
+    private final ClosedSerialSets closedSerialSets;
 
-    public SimulationThread(TaskParameters targetParameters, Graph graph, GraphSummary graphSummary,
-                            String targetName, TaskOutput taskOutput) throws FileNotFound, IOException, OpeningFileCrash {
+    public SimulationThread(TaskParameters targetParameters, Target target, GraphSummary graphSummary,
+                            TaskOutput taskOutput, ClosedSerialSets closedSerialSets) throws FileNotFound, IOException, OpeningFileCrash {
         this.targetParameters = targetParameters;
-        this.graph = graph;
         this.graphSummary = graphSummary;
-        this.targetName = targetName;
-        this.taskOutput = taskOutput;
-        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
+        this.target = target;
+        this.targetName = target.getTargetName();
+//        this.taskOutput = taskOutput;
+//        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
+        this.closedSerialSets = closedSerialSets;
         UpdateWorkingTime();
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(targetName + " Thread");
-        Target target = graph.getTarget(targetName);
         TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
         long sleepingTime = targetSummary.getPredictedTime().toMillis();
         TargetSummary.ResultStatus resultStatus;
 
         //Starting the clock
-
         targetSummary.startTheClock();
-
-        Platform.runLater(() ->
-        {
-            outputStartingTaskOnTarget(targetSummary);
-        });
+        outputStartingTaskOnTarget(targetSummary);
         graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
 
         //Going to sleep
@@ -58,25 +50,16 @@ public class SimulationThread implements Runnable {
             e.printStackTrace();
         }
 
-        Double result = Math.random();
-
-        if(result <= targetParameters.getSuccessRate()) //Task succeeded
-        {
-            if(result <= targetParameters.getSuccessWithWarnings())
-                resultStatus = TargetSummary.ResultStatus.Warning;
-            else
-                resultStatus = TargetSummary.ResultStatus.Success;
-        }
-        else //Task failed
+        double result = Math.random();
+        if(Math.random() <= targetParameters.getSuccessRate())
+            resultStatus = result <= targetParameters.getSuccessWithWarnings() ? resultStatus = TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
+        else
             resultStatus = TargetSummary.ResultStatus.Failure;
 
         targetSummary.stopTheClock();
         graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished);
-
-        Platform.runLater(() ->
-        {
-            outputEndingTaskOnTarget(targetSummary);
-        });
+        outputEndingTaskOnTarget(targetSummary);
+        closedSerialSets.removeClosedSerialSets(target);
     }
 
     private void UpdateWorkingTime() {
@@ -96,40 +79,29 @@ public class SimulationThread implements Runnable {
     public void outputStartingTaskOnTarget(TargetSummary targetSummary)
     {
         Duration time = targetSummary.getPredictedTime();
-
-        String targetName, targetExtraInfo, totalTimeFormatted;
-
-        targetName = "Task on target " + targetSummary.getTargetName() + " just started.\r\n";
-        System.out.println(targetName);
+        String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
 
         if(targetSummary.getExtraInformation() != null)
-        {
-            targetExtraInfo = "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-            System.out.println(targetExtraInfo);
-        }
+            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
 
-        totalTimeFormatted = String.format("The system is going to sleep for %02d:%02d:%02d\n",
+        outputString += String.format("The system is going to sleep for %02d:%02d:%02d\n",
                 time.toHours(), time.toMinutes(), time.getSeconds());
-        System.out.println(totalTimeFormatted);
+
+        String finalOutputString = outputString;
+        Platform.runLater(() -> System.out.println(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary)
     {
         Duration time = targetSummary.getTime();
-        String targetName, totalTimeFormatted, result;
+        String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
 
-        targetName = "Task on target " + targetSummary.getTargetName() + " ended.\n";
-        System.out.println(targetName);
-
-        totalTimeFormatted = String.format("The system went to sleep for %02d:%02d:%02d\n",
+        outputString += String.format("The system went to sleep for %02d:%02d:%02d\n",
                 time.toHours(), time.toMinutes(), time.getSeconds());
-        System.out.println(totalTimeFormatted);
+        outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
+        outputString += "------------------------------------------\n";
 
-        result = "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-        System.out.println(result);
-
-        System.out.println("------------------------------------------\n");
+        String finalOutputString = outputString;
+        Platform.runLater(() -> System.out.println(finalOutputString));
     }
-
-
 }

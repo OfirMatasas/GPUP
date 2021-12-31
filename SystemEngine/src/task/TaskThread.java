@@ -34,6 +34,7 @@ public class TaskThread extends Thread {
     private final ExecutorService executor;
     private final TaskOutput taskOutput;
     private ArrayBlockingQueue<String> targetsQueue;
+    private final ClosedSerialSets closedSerialSets;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
@@ -45,13 +46,15 @@ public class TaskThread extends Thread {
         this.targetsSet = targetsSet;
         this.executor = Executors.newFixedThreadPool(Math.min(threadsNum, 10));
         this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
+        this.closedSerialSets = new ClosedSerialSets();
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
     @Override
     public void run()
     {
-        String currTarget;
+        String currTargetName;
+        Target currTarget;
         taskPreparations();
 
         //Starting task on graph
@@ -62,17 +65,21 @@ public class TaskThread extends Thread {
 
         if(taskType.equals(TaskType.Simulation))
         {
-            while((currTarget = targetsQueue.poll()) != null)
+            while((currTargetName = targetsQueue.poll()) != null)
             {
+                currTarget = graph.getTarget(currTargetName);
                 try {
-                    if(graphSummary.isSkipped(currTarget))
+                    if(graphSummary.isSkipped(currTargetName))
                         continue;
-                    else if(graphSummary.isTargetReadyToRun(graph.getTarget(currTarget), targetsSet))
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTarget), graph, graphSummary, currTarget, taskOutput));
+                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet, closedSerialSets))
+                    {
+                        closedSerialSets.addClosedSerialSets(currTarget);
+                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput, closedSerialSets));
+                    }
                     else
-                        targetsQueue.add(currTarget);
+                        targetsQueue.add(currTargetName);
                 } catch (FileNotFound | IOException | OpeningFileCrash e) {
-                    String finalCurrTarget = currTarget;
+                    String finalCurrTarget = currTargetName;
                     Platform.runLater(() -> ErrorPopup(e, "Error with " + finalCurrTarget + " file."));
                 }
             }

@@ -22,6 +22,7 @@ import java.util.*;
 public class TaskController {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap;
+    private int parallelThreads;
 
     @FXML
     private BorderPane taskBorderPane;
@@ -183,7 +184,7 @@ public class TaskController {
             targetSet.add(target.getTargetName());
 
         TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                targetSet, 10);
+                targetSet, parallelThreads);
         taskThread.start();
     }
 
@@ -260,5 +261,13 @@ public class TaskController {
         taskParameters.setSuccessWithWarnings(successWithWarnings);
 
         return taskParameters;
+    }
+
+    public int getParallelThreads() {
+        return parallelThreads;
+    }
+
+    public void setParallelThreads(int parallelThreads) {
+        this.parallelThreads = parallelThreads;
     }
 }

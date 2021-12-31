@@ -2,6 +2,7 @@ package summaries;
 
 import target.Graph;
 import target.Target;
+import task.ClosedSerialSets;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -92,11 +93,13 @@ public class GraphSummary implements Serializable {
             setAllRequiredForTargetsOnSkipped(target, target);
     }
 
-    public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets)
+    public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets, ClosedSerialSets closedSerialSets)
     {
         TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
 
         if(targetSummary.isSkipped())
+            return false;
+        else if(closedSerialSets.checkForCommonItems(target.getSerialSets()))
             return false;
 
         for(Target dependedTarget : target.getDependsOnTargets())

@@ -6,11 +6,10 @@ import java.util.*;
 public class Graph implements Serializable {
     //--------------------------------------------------Members-----------------------------------------------------//
     private String graphName;
-    private Map<String, Target> graphTargets;
-    private Map<Target.TargetPosition, Set<Target>> targetsByPositions;
+    private final Map<String, Target> graphTargets;
+    private final Map<Target.TargetPosition, Set<Target>> targetsByPositions;
     private Map<String, Set<String>> serialSetsMap;
     private Set<String> serialSetsNames;
-    private int parallelThreads;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
@@ -46,10 +45,6 @@ public class Graph implements Serializable {
         return serialSetsMap;
     }
 
-    public int getParallelThreads() {
-        return parallelThreads;
-    }
-
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
         this.graphName = graphName;
@@ -61,10 +56,6 @@ public class Graph implements Serializable {
 
     public void setSerialSetsNames(Set<String> serialSetsNames) {
         this.serialSetsNames = serialSetsNames;
-    }
-
-    public void setParallelThreads(int parallelThreads) {
-        this.parallelThreads = parallelThreads;
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
