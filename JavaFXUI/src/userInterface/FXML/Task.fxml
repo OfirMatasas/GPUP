@@ -20,7 +20,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 
-
 <ScrollPane maxHeight="1000.0" maxWidth="1000.0" minHeight="400.0" minWidth="400.0" prefHeight="700.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TaskController">
    <content>
       <BorderPane fx:id="taskBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1000.0">
@@ -60,34 +59,31 @@
             </ToolBar>
          </top>
          <left>
-            <Pane fx:id="leftPane" prefHeight="1661.0" prefWidth="235.0" BorderPane.alignment="CENTER">
-               <BorderPane.margin>
-                  <Insets />
-               </BorderPane.margin>
-               <children>
-                  <ComboBox fx:id="taskSelection" layoutX="28.0" layoutY="52.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
-                  <ComboBox fx:id="targetSelection" disable="true" layoutX="28.0" layoutY="103.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
-                  <ComboBox fx:id="affectedTargets" disable="true" layoutX="28.0" layoutY="158.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
-                  <ListView fx:id="currentSelectedTargetListView" layoutX="28.0" layoutY="243.0" prefHeight="200.0" prefWidth="190.0" />
-                  <Label layoutX="61.0" layoutY="217.0" text="Current Selected Targets" />
-                  <Label fx:id="proccesingTimeLabel" layoutX="28.0" layoutY="519.0" text="Processing Time (m/s) : " />
-                  <Label fx:id="limitedPermanentLabel" layoutX="28.0" layoutY="559.0" text="Limited/Permanent : " />
-                  <Label fx:id="successRateLabel" layoutX="28.0" layoutY="594.0" text="Success Rate :" />
-                  <Label fx:id="successRateWithWarnings" layoutX="28.0" layoutY="631.0" text="Success Rate With Warnings : " />
-                  <Label layoutX="28.0" layoutY="626.0" />
-                  <RadioButton fx:id="limitedRadioButton" layoutX="182.0" layoutY="559.0" mnemonicParsing="false" onAction="#limitedOptionPressed" text="Limited">
-                     <toggleGroup>
+             <Pane fx:id="leftPane" prefHeight="1661.0" prefWidth="235.0" BorderPane.alignment="CENTER">
+                 <BorderPane.margin>
+                     <Insets />
+                 </BorderPane.margin>
+                 <ComboBox fx:id="taskSelection" layoutX="28.0" layoutY="52.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
+                 <ComboBox fx:id="targetSelection" disable="true" layoutX="28.0" layoutY="103.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
+                 <ComboBox fx:id="affectedTargets" disable="true" layoutX="28.0" layoutY="158.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
+                 <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="28.0" layoutY="243.0" prefHeight="200.0" prefWidth="190.0" />
+                 <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="61.0" layoutY="217.0" text="Current Selected Targets" />
+                 <Label fx:id="proccesingTimeLabel" disable="true" layoutX="28.0" layoutY="519.0" text="Processing Time (m/s) : " />
+                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="28.0" layoutY="559.0" text="Limited/Permanent : " />
+                 <Label fx:id="successRateLabel" disable="true" layoutX="28.0" layoutY="594.0" text="Success Rate :" />
+                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="28.0" layoutY="631.0" text="Success Rate With Warnings : " />
+                 <RadioButton fx:id="limitedRadioButton" disable="true" layoutX="182.0" layoutY="559.0" mnemonicParsing="false" onAction="#limitedOptionPressed" text="Limited">
+                    <toggleGroup>
                         <ToggleGroup fx:id="limitedOrPermanent" />
-                     </toggleGroup>
-                  </RadioButton>
-                  <RadioButton fx:id="permanentRadioButton" layoutX="270.0" layoutY="559.0" mnemonicParsing="false" onAction="#permanentOptionPressed" selected="true" text="Permanent" toggleGroup="$limitedOrPermanent" />
-                  <Slider fx:id="successRateSlider" layoutX="186.0" layoutY="596.0" />
-                  <Slider fx:id="successRatewithWarningsSlider" layoutX="186.0" layoutY="633.0" />
-                  <Label fx:id="successRateValueLabel" layoutX="335.0" layoutY="594.0" text="value" />
-                  <Label fx:id="successRateWithWarningsValueLabel" layoutX="335.0" layoutY="632.0" text="value" />
-                  <TextField fx:id="processingTimeTextArea" layoutX="182.0" layoutY="515.0" />
-               </children>
-            </Pane>
+                    </toggleGroup>
+                 </RadioButton>
+                 <RadioButton fx:id="permanentRadioButton" disable="true" layoutX="270.0" layoutY="559.0" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
+                 <Slider fx:id="successRateSlider" disable="true" layoutX="186.0" layoutY="596.0" />
+                 <Slider fx:id="successRatewithWarningsSlider" disable="true" layoutX="186.0" layoutY="633.0" />
+                 <Label fx:id="successRateValueLabel" disable="true" layoutX="335.0" layoutY="594.0" text="0" />
+                 <Label fx:id="successRateWithWarningsValueLabel" disable="true" layoutX="335.0" layoutY="632.0" text="0" />
+                 <TextField fx:id="processingTimeTextArea" disable="true" layoutX="182.0" layoutY="515.0" />
+             </Pane>
          </left>
          <center>
             <TabPane fx:id="tabPane" BorderPane.alignment="CENTER">
@@ -119,13 +115,13 @@
                         <Pane prefHeight="200.0" prefWidth="200.0" />
                      </content>
                   </Tab>
-                  <Tab fx:id="graphViewTabPane1" closable="false" onSelectionChanged="#logViewTabPressed" text="Log">
+                  <Tab fx:id="logPane" closable="false" onSelectionChanged="#logViewTabPressed" text="Log">
                      <content>
-                        <Pane prefHeight="200.0" prefWidth="200.0">
+                        <Pane fx:id="zeroSuccessRate" prefHeight="200.0" prefWidth="200.0">
                            <children>
                               <ScrollPane layoutX="14.0" layoutY="14.0">
                                  <content>
-                                    <TextArea disable="true" editable="false" prefHeight="456.0" prefWidth="535.0" />
+                                    <TextArea fx:id="proccessingTimeTextArea" disable="true" editable="false" prefHeight="456.0" prefWidth="535.0" />
                                  </content>
                               </ScrollPane>
                            </children>
