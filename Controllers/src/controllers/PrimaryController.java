@@ -33,7 +33,7 @@ public class PrimaryController {
     private ConnectionsController connectionsController;
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
-    private BorderPane taskPane = null;
+    private ScrollPane taskPane = null;
     private GraphSummary graphSummary;
 
     @FXML

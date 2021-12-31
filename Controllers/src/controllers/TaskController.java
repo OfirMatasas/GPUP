@@ -148,11 +148,7 @@ public class TaskController {
     }
 
     @FXML
-    void graphViewTabPressed(Event event) {
-
-        this.footerPane.setVisible(false);
-
-    }
+    void graphViewTabPressed(Event event) {}
 
     @FXML
     void limitedOptionPressed(ActionEvent event) {
