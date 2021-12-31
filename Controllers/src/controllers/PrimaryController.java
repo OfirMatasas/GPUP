@@ -33,7 +33,7 @@ public class PrimaryController {
     private ConnectionsController connectionsController;
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
-    private BorderPane taskPane = null;
+    private ScrollPane taskPane = null;
     private int parallelThreads;
     private GraphSummary graphSummary;
 
@@ -131,7 +131,6 @@ public class PrimaryController {
 
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
-            parallelThreads = rc.getParallelThreads();
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
