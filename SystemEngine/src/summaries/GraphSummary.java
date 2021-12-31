@@ -85,7 +85,6 @@ public class GraphSummary implements Serializable {
     public synchronized void UpdateTargetSummary(Target target, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus)
     {
         TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
-
         targetSummary.setResultStatus(resultStatus);
         targetSummary.setRuntimeStatus(runtimeStatus);
 
@@ -96,6 +95,9 @@ public class GraphSummary implements Serializable {
     public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets)
     {
         TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
+
+        if(targetSummary.isSkipped())
+            return false;
 
         for(Target dependedTarget : target.getDependsOnTargets())
         {

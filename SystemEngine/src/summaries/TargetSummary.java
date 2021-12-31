@@ -72,7 +72,7 @@ public class TargetSummary implements Serializable
         return resultStatus;
     }
 
-    public boolean isSkipped() {
+    public synchronized boolean isSkipped() {
         return this.isSkipped;
     }
 
@@ -97,7 +97,7 @@ public class TargetSummary implements Serializable
         this.runtimeStatus = runtimeStatus;
     }
 
-    public void setSkipped(boolean skipped) {
+    public synchronized void setSkipped(boolean skipped) {
         isSkipped = skipped;
     }
 

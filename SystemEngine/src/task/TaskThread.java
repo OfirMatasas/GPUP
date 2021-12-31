@@ -14,11 +14,13 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TaskThread extends Thread {
     //--------------------------------------------------Enums-------------------------------------------------------//
-    public static enum TaskType { Simulation, Compilation }
+    public enum TaskType { Simulation, Compilation }
 
     //-------------------------------------------------Members------------------------------------------------------//
     //Getting from UI
@@ -31,7 +33,7 @@ public class TaskThread extends Thread {
     //Local use
     private final ExecutorService executor;
     private final TaskOutput taskOutput;
-    private BlockingQueue<String> targetsQueue;
+    private ArrayBlockingQueue<String> targetsQueue;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
@@ -63,10 +65,10 @@ public class TaskThread extends Thread {
             while((currTarget = targetsQueue.poll()) != null)
             {
                 try {
-                    if(graphSummary.isTargetReadyToRun(graph.getTarget(currTarget), targetsSet))
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTarget), graph, graphSummary, currTarget, taskOutput));
-                    else if(graphSummary.isSkipped(currTarget))
+                    if(graphSummary.isSkipped(currTarget))
                         continue;
+                    else if(graphSummary.isTargetReadyToRun(graph.getTarget(currTarget), targetsSet))
+                        executor.execute(new SimulationThread(taskParametersMap.get(currTarget), graph, graphSummary, currTarget, taskOutput));
                     else
                         targetsQueue.add(currTarget);
                 } catch (FileNotFound | IOException | OpeningFileCrash e) {
@@ -84,7 +86,7 @@ public class TaskThread extends Thread {
         while (!executor.isTerminated()) {   }
 
         graphSummary.stopTheClock();
-        Platform.runLater(() -> outputGraphSummary(graphSummary));
+        outputGraphSummary(graphSummary);
 //        taskOutput.outputGraphSummary();
     }
 
@@ -104,80 +106,86 @@ public class TaskThread extends Thread {
     public void outputGraphSummary(GraphSummary graphSummary)
     {
         Duration time = graphSummary.getTime();
-        System.out.println("Graph task summary:\n");
-
-        String timeSpentFormatted = String.format("Total time spent on task: %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
-        System.out.println(timeSpentFormatted);
-
+        String outputString = "Graph task summary:\n";
         graphSummary.calculateResults();
         Map<TargetSummary.ResultStatus, Integer> results = graphSummary.getAllResultStatus();
-        String succeeded, warnings, failed, skipped;
 
-        succeeded = "Number of targets succeeded: " + results.get(TargetSummary.ResultStatus.Success) + "\n";
-        System.out.println(succeeded);
+        outputString += String.format("Total time spent on task: %02d:%02d:%02d\n",
+                time.toHours(), time.toMinutes(), time.getSeconds());
+        outputString += "Number of targets succeeded: " + results.get(TargetSummary.ResultStatus.Success) + "\n";
+        outputString += "Number of targets succeeded with warnings: " + results.get(TargetSummary.ResultStatus.Warning) + "\n";
+        outputString += "Number of targets failed: " + results.get(TargetSummary.ResultStatus.Failure) + "\n";
+        outputString += "Number of targets skipped: " + graphSummary.getSkippedTargets();
 
-        warnings = "Number of targets succeeded with warnings: " + results.get(TargetSummary.ResultStatus.Warning) + "\n";
-        System.out.println(warnings);
-
-        failed = "Number of targets failed: " + results.get(TargetSummary.ResultStatus.Failure) + "\n";
-        System.out.println(failed);
-
-        skipped = "Number of targets skipped: " + graphSummary.getSkippedTargets() + "\n";
-        System.out.println(skipped);
+        String finalOutputString = outputString;
+        Platform.runLater(() ->
+        {
+            System.out.println(finalOutputString);
+        });
 
         for(TargetSummary currentTarget : graphSummary.getTargetsSummaryMap().values())
         {
             if(currentTarget.isRunning())
                 outputTargetTaskSummary(currentTarget);
         }
-        System.out.println("----------------------------------\n");
+//        System.out.println("----------------------------------\n");
     }
 
     public void outputTargetTaskSummary(TargetSummary targetSummary)
     {
         Duration time = targetSummary.getTime();
-        System.out.println("-----------------------\n");
-
         String targetName, timeSpentFormatted;
-        String result = "Target's result status: ";
-
-        targetName = "Target's name :" + targetSummary.getTargetName() + "\n";
-        System.out.println(targetName);
+        String outputString = "-----------------------\n";
+        outputString += "Target's name :" + targetSummary.getTargetName() + "\n";
+        outputString += "Target's result status: ";
 
         if(targetSummary.isSkipped())
-            result += "Skipped\n";
+            outputString += "Skipped\n";
         else
-            result += targetSummary.getResultStatus() + "\n";
-        System.out.println(result);
+            outputString += targetSummary.getResultStatus() + "\n";
 
-        if(!targetSummary.isSkipped())
+        outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
+
+        String finalOutputString = outputString;
+        Platform.runLater(() ->
         {
-            timeSpentFormatted = String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
-            System.out.println(timeSpentFormatted);
-        }
+            System.out.println(finalOutputString);
+        });
     }
 
     private void taskPreparations()
     {
         TargetSummary currentTargetSummary;
+        Target currentTarget;
+        String dependedTargetName;
         this.targetsQueue = new ArrayBlockingQueue<String>(targetsSet.size());
 
-        //Resetting the graph summary
-        for(Target currentTarget : graph.getGraphTargets().values())
-        {
-            graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).setRunning(false);
-        }
+        //Preparing the graph summary
+        for(Target target : graph.getGraphTargets().values())
+            graphSummary.getTargetsSummaryMap().get(target.getTargetName()).setRunning(false);
         graphSummary.setSkippedTargetsToZero();
+        //Finished preparing the graph summary
 
         //Initializing graph summary for current run
-        for(String currentTarget : targetsSet)
+        for(String currentTargetName : targetsSet)
         {
-            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTarget);
-            targetsQueue.add(currentTarget);
+            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
+            targetsQueue.add(currentTargetName);
 
             currentTargetSummary.setRunning(true);
+            currentTargetSummary.setResultStatus(TargetSummary.ResultStatus.Undefined);
+
+            currentTarget = graph.getTarget(currentTargetName);
+            for(Target dependedTarget : currentTarget.getDependsOnTargets())
+            {
+                if(targetsSet.contains(dependedTarget.getTargetName()))
+                    currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Frozen);
+                else
+                    currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Waiting);
+            }
+
 //            currentTargetSummary.setOpenedTargetsToZero();
         }
+        //Finished initializing graph summary
     }
 }

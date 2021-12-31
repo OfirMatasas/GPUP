@@ -176,7 +176,7 @@ public class TaskController {
 
     @FXML
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
-        Set<String> targetSet = new HashSet<String>();
+        Set<String> targetSet = new HashSet<>();
 
         getTaskParametersForAllTargets();
         for (Target target : graph.getGraphTargets().values())
