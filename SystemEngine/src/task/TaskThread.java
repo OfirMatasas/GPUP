@@ -151,7 +151,8 @@ public class TaskThread extends Thread {
         else
             outputString += targetSummary.getResultStatus() + "\n";
 
-        outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
+        if(!targetSummary.isSkipped())
+            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
 
         String finalOutputString = outputString;
         Platform.runLater(() ->

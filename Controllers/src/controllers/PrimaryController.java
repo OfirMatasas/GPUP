@@ -131,6 +131,7 @@ public class PrimaryController {
 
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            parallelThreads = rc.getParallelThreads();
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);

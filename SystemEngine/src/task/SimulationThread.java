@@ -96,9 +96,9 @@ public class SimulationThread implements Runnable {
         Duration time = targetSummary.getTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
 
+        outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
         outputString += String.format("The system went to sleep for %02d:%02d:%02d\n",
                 time.toHours(), time.toMinutes(), time.getSeconds());
-        outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;
