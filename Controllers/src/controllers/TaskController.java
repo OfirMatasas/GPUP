@@ -1,5 +1,6 @@
 package controllers;
 
+import bodyComponentsPaths.BodyComponentsPaths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -11,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -23,7 +25,6 @@ import task.TaskOutput;
 import task.TaskParameters;
 import task.TaskThread;
 
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
@@ -275,10 +276,11 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(false);
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(Graph graph,String xmlFileName) {
         this.graph = graph;
 
         setAllTargetsList();
+        setGraphImage(xmlFileName);
     }
 
     private void getTaskParametersForAllTargets()
@@ -344,6 +346,27 @@ public class TaskController implements Initializable {
     {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
         taskSelection.setItems(taskSelectionList);
+
+    }
+
+    public void setGraphImage(String xmlFileName)
+    {
+        Image image;
+        switch (xmlFileName)
+        {
+            case "ex2-small.xml": {
+                 image = new Image(BodyComponentsPaths.SMALL_GRAPH_PNG);
+                break;
+            }
+            case "ex2-big.xml": {
+                 image = new Image(BodyComponentsPaths.BIG_GRAPH_PNG);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected value: " + xmlFileName);
+        }
+
+        this.graphImage.setImage(image);
     }
 }
 

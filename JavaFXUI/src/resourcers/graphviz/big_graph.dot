@@ -14,4 +14,6 @@ F -> H
 H -> {M K}
 I -> {M N}
 J -> {P O N}
+R
+S
 }

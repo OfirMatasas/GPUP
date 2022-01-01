@@ -2,6 +2,9 @@ digraph G {
 
 node [margin=0 fontcolor=blue fontsize=28 width=1 shape=circle style=filled fillcolor=orange]
 
+nodesep=2;
+ranksep = 2;
+
 E -> D 
 D -> A 
 D -> B 
