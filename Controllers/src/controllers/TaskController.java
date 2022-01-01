@@ -8,6 +8,10 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -19,9 +23,15 @@ import task.TaskOutput;
 import task.TaskParameters;
 import task.TaskThread;
 
+import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -133,6 +143,9 @@ public class TaskController implements Initializable {
 
     @FXML
     private ToggleGroup limitedOrPermanent;
+
+    @FXML
+    private ImageView graphImage;
 
     @FXML
     private RadioButton permanentRadioButton;

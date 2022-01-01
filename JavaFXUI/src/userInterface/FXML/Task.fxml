@@ -16,6 +16,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -112,7 +113,10 @@
                   </Tab>
                   <Tab fx:id="graphViewTabPane" closable="false" onSelectionChanged="#graphViewTabPressed" text="Graph View">
                      <content>
-                        <Pane prefHeight="200.0" prefWidth="200.0" />
+                        <Pane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <ImageView fx:id="graphImage" fitHeight="467.0" fitWidth="517.0" layoutX="3.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true" />
+                           </children></Pane>
                      </content>
                   </Tab>
                   <Tab fx:id="logPane" closable="false" onSelectionChanged="#logViewTabPressed" text="Log">
