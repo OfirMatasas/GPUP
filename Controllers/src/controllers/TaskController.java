@@ -15,6 +15,7 @@ import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
+import task.TaskOutput;
 import task.TaskParameters;
 import task.TaskThread;
 
@@ -28,7 +29,7 @@ import java.util.*;
 public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap;
-
+    private TaskOutput taskOutput;
 
 
     @FXML

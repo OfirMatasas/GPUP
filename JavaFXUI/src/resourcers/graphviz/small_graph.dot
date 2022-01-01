@@ -1,0 +1,10 @@
+digraph G {
+
+node [margin=0 fontcolor=blue fontsize=28 width=1 shape=circle style=filled fillcolor=orange]
+
+E -> D 
+D -> A 
+D -> B 
+E -> B 
+E -> C 
+}
