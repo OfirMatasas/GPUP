@@ -79,11 +79,11 @@
                     </toggleGroup>
                  </RadioButton>
                  <RadioButton fx:id="permanentRadioButton" disable="true" layoutX="270.0" layoutY="559.0" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
-                 <Slider fx:id="successRateSlider" disable="true" layoutX="186.0" layoutY="596.0" />
-                 <Slider fx:id="successRatewithWarningsSlider" disable="true" layoutX="186.0" layoutY="633.0" />
+                 <Slider fx:id="successRateSlider" disable="true" layoutX="186.0" layoutY="596.0" max="1.0" />
+                 <Slider fx:id="successRatewithWarningsSlider" disable="true" layoutX="186.0" layoutY="633.0" max="1.0" />
                  <Label fx:id="successRateValueLabel" disable="true" layoutX="335.0" layoutY="594.0" text="0" />
                  <Label fx:id="successRateWithWarningsValueLabel" disable="true" layoutX="335.0" layoutY="632.0" text="0" />
-                 <TextField fx:id="processingTimeTextArea" disable="true" layoutX="182.0" layoutY="515.0" />
+                 <TextField fx:id="processingTimeTextArea" disable="true" layoutX="182.0" layoutY="515.0" onAction="#getProcessingTime" promptText="Time In M/S" />
              </Pane>
          </left>
          <center>

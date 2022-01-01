@@ -39,8 +39,8 @@ import java.util.*;
 
 public class TaskController implements Initializable {
     private Graph graph;
-    private Map<String, TaskParameters> taskParametersMap;
-    private TaskOutput taskOutput;
+    private final Map<String, TaskParameters> taskParametersMap= new HashMap<>();
+    private Duration processingTime = null;
 
 
     @FXML
@@ -215,6 +215,13 @@ public class TaskController implements Initializable {
                 targetSet, 10);
         taskThread.start();
     }
+    @FXML
+    void getProcessingTime(ActionEvent event) {
+        long timeInMS = -1;
+        timeInMS = Integer.parseInt(this.processingTimeTextArea.getText());
+        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+        getSimulationTaskParametersFromUser();
+    }
 
     @FXML
     void selectAllPressed(ActionEvent event) {
@@ -285,11 +292,11 @@ public class TaskController implements Initializable {
 
     private void getTaskParametersForAllTargets()
     {
-        taskParametersMap = new HashMap<>();
-        TaskParameters taskParameters = getTaskParametersFromUser();
-
-        for(Target target : graph.getGraphTargets().values())
-            taskParametersMap.put(target.getTargetName(), taskParameters);
+//        taskParametersMap = new HashMap<>();
+//        TaskParameters taskParameters = getTaskParametersFromUser();
+//
+//        for(Target target : graph.getGraphTargets().values())
+//            taskParametersMap.put(target.getTargetName(), taskParameters);
     }
 
     private TaskParameters getTaskParametersFromUser()
@@ -346,7 +353,6 @@ public class TaskController implements Initializable {
     {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
         taskSelection.setItems(taskSelectionList);
-
     }
 
     public void setGraphImage(String xmlFileName)
@@ -367,6 +373,32 @@ public class TaskController implements Initializable {
         }
 
         this.graphImage.setImage(image);
+    }
+
+    public void getSimulationTaskParametersFromUser()
+    {
+        String selectedTarget;
+        long timeInMS = -1;
+        Boolean isRandom = true;
+        Double successRate = -1.0, successWithWarnings = -1.0;
+
+        TaskParameters taskParameters = new TaskParameters();
+
+        selectedTarget = this.targetSelection.getValue();
+        isRandom= this.permanentRadioButton.isSelected();
+        successRate =this.successRateSlider.getValue();
+        successWithWarnings =this.successRatewithWarningsSlider.getValue();
+
+
+        this.successRateValueLabel.setText(successRate.toString());
+        this.successRateWithWarningsValueLabel.setText(successWithWarnings.toString());
+
+        taskParameters.setProcessingTime(processingTime);
+        taskParameters.setRandom(isRandom);
+        taskParameters.setSuccessRate(successRate);
+        taskParameters.setSuccessWithWarnings(successWithWarnings);
+
+        taskParametersMap.put(selectedTarget,taskParameters);
     }
 }
 
