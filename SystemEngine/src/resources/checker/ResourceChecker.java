@@ -18,6 +18,11 @@ import java.util.*;
 public class ResourceChecker
 {
     private String workingDirectoryString;
+    private int parallelThreads;
+
+    public int getParallelThreads() {
+        return parallelThreads;
+    }
 
     private enum DependencyType { requiredFor, dependsOn};
 
@@ -67,9 +72,9 @@ public class ResourceChecker
         if(descriptor.getGPUPTargets() == null || descriptor.getGPUPTargets().getGPUPTarget() == null)
             throw new EmptyGraph();
 
-        if(descriptor.getGPUPConfiguration().getGPUPMaxParallelism() < 1)
+        parallelThreads = descriptor.getGPUPConfiguration().getGPUPMaxParallelism();
+        if(parallelThreads < 1)
             throw new InvalidThreadsNumber();
-        graph.setParallelThreads(descriptor.getGPUPConfiguration().getGPUPMaxParallelism());
 
         for(GPUPTarget currentgpupTarget : gpupTargetsAsList)
         {

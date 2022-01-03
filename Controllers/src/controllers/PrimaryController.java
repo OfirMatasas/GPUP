@@ -36,6 +36,7 @@ public class PrimaryController {
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
+    private int parallelThreads;
     private GraphSummary graphSummary;
     private ArrayList<String> colors;
     private File selectedFile;
@@ -133,6 +134,7 @@ public class PrimaryController {
 
         try{
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            parallelThreads = rc.getParallelThreads();
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
@@ -383,6 +385,7 @@ public class PrimaryController {
         try {
             taskPane = loader.load(url.openStream());
             taskController = loader.getController();
+            taskController.setParallelThreads(parallelThreads);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -28,7 +28,6 @@ public class ConnectionsController {
     private final ObservableList<String> destinationTargets = FXCollections.observableArrayList();
     private String originTargetName;
     private String relation;
-    private String destinationTargetName;
 
     @FXML
     private ScrollPane scrollPane;
@@ -153,6 +152,7 @@ public class ConnectionsController {
     //--------------------------------------------Targets Connection-----------------------------------------------//
     public void OriginTargetChosen(ActionEvent actionEvent) {
         originTargetName = OriginTargetChoiceBox.getValue();
+        RelationChoiceBox.getSelectionModel().clearSelection();
         RelationChoiceBox.setDisable(false);
         DestinationTargetChoiceBox.setDisable(true);
         destinationTargets.clear();
@@ -169,7 +169,15 @@ public class ConnectionsController {
         else
             destinationSet = graph.getTarget(this.originTargetName).getAllRequiredForTargets();
 
-        destinationTargets.clear();
+        if(destinationSet.isEmpty())
+        {
+            DestinationTargetChoiceBox.setDisable(true);
+            return;
+        }
+
+        if(!destinationTargets.isEmpty())
+            destinationTargets.clear();
+
         for(String currentTargetName : destinationSet)
             destinationTargets.add(i++, currentTargetName);
 
@@ -179,11 +187,11 @@ public class ConnectionsController {
 
     public void DestinationTargetChosen(ActionEvent actionEvent) {
         Target origin,destination;
-        ArrayList<String> paths = new ArrayList<String>();
+        ArrayList<String> paths;
         ObservableList<String> pathsTargets = FXCollections.observableArrayList();
         PathFinder pathFinder = new PathFinder();
+        String destinationTargetName = DestinationTargetChoiceBox.getValue();
 
-        destinationTargetName = DestinationTargetChoiceBox.getValue();
         origin = graph.getTarget(originTargetName);
         destination = graph.getTarget(destinationTargetName);
 
