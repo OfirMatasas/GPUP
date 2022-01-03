@@ -179,8 +179,8 @@ public class PrimaryController {
         Random rnd = new Random();
         int randomColor = rnd.nextInt(colors.size());
 
-        String directoryPath = "C:\\Users\\linki\\Documents\\GitHub\\GPUP-JavaFX\\JavaFXUI\\src\\resourcers\\graphviz";
-        String fileName = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
+        String directoryPath = "JavaFXUI/src/resourcers/graphviz";
+        String fileNameDOT = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
         String fileNamePNG = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".png";
 
         String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor="+ colors.get(randomColor) +"]\n" +
@@ -189,7 +189,7 @@ public class PrimaryController {
                 "ranksep = 2;\n";
 
         try {
-            FileWriter dotFile = new FileWriter(new File(directoryPath,fileName));
+            FileWriter dotFile = new FileWriter(new File(directoryPath,fileNameDOT));
             dotFile.write(properties);
 
             for (Target target : graph.getGraphTargets().values()) {
@@ -203,8 +203,8 @@ public class PrimaryController {
         dotFile.close();
 
         Runtime rt = Runtime.getRuntime();
-        String toCMD = "dot -Tpng "+ fileName+" -o "+fileNamePNG;
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && "+toCMD +"&& exit");
+        String toCMD = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && " + toCMD + "&& exit");
 
 
 
