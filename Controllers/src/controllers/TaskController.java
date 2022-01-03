@@ -277,7 +277,7 @@ public class TaskController implements Initializable {
         this.graph = graph;
 
         setAllTargetsList();
-        setGraphImage(xmlFileName);
+        //setGraphImage(xmlFileName);
     }
 
     private void getTaskParametersForAllTargets()

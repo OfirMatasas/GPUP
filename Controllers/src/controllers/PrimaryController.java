@@ -175,16 +175,22 @@ public class PrimaryController {
         colors.add("lightcoral");
     }
     public void convertXMLToDot() throws IOException {
+
         setColorsForNodes();
         Random rnd = new Random();
         int randomColor = rnd.nextInt(colors.size());
+
+        String directoryPath = "C:\\Users\\linki\\Documents\\GitHub\\GPUP-JavaFX\\JavaFXUI\\src\\resourcers\\graphviz";
+        String fileName = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
+        String fileNamePNG = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".png";
+
         String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor="+ colors.get(randomColor) +"]\n" +
                 "\n" +
                 "nodesep = 2;\n" +
                 "ranksep = 2;\n";
 
         try {
-            FileWriter dotFile = new FileWriter(selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot");
+            FileWriter dotFile = new FileWriter(new File(directoryPath,fileName));
             dotFile.write(properties);
 
             for (Target target : graph.getGraphTargets().values()) {
@@ -192,11 +198,17 @@ public class PrimaryController {
                 if (!target.getDependsOnTargets().isEmpty())
                     dotFile.write("-> {" + printAllDependsOnTarget(target) + "}\n");
 
-
                 dotFile.write("\n");
             }
-            dotFile.write("}");
-            dotFile.close();
+        dotFile.write("}");
+        dotFile.close();
+        Runtime rt = Runtime.getRuntime();
+        String toCMD = "dot -Tpng "+ fileName+" -o "+fileNamePNG;
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && "+toCMD);
+
+
+
+
         }
         catch(IOException e) {
         System.out.println("An error occurred.");
