@@ -135,7 +135,7 @@ public class PrimaryController {
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
-            taskController.setGraph(graph);
+            taskController.setGraph(graph,selectedFile.getName());
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();

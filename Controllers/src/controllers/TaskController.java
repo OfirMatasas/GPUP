@@ -1,5 +1,6 @@
 package controllers;
 
+import bodyComponentsPaths.BodyComponentsPaths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -8,6 +9,11 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -15,16 +21,25 @@ import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
+import task.TaskOutput;
 import task.TaskParameters;
 import task.TaskThread;
+import java.awt.event.MouseEvent;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TaskController implements Initializable {
     private Graph graph;
+    private final Map<String, TaskParameters> taskParametersMap= new HashMap<>();
+    private Duration processingTime = null;
     private Map<String, TaskParameters> taskParametersMap;
     private int parallelThreads;
 
@@ -131,6 +146,9 @@ public class TaskController implements Initializable {
     private ToggleGroup limitedOrPermanent;
 
     @FXML
+    private ImageView graphImage;
+
+    @FXML
     private RadioButton permanentRadioButton;
 
     @FXML
@@ -196,6 +214,13 @@ public class TaskController implements Initializable {
                 targetSet, parallelThreads);
         taskThread.start();
     }
+    @FXML
+    void getProcessingTime(ActionEvent event) {
+        long timeInMS = -1;
+        timeInMS = Integer.parseInt(this.processingTimeTextArea.getText());
+        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+        getSimulationTaskParametersFromUser();
+    }
 
     @FXML
     void selectAllPressed(ActionEvent event) {
@@ -257,19 +282,20 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(false);
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(Graph graph,String xmlFileName) {
         this.graph = graph;
 
         setAllTargetsList();
+        setGraphImage(xmlFileName);
     }
 
     private void getTaskParametersForAllTargets()
     {
-        taskParametersMap = new HashMap<>();
-        TaskParameters taskParameters = getTaskParametersFromUser();
-
-        for(Target target : graph.getGraphTargets().values())
-            taskParametersMap.put(target.getTargetName(), taskParameters);
+//        taskParametersMap = new HashMap<>();
+//        TaskParameters taskParameters = getTaskParametersFromUser();
+//
+//        for(Target target : graph.getGraphTargets().values())
+//            taskParametersMap.put(target.getTargetName(), taskParameters);
     }
 
     private TaskParameters getTaskParametersFromUser()
@@ -326,6 +352,52 @@ public class TaskController implements Initializable {
     {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
         taskSelection.setItems(taskSelectionList);
+    }
+
+    public void setGraphImage(String xmlFileName)
+    {
+        Image image;
+        switch (xmlFileName)
+        {
+            case "ex2-small.xml": {
+                 image = new Image(BodyComponentsPaths.SMALL_GRAPH_PNG);
+                break;
+            }
+            case "ex2-big.xml": {
+                 image = new Image(BodyComponentsPaths.BIG_GRAPH_PNG);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected value: " + xmlFileName);
+        }
+
+        this.graphImage.setImage(image);
+    }
+
+    public void getSimulationTaskParametersFromUser()
+    {
+        String selectedTarget;
+        long timeInMS = -1;
+        Boolean isRandom = true;
+        Double successRate = -1.0, successWithWarnings = -1.0;
+
+        TaskParameters taskParameters = new TaskParameters();
+
+        selectedTarget = this.targetSelection.getValue();
+        isRandom= this.permanentRadioButton.isSelected();
+        successRate =this.successRateSlider.getValue();
+        successWithWarnings =this.successRatewithWarningsSlider.getValue();
+
+
+        this.successRateValueLabel.setText(successRate.toString());
+        this.successRateWithWarningsValueLabel.setText(successWithWarnings.toString());
+
+        taskParameters.setProcessingTime(processingTime);
+        taskParameters.setRandom(isRandom);
+        taskParameters.setSuccessRate(successRate);
+        taskParameters.setSuccessWithWarnings(successWithWarnings);
+
+        taskParametersMap.put(selectedTarget,taskParameters);
     }
 
     public void setParallelThreads(int parallelThreads) {
