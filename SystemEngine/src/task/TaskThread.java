@@ -8,13 +8,12 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,8 +32,8 @@ public class TaskThread extends Thread {
     //Local use
     private final ExecutorService executor;
     private final TaskOutput taskOutput;
-    private ArrayBlockingQueue<String> targetsQueue;
-    private final ClosedSerialSets closedSerialSets;
+    private final LinkedList<String> targetsList;
+    private final int maxThreads;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
@@ -44,9 +43,10 @@ public class TaskThread extends Thread {
         this.taskParametersMap = taskParametersMap;
         this.graphSummary = graphSummary;
         this.targetsSet = targetsSet;
-        this.executor = Executors.newFixedThreadPool(Math.min(threadsNum, 10));
+        this.maxThreads = Math.min(threadsNum, 10);
+        this.executor = Executors.newFixedThreadPool(maxThreads);
         this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
-        this.closedSerialSets = new ClosedSerialSets();
+        this.targetsList = new LinkedList<>();
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
@@ -65,19 +65,28 @@ public class TaskThread extends Thread {
 
         if(taskType.equals(TaskType.Simulation))
         {
-            while((currTargetName = targetsQueue.poll()) != null)
+            while((currTargetName = targetsList.poll()) != null)
             {
+                String finalCurrTargetName = currTargetName;
+//                Platform.runLater(() -> System.out.println("Pulled target " + finalCurrTargetName + " from queue."));
                 currTarget = graph.getTarget(currTargetName);
                 try {
                     if(graphSummary.isSkipped(currTargetName))
-                        continue;
-                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet, closedSerialSets))
                     {
-                        closedSerialSets.addClosedSerialSets(currTarget);
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput, closedSerialSets));
+//                        Platform.runLater(() -> System.out.println("Can't run target " + finalCurrTargetName + ", because it's skipped."));
+                        continue;
+                    }
+                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet))
+                    {
+                        graphSummary.addClosedSerialSets(currTarget);
+//                        Platform.runLater(() -> System.out.println("Running target " + finalCurrTargetName + "."));
+                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput));
                     }
                     else
-                        targetsQueue.add(currTargetName);
+                    {
+//                        Platform.runLater(() -> System.out.println("Returning target " + finalCurrTargetName + " to the queue."));
+                        targetsList.addLast(currTargetName);
+                    }
                 } catch (FileNotFound | IOException | OpeningFileCrash e) {
                     String finalCurrTarget = currTargetName;
                     Platform.runLater(() -> ErrorPopup(e, "Error with " + finalCurrTarget + " file."));
@@ -125,10 +134,7 @@ public class TaskThread extends Thread {
         outputString += "Number of targets skipped: " + graphSummary.getSkippedTargets();
 
         String finalOutputString = outputString;
-        Platform.runLater(() ->
-        {
-            System.out.println(finalOutputString);
-        });
+        Platform.runLater(() -> System.out.println(finalOutputString));
 
         for(TargetSummary currentTarget : graphSummary.getTargetsSummaryMap().values())
         {
@@ -165,31 +171,41 @@ public class TaskThread extends Thread {
     {
         TargetSummary currentTargetSummary;
         Target currentTarget;
-        String dependedTargetName;
-        this.targetsQueue = new ArrayBlockingQueue<String>(targetsSet.size());
+        Boolean targetFrozen;
 
         //Preparing the graph summary
         for(Target target : graph.getGraphTargets().values())
-            graphSummary.getTargetsSummaryMap().get(target.getTargetName()).setRunning(false);
+        {
+            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(target.getTargetName());
+            currentTargetSummary.setRunning(targetsSet.contains(target.getTargetName()));
+        }
+        graphSummary.MakeNewClosedSerialSets();
         graphSummary.setSkippedTargetsToZero();
         //Finished preparing the graph summary
 
         //Initializing graph summary for current run
         for(String currentTargetName : targetsSet)
         {
+            targetFrozen = false;
+            currentTarget = graph.getTarget(currentTargetName);
             currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
-            targetsQueue.add(currentTargetName);
-
-            currentTargetSummary.setRunning(true);
             currentTargetSummary.setResultStatus(TargetSummary.ResultStatus.Undefined);
 
-            currentTarget = graph.getTarget(currentTargetName);
             for(Target dependedTarget : currentTarget.getDependsOnTargets())
             {
+                //Check if the current target has depends-on-targets in the current run (frozen)
                 if(targetsSet.contains(dependedTarget.getTargetName()))
+                {
+                    targetFrozen = true;
+                    targetsList.addLast(currentTargetName);
                     currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Frozen);
-                else
-                    currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Waiting);
+                    break;
+                }
+            }
+            if(!targetFrozen)
+            {
+                targetsList.addFirst(currentTargetName);
+                currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Waiting);
             }
 
 //            currentTargetSummary.setOpenedTargetsToZero();

@@ -327,4 +327,8 @@ public class TaskController implements Initializable {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
         taskSelection.setItems(taskSelectionList);
     }
+
+    public void setParallelThreads(int parallelThreads) {
+        this.parallelThreads = parallelThreads;
+    }
 }

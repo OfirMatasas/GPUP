@@ -17,17 +17,15 @@ public class SimulationThread implements Runnable {
 //    private Path filePath;
     private final Target target;
     private final String targetName;
-    private final ClosedSerialSets closedSerialSets;
 
     public SimulationThread(TaskParameters targetParameters, Target target, GraphSummary graphSummary,
-                            TaskOutput taskOutput, ClosedSerialSets closedSerialSets) throws FileNotFound, IOException, OpeningFileCrash {
+                            TaskOutput taskOutput) throws FileNotFound, IOException, OpeningFileCrash {
         this.targetParameters = targetParameters;
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
 //        this.taskOutput = taskOutput;
 //        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
-        this.closedSerialSets = closedSerialSets;
         UpdateWorkingTime();
     }
 
@@ -52,14 +50,13 @@ public class SimulationThread implements Runnable {
 
         double result = Math.random();
         if(Math.random() <= targetParameters.getSuccessRate())
-            resultStatus = result <= targetParameters.getSuccessWithWarnings() ? resultStatus = TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
+            resultStatus = result <= targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
         else
             resultStatus = TargetSummary.ResultStatus.Failure;
 
         targetSummary.stopTheClock();
         graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished);
         outputEndingTaskOnTarget(targetSummary);
-        closedSerialSets.removeClosedSerialSets(target);
     }
 
     private void UpdateWorkingTime() {
