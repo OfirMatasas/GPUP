@@ -1,0 +1,33 @@
+digraph G {
+node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor=orangered]
+
+nodesep = 2;
+ranksep = 2;
+A-> {F L }
+
+B-> {F H }
+
+C-> {F G I }
+
+D-> {G J }
+
+E-> {I J }
+
+F-> {H }
+
+G
+H-> {K L M }
+
+I-> {L M N }
+
+J-> {N O P }
+
+K
+L
+M
+N
+O
+P
+Q
+R
+}

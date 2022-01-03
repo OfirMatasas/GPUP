@@ -202,9 +202,10 @@ public class PrimaryController {
             }
         dotFile.write("}");
         dotFile.close();
+
         Runtime rt = Runtime.getRuntime();
         String toCMD = "dot -Tpng "+ fileName+" -o "+fileNamePNG;
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && "+toCMD);
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && "+toCMD +"&& exit");
 
 
 
