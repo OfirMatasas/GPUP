@@ -9,9 +9,6 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -21,26 +18,19 @@ import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
-import task.TaskOutput;
 import task.TaskParameters;
 import task.TaskThread;
-import java.awt.event.MouseEvent;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.io.File;
+
 import java.io.FileNotFoundException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TaskController implements Initializable {
     private Graph graph;
-    private final Map<String, TaskParameters> taskParametersMap= new HashMap<>();
+    private Map<String, TaskParameters> taskParametersMap= new HashMap<>();
     private Duration processingTime = null;
-    private Map<String, TaskParameters> taskParametersMap;
     private int parallelThreads;
 
     @FXML
@@ -206,6 +196,7 @@ public class TaskController implements Initializable {
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         Set<String> targetSet = new HashSet<>();
 
+//        getTaskParametersForAllTargets();
         getTaskParametersForAllTargets();
         for (Target target : graph.getGraphTargets().values())
             targetSet.add(target.getTargetName());
@@ -291,16 +282,16 @@ public class TaskController implements Initializable {
 
     private void getTaskParametersForAllTargets()
     {
-//        taskParametersMap = new HashMap<>();
-//        TaskParameters taskParameters = getTaskParametersFromUser();
-//
-//        for(Target target : graph.getGraphTargets().values())
-//            taskParametersMap.put(target.getTargetName(), taskParameters);
+        taskParametersMap = new HashMap<>();
+        TaskParameters taskParameters = getTaskParametersFromUser();
+
+        for(Target target : graph.getGraphTargets().values())
+            taskParametersMap.put(target.getTargetName(), taskParameters);
     }
 
     private TaskParameters getTaskParametersFromUser()
     {
-        Scanner scanner = new Scanner(System.in);
+//        Scanner scanner = new Scanner(System.in);
         Duration processingTime = null;
         long timeInMS = -1;
         Boolean isRandom = true;
