@@ -26,12 +26,15 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap= new HashMap<>();
     private Duration processingTime = null;
     private int parallelThreads;
+    private ExecutorService executor;
 
     @FXML
     private BorderPane taskBorderPane;
@@ -201,8 +204,9 @@ public class TaskController implements Initializable {
         for (Target target : graph.getGraphTargets().values())
             targetSet.add(target.getTargetName());
 
+        this.executor = Executors.newFixedThreadPool(parallelThreads);
         TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                targetSet, parallelThreads);
+                targetSet, executor);
         taskThread.start();
     }
     @FXML

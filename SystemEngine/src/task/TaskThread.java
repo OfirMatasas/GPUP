@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TaskThread extends Thread {
     //--------------------------------------------------Enums-------------------------------------------------------//
@@ -28,25 +27,27 @@ public class TaskThread extends Thread {
     private final Map<String, TaskParameters> taskParametersMap;
     private final GraphSummary graphSummary;
     private final Set<String> targetsSet;
+    private final ExecutorService executor;
 
     //Local use
-    private final ExecutorService executor;
     private final TaskOutput taskOutput;
     private final LinkedList<String> targetsList;
-    private final int maxThreads;
+    private Boolean paused;
+    private Boolean stopped;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, int threadsNum) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
         this.graphSummary = graphSummary;
         this.targetsSet = targetsSet;
-        this.maxThreads = Math.min(threadsNum, 10);
-        this.executor = Executors.newFixedThreadPool(maxThreads);
+        this.executor = executor;
         this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
         this.targetsList = new LinkedList<>();
+        this.paused = false;
+        this.stopped = false;
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
@@ -80,7 +81,10 @@ public class TaskThread extends Thread {
                     {
                         graphSummary.addClosedSerialSets(currTarget);
 //                        Platform.runLater(() -> System.out.println("Running target " + finalCurrTargetName + "."));
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput));
+                        if(!paused && !stopped)
+                            executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput));
+                        else
+                            targetsList.addFirst(currTargetName);
                     }
                     else
                     {
@@ -212,4 +216,19 @@ public class TaskThread extends Thread {
         }
         //Finished initializing graph summary
     }
+
+    public Boolean getPaused() {
+        return this.paused;
+    }
+
+    public Boolean getStopped() {
+        return this.stopped;
+    }
+
+    public void stopTheTask()
+    {
+        this.stopped = true;
+    }
+
+    public void pauseTheTask() { this.paused = true; }
 }

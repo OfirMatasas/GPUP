@@ -13,8 +13,6 @@ import javafx.scene.layout.AnchorPane;
 import target.Graph;
 import target.Target;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class GraphDetailsController {
     private Graph graph = null;
     private final ObservableList<TargetDetails> targetDetailsList = FXCollections.observableArrayList();
@@ -27,7 +25,6 @@ public class GraphDetailsController {
         initializeGraphDetails();
         initializeGraphPositions();
         initializeSerialSetChoiceBox();
-
     }
 
     private void initializeGraphDetails() {

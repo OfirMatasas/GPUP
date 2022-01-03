@@ -19,7 +19,6 @@ import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -227,14 +226,8 @@ public class PrimaryController {
         return DependedTarget;
     }
 
-
-    private void RefreshCurrentCenterPane() throws Exception {
-//        if(mainBorderPane.getCenter() == graphDetailsPane)
-            graphDetailsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == connectionsPane)
-//            connectionsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == taskPane)
-//            taskButtonPressed(new ActionEvent());
+    private void RefreshCurrentCenterPane() {
+        graphDetailsButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -248,16 +241,15 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
 
-
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        }
     }
 
     @FXML
@@ -266,15 +258,15 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
 
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        }
     }
 
     @FXML
@@ -283,17 +275,23 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
 
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
+    private void UpdateButtons() {
+        graphDetailsButton.setDisable(false);
+        connectionsButton.setDisable(false);
+        taskButton.setDisable(false);
+    }
+
     @FXML
     void connectionsButtonPressed(ActionEvent event) {
         mainBorderPane.setCenter(connectionsPane);
@@ -356,12 +354,6 @@ public class PrimaryController {
         UpdateTaskControllerAndPane();
         UpdateButtons();
         UpdatePanesStyles();
-    }
-
-    private void UpdateButtons() {
-        graphDetailsButton.setDisable(false);
-        connectionsButton.setDisable(false);
-        taskButton.setDisable(false);
     }
 
     private void UpdateConnectionsControllerAndPane()
