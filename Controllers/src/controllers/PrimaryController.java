@@ -1,6 +1,7 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
+import com.sun.webkit.ColorChooser;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -17,12 +18,13 @@ import javafx.stage.Stage;
 import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
+import target.Target;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class PrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
@@ -35,6 +37,8 @@ public class PrimaryController {
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
     private GraphSummary graphSummary;
+    private ArrayList<String> colors;
+    private File selectedFile;
 
     @FXML
     private ToggleGroup templates;
@@ -118,7 +122,6 @@ public class PrimaryController {
     {
         ResourceChecker rc = new ResourceChecker();
         FileChooser fileChooser = new FileChooser();
-        File selectedFile;
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
         selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -133,6 +136,8 @@ public class PrimaryController {
             updatePanesAndControllers();
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
+
+            convertXMLToDot();
             taskController.setGraph(graph,selectedFile.getName());
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
             RefreshCurrentCenterPane();
@@ -143,6 +148,70 @@ public class PrimaryController {
             ErrorPopup(ex, "Error loading file");
         }
     }
+
+    public void setColorsForNodes()
+    {
+        colors = new ArrayList<>();
+        colors.add("aqua");
+        colors.add("aquamarine");
+        colors.add("blueviolet");
+        colors.add("brown1");
+        colors.add("crimson");
+        colors.add("darkorchid");
+        colors.add("deeppink");
+        colors.add("forestgreen");
+        colors.add("goldenrod1");
+        colors.add("gray46");
+        colors.add("greenyellow");
+        colors.add("hotpink");
+        colors.add("orangered");
+        colors.add("seagreen1");
+        colors.add("steelblue1");
+        colors.add("royalblue2");
+        colors.add("teal");
+        colors.add("olive");
+        colors.add("lightcoral");
+    }
+    public void convertXMLToDot() throws IOException {
+        setColorsForNodes();
+        Random rnd = new Random();
+        int randomColor = rnd.nextInt(colors.size());
+        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor="+ colors.get(randomColor) +"]\n" +
+                "\n" +
+                "nodesep = 2;\n" +
+                "ranksep = 2;\n";
+
+        try {
+            FileWriter dotFile = new FileWriter(selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot");
+            dotFile.write(properties);
+
+            for (Target target : graph.getGraphTargets().values()) {
+                dotFile.write(target.getTargetName());
+                if (!target.getDependsOnTargets().isEmpty())
+                    dotFile.write("-> {" + printAllDependsOnTarget(target) + "}\n");
+
+
+                dotFile.write("\n");
+            }
+            dotFile.write("}");
+            dotFile.close();
+        }
+        catch(IOException e) {
+        System.out.println("An error occurred.");
+        e.printStackTrace();
+    }
+    }
+
+    private String printAllDependsOnTarget(Target curTarget)
+    {
+        String DependedTarget = "";
+        for (Target dependsOnTarget : curTarget.getDependsOnTargets())
+        {
+            DependedTarget = DependedTarget + dependsOnTarget.getTargetName() + " ";
+        }
+        return DependedTarget;
+    }
+
 
     private void RefreshCurrentCenterPane() throws Exception {
 //        if(mainBorderPane.getCenter() == graphDetailsPane)

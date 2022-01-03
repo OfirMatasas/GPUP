@@ -1,6 +1,6 @@
 digraph G {
 
-node [margin=0 fontcolor=white fontsize=28 width=1 shape=circle style=filled fillcolor=olive]
+node [margin=0 fontcolor=white fontsize=28 width=1 shape=circle style=filled fillcolor=orange]
 
 nodesep=2;
 ranksep = 2;
