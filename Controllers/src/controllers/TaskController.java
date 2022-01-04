@@ -1,6 +1,5 @@
 package controllers;
 
-import bodyComponentsPaths.BodyComponentsPaths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -279,23 +278,17 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(false);
     }
 
-    public void createGraphImageAndDisplay(String fileName, String directoryPath) throws FileNotFoundException
+    public void setGraphImage(String fullFileName) throws FileNotFoundException
     {
-        setGraphImage(fileName,directoryPath);
-    }
-
-    private void setGraphImage(String fileName , String directoryPath) throws FileNotFoundException
-    {
-        String url = directoryPath +"\\" + fileName + ".png";
-        InputStream stream = new FileInputStream(url);
+        InputStream stream = new FileInputStream(fullFileName);
         Image image = new Image(stream);
+
         graphImage.setImage(image);
     }
 
     public void setGraph(Graph graph) {
         this.graph = graph;
         setAllTargetsList();
-
     }
 
     private void getTaskParametersForAllTargets()

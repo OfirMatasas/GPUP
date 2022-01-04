@@ -18,6 +18,7 @@ import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -136,19 +137,20 @@ public class PrimaryController {
             return;
 
         try{
+            //Loading the graph from the xml file
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
             parallelThreads = rc.getParallelThreads();
+
+            //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
-            graphDetailsController.setGraph(graph);
-            connectionsController.setGraph(graph);
-
-            selectedFileComposedName=selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.'));
+            setGraphOnControllers();
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
-            directoryPath = graphSummary.getWorkingDirectory();
-            taskController.setGraph(graph);
 
+            //Setting Graphviz and display its outcome
             convertXMLToDot();
             RefreshCurrentCenterPane();
+
+            //Knowing the user the file loaded successfully
             FileLoadedSuccessfully();
         }
         catch(Exception ex)
@@ -157,9 +159,10 @@ public class PrimaryController {
         }
     }
 
-    private void createGraphImageAndDisplay() throws IOException
-    {
-       taskController.createGraphImageAndDisplay(selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')),graphSummary.getWorkingDirectory());
+    private void setGraphOnControllers() {
+        this.graphDetailsController.setGraph(this.graph);
+        this.connectionsController.setGraph(this.graph);
+        this.taskController.setGraph(this.graph);
     }
 
     public void setColorsForNodes()
@@ -185,15 +188,14 @@ public class PrimaryController {
         colors.add("olive");
         colors.add("lightcoral");
     }
-    public void convertXMLToDot() throws IOException {
+    public void convertXMLToDot() {
 
         setColorsForNodes();
         Random rnd = new Random();
         int randomColor = rnd.nextInt(colors.size());
-
         String directoryPath = graphSummary.getWorkingDirectory();
-        String fileNameDOT = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
-        String fileNamePNG = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".png";
+        String fileNameDOT = "GeneratedGraph.dot";
+        String fileNamePNG = "GeneratedGraph.png";
         String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
         String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor= " + colors.get(randomColor) +"]\n" +
                 "\n" +
@@ -214,10 +216,11 @@ public class PrimaryController {
         dotFile.write("}");
         dotFile.close();
 
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
-        taskController.createGraphImageAndDisplay(fileNamePNG,directoryPath);
+        Process process = Runtime.getRuntime().exec("cmd /c cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
+        process.waitFor();
+        taskController.setGraphImage(directoryPath + "\\" + fileNamePNG);
         }
-        catch(IOException e) {
+        catch(IOException | InterruptedException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
     }
@@ -233,14 +236,8 @@ public class PrimaryController {
         return DependedTarget;
     }
 
-
-    private void RefreshCurrentCenterPane() throws Exception {
-//        if(mainBorderPane.getCenter() == graphDetailsPane)
-            graphDetailsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == connectionsPane)
-//            connectionsButtonPressed(new ActionEvent());
-//        else if(mainBorderPane.getCenter() == taskPane)
-//            taskButtonPressed(new ActionEvent());
+    private void RefreshCurrentCenterPane() {
+        graphDetailsButtonPressed(new ActionEvent());
     }
 
     @FXML
@@ -254,16 +251,15 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
 
-
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        }
     }
 
     @FXML
@@ -272,15 +268,15 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
 
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+        }
     }
 
     @FXML
@@ -289,17 +285,23 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
 
-        if(graph == null)
-            return;
-
-        graphDetailsPane.getStylesheets().clear();
-        graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-        connectionsPane.getStylesheets().clear();
-        connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-        taskPane.getStylesheets().clear();
-        taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        if(graph != null)
+        {
+            graphDetailsPane.getStylesheets().clear();
+            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            connectionsPane.getStylesheets().clear();
+            connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            taskPane.getStylesheets().clear();
+            taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
+    private void UpdateButtons() {
+        graphDetailsButton.setDisable(false);
+        connectionsButton.setDisable(false);
+        taskButton.setDisable(false);
+    }
+
     @FXML
     void connectionsButtonPressed(ActionEvent event) {
         mainBorderPane.setCenter(connectionsPane);
@@ -362,12 +364,6 @@ public class PrimaryController {
         UpdateTaskControllerAndPane();
         UpdateButtons();
         UpdatePanesStyles();
-    }
-
-    private void UpdateButtons() {
-        graphDetailsButton.setDisable(false);
-        connectionsButton.setDisable(false);
-        taskButton.setDisable(false);
     }
 
     private void UpdateConnectionsControllerAndPane()
