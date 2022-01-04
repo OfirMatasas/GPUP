@@ -20,7 +20,7 @@ public class TargetDetails {
         this.directRequiredFor = directRequiredFor;
         this.allRequiredFor = allRequiredFor;
         this.serialSets = serialSets;
-        this.extraInformation=extraInformation;
+        this.extraInformation = extraInformation;
 
     }
 
