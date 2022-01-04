@@ -139,9 +139,10 @@ public class PrimaryController {
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
 
-            convertXMLToDot();
+
             taskController.setGraph(graph,selectedFile.getName());
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
+            convertXMLToDot();
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
         }
@@ -180,11 +181,11 @@ public class PrimaryController {
         Random rnd = new Random();
         int randomColor = rnd.nextInt(colors.size());
 
-        String directoryPath = "JavaFXUI/src/resourcers/graphviz";
+        String directoryPath = graphSummary.getWorkingDirectory();
         String fileNameDOT = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
         String fileNamePNG = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".png";
 
-        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor="+ colors.get(randomColor) +"]\n" +
+        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor= " + colors.get(randomColor) +"]\n" +
                 "\n" +
                 "nodesep = 2;\n" +
                 "ranksep = 2;\n";
@@ -203,9 +204,8 @@ public class PrimaryController {
         dotFile.write("}");
         dotFile.close();
 
-        Runtime rt = Runtime.getRuntime();
-        String toCMD = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd JavaFXUI\\src\\resourcers\\graphviz\\ && " + toCMD + "&& exit");
+        String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
 
 
 
