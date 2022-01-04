@@ -27,7 +27,6 @@ public class GraphDetailsController {
         initializeGraphDetails();
         initializeGraphPositions();
         initializeSerialSetChoiceBox();
-
     }
 
     private void initializeGraphDetails() {

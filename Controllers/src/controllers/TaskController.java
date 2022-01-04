@@ -21,7 +21,9 @@ import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -273,11 +275,23 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(false);
     }
 
-    public void setGraph(Graph graph,String xmlFileName) {
-        this.graph = graph;
+    public void createGraphImageAndDisplay(String fileName, String directoryPath) throws FileNotFoundException
+    {
+        setGraphImage(fileName,directoryPath);
+    }
 
+    private void setGraphImage(String fileName , String directoryPath) throws FileNotFoundException
+    {
+        String url = directoryPath +"\\" + fileName + ".png";
+        InputStream stream = new FileInputStream(url);
+        Image image = new Image(stream);
+        graphImage.setImage(image);
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
         setAllTargetsList();
-        //setGraphImage(xmlFileName);
+
     }
 
     private void getTaskParametersForAllTargets()
@@ -345,25 +359,26 @@ public class TaskController implements Initializable {
         taskSelection.setItems(taskSelectionList);
     }
 
-    public void setGraphImage(String xmlFileName)
-    {
-        Image image;
-        switch (xmlFileName)
-        {
-            case "ex2-small.xml": {
-                 image = new Image(BodyComponentsPaths.SMALL_GRAPH_PNG);
-                break;
-            }
-            case "ex2-big.xml": {
-                 image = new Image(BodyComponentsPaths.BIG_GRAPH_PNG);
-                break;
-            }
-            default:
-                throw new IllegalStateException("Unexpected value: " + xmlFileName);
-        }
-
-        this.graphImage.setImage(image);
-    }
+//    public void setGraphImage(String FileName,String directoryPath)
+//    {
+//        Image image = new Image(directoryPath+FileName+".png");
+//        this.graphImage.setImage(image);
+////        switch (FileName)
+////        {
+////            case "ex2-small": {
+////                image = new Image(directoryPath+FileName+".png");
+////                break;
+////            }
+////            case "ex2-big": {
+////                image = new Image(directoryPath+FileName+".png");
+////                break;
+////            }
+////            default:
+////                throw new IllegalStateException("Unexpected value: " + FileName);
+////        }
+//
+//        this.graphImage.setImage(image);
+//    }
 
     public void getSimulationTaskParametersFromUser()
     {

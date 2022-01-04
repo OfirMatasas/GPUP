@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -20,9 +21,7 @@ import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -126,6 +125,8 @@ public class PrimaryController {
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
         selectedFile = fileChooser.showOpenDialog(primaryStage);
+        String selectedFileComposedName;
+        String directoryPath;
         if(selectedFile == null)
             return;
 
@@ -139,9 +140,11 @@ public class PrimaryController {
             graphDetailsController.setGraph(graph);
             connectionsController.setGraph(graph);
 
-
-            taskController.setGraph(graph,selectedFile.getName());
+            selectedFileComposedName=selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.'));
             graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
+            directoryPath = graphSummary.getWorkingDirectory();
+            taskController.setGraph(graph);
+
             convertXMLToDot();
             RefreshCurrentCenterPane();
             FileLoadedSuccessfully();
@@ -150,6 +153,11 @@ public class PrimaryController {
         {
             ErrorPopup(ex, "Error loading file");
         }
+    }
+
+    private void createGraphImageAndDisplay() throws IOException
+    {
+       taskController.createGraphImageAndDisplay(selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')),graphSummary.getWorkingDirectory());
     }
 
     public void setColorsForNodes()
@@ -184,7 +192,7 @@ public class PrimaryController {
         String directoryPath = graphSummary.getWorkingDirectory();
         String fileNameDOT = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".dot";
         String fileNamePNG = selectedFile.getName().substring(0,selectedFile.getName().lastIndexOf('.')) + ".png";
-
+        String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
         String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor= " + colors.get(randomColor) +"]\n" +
                 "\n" +
                 "nodesep = 2;\n" +
@@ -204,12 +212,8 @@ public class PrimaryController {
         dotFile.write("}");
         dotFile.close();
 
-        String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
-
-
-
-
+        taskController.createGraphImageAndDisplay(fileNamePNG,directoryPath);
         }
         catch(IOException e) {
         System.out.println("An error occurred.");
