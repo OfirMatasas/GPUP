@@ -1,6 +1,7 @@
 package task;
 
 import javafx.application.Platform;
+import javafx.scene.control.TextArea;
 import myExceptions.FileNotFound;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
@@ -13,17 +14,19 @@ import java.time.temporal.ChronoUnit;
 public class SimulationThread implements Runnable {
     private final TaskParameters targetParameters;
     private final GraphSummary graphSummary;
+    private final TextArea log;
 //    private final TaskOutput taskOutput;
 //    private Path filePath;
     private final Target target;
     private final String targetName;
 
     public SimulationThread(TaskParameters targetParameters, Target target, GraphSummary graphSummary,
-                            TaskOutput taskOutput) throws FileNotFound, IOException, OpeningFileCrash {
+                            TextArea log) throws FileNotFound, IOException, OpeningFileCrash {
         this.targetParameters = targetParameters;
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
+        this.log = log;
 //        this.taskOutput = taskOutput;
 //        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
         UpdateWorkingTime();
@@ -38,7 +41,7 @@ public class SimulationThread implements Runnable {
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary);
+        outputStartingTaskOnTarget(targetSummary, log);
         graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
 
         //Going to sleep
@@ -73,7 +76,7 @@ public class SimulationThread implements Runnable {
         }
     }
 
-    public void outputStartingTaskOnTarget(TargetSummary targetSummary)
+    public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log)
     {
         Duration time = targetSummary.getPredictedTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
@@ -84,8 +87,12 @@ public class SimulationThread implements Runnable {
         outputString += String.format("The system is going to sleep for %02d:%02d:%02d\n",
                 time.toHours(), time.toMinutes(), time.getSeconds());
 
+        outputString += "------------------------------------------\n";
+
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
+        Platform.runLater(() -> log.appendText(finalOutputString));
+
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary)
@@ -100,5 +107,6 @@ public class SimulationThread implements Runnable {
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
+        Platform.runLater(() -> log.appendText(finalOutputString));
     }
 }

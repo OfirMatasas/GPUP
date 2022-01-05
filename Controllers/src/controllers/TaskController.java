@@ -210,7 +210,7 @@ public class TaskController implements Initializable {
 
         this.executor = Executors.newFixedThreadPool(parallelThreads);
         TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                targetSet, executor);
+                targetSet, executor, logTextArea);
         taskThread.start();
     }
     @FXML
