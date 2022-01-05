@@ -31,10 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TaskController implements Initializable {
-    public ToggleGroup limitPerma;
     private Graph graph;
-    private Map<String, TaskParameters> taskParametersMap= new HashMap<>();
-    private Duration processingTime = null;
+    private Map<String, TaskParameters> taskParametersMap = new HashMap<>();
     private int parallelThreads;
     private ExecutorService executor;
 
@@ -156,13 +154,16 @@ public class TaskController implements Initializable {
     private Slider successRateWithWarningsSlider;
 
     @FXML
-    private Label successRateValueLabel;
-
-    @FXML
-    private Label successRateWithWarningsValueLabel;
-
-    @FXML
     private Tab logPane;
+
+    @FXML
+    private TextField successWithWarningRateText;
+
+    @FXML
+    private TextField successRateText;
+
+    @FXML
+    private Button ApplyParametersButton;
 
     @FXML
     void affectedTargetsPressed(ActionEvent event) {
@@ -203,9 +204,8 @@ public class TaskController implements Initializable {
     @FXML
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         Set<String> targetSet = new HashSet<>();
-
-//        getTaskParametersForAllTargets();
-        getTaskParametersForAllTargets();
+        //getTaskParametersForAllTargets();
+        //getTaskParametersForAllTargets();
         for (Target target : graph.getGraphTargets().values())
             targetSet.add(target.getTargetName());
 
@@ -216,10 +216,10 @@ public class TaskController implements Initializable {
     }
     @FXML
     void getProcessingTime(ActionEvent event) {
-        long timeInMS = -1;
-        timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
-        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-        getSimulationTaskParametersFromUser();
+//        long timeInMS = -1;
+//        timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
+//        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+//        getSimulationTaskParametersFromUser();
     }
 
     @FXML
@@ -246,7 +246,6 @@ public class TaskController implements Initializable {
         if(!taskSelection.getSelectionModel().isEmpty())
         {
             setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
-
             enableAffectedButtons();
         }
     }
@@ -265,8 +264,9 @@ public class TaskController implements Initializable {
         this.successRateSlider.setDisable(flag);
         this.successRateWithWarningsSlider.setDisable(flag);
 
-        this.successRateValueLabel.setDisable(flag);
-        this.successRateWithWarningsValueLabel.setDisable(flag);
+        this.successRateText.setDisable(flag);
+        this.successWithWarningRateText.setDisable(flag);
+        this.ApplyParametersButton.setDisable(flag);
     }
 
     private void enableAffectedButtons() {
@@ -290,51 +290,49 @@ public class TaskController implements Initializable {
         setAllTargetsList();
     }
 
-    private void getTaskParametersForAllTargets()
+    private void applyTaskParametersForAllTargets(TaskParameters taskParameters)
     {
         taskParametersMap = new HashMap<>();
-        TaskParameters taskParameters = getTaskParametersFromUser();
-
         for(Target target : graph.getGraphTargets().values())
             taskParametersMap.put(target.getTargetName(), taskParameters);
     }
 
-    private TaskParameters getTaskParametersFromUser()
-    {
-//        Scanner scanner = new Scanner(System.in);
-        Duration processingTime = null;
-        long timeInMS = -1;
-        Boolean isRandom = true;
-        Double successRate = -1.0, successWithWarnings = -1.0;
-        TaskParameters taskParameters = new TaskParameters();
+//    private TaskParameters getTaskParametersFromUser()
+//    {
+////        Scanner scanner = new Scanner(System.in);
+//        Duration processingTime = null;
+//        long timeInMS = -1;
+//        Boolean isRandom = true;
+//        Double successRate = -1.0, successWithWarnings = -1.0;
+//        TaskParameters taskParameters = new TaskParameters();
+////
+////        System.out.print("Enter the processing time (in m/s) for each task: ");
+////        timeInMS = scanner.nextLong();
+////        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+////
+////        System.out.print("Choose if the processing time is limited by the value you just entered, or permanent (0 - limited, 1 - permanent): ");
+////        int temp = scanner.nextInt();
+////        isRandom = temp == 0;
+////
+////        System.out.print("Enter the success rate of the task (value between 0 and 1): ");
+////        successRate = scanner.nextDouble();
+////
+////        System.out.print("If the task ended successfully, what is the chance that it ended with warnings? (value between 0 and 1): ");
+////        successWithWarnings = scanner.nextDouble();
 //
-//        System.out.print("Enter the processing time (in m/s) for each task: ");
-//        timeInMS = scanner.nextLong();
+//        timeInMS = 5000;
 //        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+//        isRandom = true;
+//        successRate = 0.7;
+//        successWithWarnings = 0.3;
 //
-//        System.out.print("Choose if the processing time is limited by the value you just entered, or permanent (0 - limited, 1 - permanent): ");
-//        int temp = scanner.nextInt();
-//        isRandom = temp == 0;
+//        taskParameters.setProcessingTime(processingTime);
+//        taskParameters.setRandom(isRandom);
+//        taskParameters.setSuccessRate(successRate);
+//        taskParameters.setSuccessWithWarnings(successWithWarnings);
 //
-//        System.out.print("Enter the success rate of the task (value between 0 and 1): ");
-//        successRate = scanner.nextDouble();
-//
-//        System.out.print("If the task ended successfully, what is the chance that it ended with warnings? (value between 0 and 1): ");
-//        successWithWarnings = scanner.nextDouble();
-
-        timeInMS = 5000;
-        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-        isRandom = true;
-        successRate = 0.7;
-        successWithWarnings = 0.3;
-
-        taskParameters.setProcessingTime(processingTime);
-        taskParameters.setRandom(isRandom);
-        taskParameters.setSuccessRate(successRate);
-        taskParameters.setSuccessWithWarnings(successWithWarnings);
-
-        return taskParameters;
-    }
+//        return taskParameters;
+//    }
 
     private void setAllTargetsList()
     {
@@ -356,33 +354,47 @@ public class TaskController implements Initializable {
     }
 
 
-    public void getSimulationTaskParametersFromUser()
+    public TaskParameters getSimulationTaskParametersFromUser()
     {
-        String selectedTarget;
+        TaskParameters taskParameters = new TaskParameters();
+        Duration processingTime = null;
         long timeInMS = -1;
         Boolean isRandom = true;
         Double successRate = -1.0, successWithWarnings = -1.0;
 
-        TaskParameters taskParameters = new TaskParameters();
 
-        selectedTarget = this.targetSelection.getValue();
-        isRandom= this.permanentRadioButton.isSelected();
+        timeInMS = Integer.parseInt(processingTimeTextField.getText());
+        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+        isRandom= !this.permanentRadioButton.isSelected();
         successRate =this.successRateSlider.getValue();
         successWithWarnings =this.successRateWithWarningsSlider.getValue();
-
-
-        this.successRateValueLabel.setText(successRate.toString());
-        this.successRateWithWarningsValueLabel.setText(successWithWarnings.toString());
 
         taskParameters.setProcessingTime(processingTime);
         taskParameters.setRandom(isRandom);
         taskParameters.setSuccessRate(successRate);
         taskParameters.setSuccessWithWarnings(successWithWarnings);
 
-        taskParametersMap.put(selectedTarget,taskParameters);
+        return taskParameters;
     }
 
     public void setParallelThreads(int parallelThreads) {
         this.parallelThreads = parallelThreads;
+    }
+
+
+    @FXML
+    void ApplyParametersToTask(ActionEvent event)
+    {
+        TaskParameters taskParameters = getSimulationTaskParametersFromUser();
+        applyTaskParametersForAllTargets(taskParameters);
+    }
+
+    private void ErrorPopup(Exception ex, String title)
+    {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(ex.getMessage());
+        alert.showAndWait();
     }
 }

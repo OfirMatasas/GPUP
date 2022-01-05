@@ -69,24 +69,29 @@
                  <ComboBox fx:id="affectedTargets" disable="true" layoutX="28.0" layoutY="158.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
                  <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="28.0" layoutY="243.0" prefHeight="200.0" prefWidth="190.0" />
                  <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="61.0" layoutY="217.0" text="Current Selected Targets" />
-                 <Label fx:id="processingTimeLabel" disable="true" layoutX="28.0" layoutY="519.0" text="Processing Time (m/s) : " />
-                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="28.0" layoutY="559.0" text="Limited/Permanent : " />
-                 <Label fx:id="successRateLabel" disable="true" layoutX="28.0" layoutY="594.0" text="Success Rate :" />
-                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="28.0" layoutY="631.0" text="Success Rate With Warnings : " />
-                 <HBox layoutX="150.0" layoutY="559.0">
+                 <Label fx:id="processingTimeLabel" disable="true" layoutX="18.0" layoutY="470.0" text="Processing Time (m/s) : " />
+                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="20.0" layoutY="508.0" text="Limited/Permanent : " />
+                 <Label fx:id="successRateLabel" disable="true" layoutX="18.0" layoutY="540.0" text="Success Rate :" />
+                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="17.0" layoutY="569.0" text="Success Rate&#10;With Warnings : " />
+                 <HBox layoutX="131.0" layoutY="508.0">
                      <fx:define>
-                         <ToggleGroup fx:id="limitedOrPermanent"/>
+                         <ToggleGroup fx:id="limitedOrPermanent" />
                      </fx:define>
                      <children>
-                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" text="Limited" toggleGroup="$limitedOrPermanent"/>
-                         <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent"/>
+                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" text="Limited">
+                        <toggleGroup>
+                           <ToggleGroup fx:id="limitedOrPermanent" />
+                        </toggleGroup>
+                     </RadioButton>
+                         <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
                      </children>
                  </HBox>
-                  <Slider fx:id="successRateSlider" disable="true" layoutX="186.0" layoutY="596.0" max="1.0" />
-                 <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="186.0" layoutY="633.0" max="1.0" />
-                 <Label fx:id="successRateValueLabel" disable="true" layoutX="335.0" layoutY="594.0" text="0" />
-                 <Label fx:id="successRateWithWarningsValueLabel" disable="true" layoutX="335.0" layoutY="632.0" text="0" />
-                 <TextField fx:id="processingTimeTextField" disable="true" layoutX="182.0" layoutY="515.0" onAction="#getProcessingTime" promptText="Time In M/S" />
+                  <Slider fx:id="successRateSlider" disable="true" layoutX="103.0" layoutY="542.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                 <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="103.0" layoutY="589.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                 <TextField fx:id="processingTimeTextField" disable="true" layoutX="149.0" layoutY="466.0" onAction="#getProcessingTime" promptText="Time In M/S" />
+               <TextField fx:id="successWithWarningRateText" disable="true" layoutX="243.0" layoutY="584.0" prefHeight="25.0" prefWidth="45.0" />
+               <TextField fx:id="successRateText" disable="true" layoutX="243.0" layoutY="536.0" prefHeight="25.0" prefWidth="45.0" />
+               <Button fx:id="ApplyParametersButton" disable="true" layoutX="89.0" layoutY="624.0" mnemonicParsing="false" onAction="#ApplyParametersToTask" text="Apply Parameters" />
              </Pane>
          </left>
          <center>
