@@ -44,7 +44,7 @@ public class TaskController implements Initializable {
     private ToolBar toolBar;
 
     @FXML
-    private HBox toolBarHbox;
+    private HBox toolBarHBox;
 
     @FXML
     private Button runButton;
@@ -116,7 +116,7 @@ public class TaskController implements Initializable {
     private Pane footerPane;
 
     @FXML
-    private Label proccesingTimeLabel;
+    private Label processingTimeLabel;
 
     @FXML
     private Label limitedPermanentLabel;
@@ -125,7 +125,10 @@ public class TaskController implements Initializable {
     private Label successRateLabel;
 
     @FXML
-    private TextField processingTimeTextArea;
+    private TextField processingTimeTextField;
+
+    @FXML
+    private TextArea logTextArea;
 
     @FXML
     private Label successRateWithWarnings;
@@ -149,7 +152,7 @@ public class TaskController implements Initializable {
     private Slider successRateSlider;
 
     @FXML
-    private Slider successRatewithWarningsSlider;
+    private Slider successRateWithWarningsSlider;
 
     @FXML
     private Label successRateValueLabel;
@@ -213,7 +216,7 @@ public class TaskController implements Initializable {
     @FXML
     void getProcessingTime(ActionEvent event) {
         long timeInMS = -1;
-        timeInMS = Integer.parseInt(this.processingTimeTextArea.getText());
+        timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
         processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
         getSimulationTaskParametersFromUser();
     }
@@ -253,18 +256,18 @@ public class TaskController implements Initializable {
 
     private void setForSimulationTask(boolean flag) {
 
-        this.proccesingTimeLabel.setDisable(flag);
+        this.processingTimeLabel.setDisable(flag);
         this.limitedPermanentLabel.setDisable(flag);
         this.successRateLabel.setDisable(flag);
         this.successRateWithWarnings.setDisable(flag);
 
-        this.processingTimeTextArea.setDisable(flag);
+        this.processingTimeTextField.setDisable(flag);
         this.limitedRadioButton.setDisable(flag);
         this.permanentRadioButton.setDisable(flag);
 
 
         this.successRateSlider.setDisable(flag);
-        this.successRatewithWarningsSlider.setDisable(flag);
+        this.successRateWithWarningsSlider.setDisable(flag);
 
         this.successRateValueLabel.setDisable(flag);
         this.successRateWithWarningsValueLabel.setDisable(flag);
@@ -389,7 +392,7 @@ public class TaskController implements Initializable {
         selectedTarget = this.targetSelection.getValue();
         isRandom= this.permanentRadioButton.isSelected();
         successRate =this.successRateSlider.getValue();
-        successWithWarnings =this.successRatewithWarningsSlider.getValue();
+        successWithWarnings =this.successRateWithWarningsSlider.getValue();
 
 
         this.successRateValueLabel.setText(successRate.toString());
