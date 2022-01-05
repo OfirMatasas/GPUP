@@ -94,7 +94,7 @@
                <tabs>
                   <Tab fx:id="tableViewTabPane" closable="false" onSelectionChanged="#tableViewTabPressed" text="Table View">
                      <content>
-                        <Pane prefHeight="200.0" prefWidth="200.0">
+                        <Pane prefHeight="656.0" prefWidth="669.0">
                            <children>
                               <TableView fx:id="taskTargetDetailsTableView" layoutX="14.0" layoutY="47.0" prefHeight="300.0" prefWidth="650.0">
                                 <columns>

@@ -18,7 +18,4 @@ public class BodyComponentsPaths
     public static String RAINBOW_CENTER_THEME = "/userInterface/Stylesheets/CenterRainbowMode.css";
     //--------------------------------------------GRAPHS----------------------------------------------------
 
-    public static String SMALL_GRAPH_PNG = "C:\\temp\\ex2-small.png";
-    public static String BIG_GRAPH_PNG = "C:\\temp\\ex2-big.png";
-
 }

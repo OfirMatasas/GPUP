@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TaskController implements Initializable {
+    public ToggleGroup limitPerma;
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap= new HashMap<>();
     private Duration processingTime = null;
@@ -244,11 +245,7 @@ public class TaskController implements Initializable {
 
         if(!taskSelection.getSelectionModel().isEmpty())
         {
-            if(taskSelection.getValue().equals("Simulation"))
-                 setForSimulationTask(false);
-            else
-                setForSimulationTask(true);
-
+            setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
 
             enableAffectedButtons();
         }
@@ -264,7 +261,6 @@ public class TaskController implements Initializable {
         this.processingTimeTextField.setDisable(flag);
         this.limitedRadioButton.setDisable(flag);
         this.permanentRadioButton.setDisable(flag);
-
 
         this.successRateSlider.setDisable(flag);
         this.successRateWithWarningsSlider.setDisable(flag);
@@ -359,26 +355,6 @@ public class TaskController implements Initializable {
         taskSelection.setItems(taskSelectionList);
     }
 
-//    public void setGraphImage(String FileName,String directoryPath)
-//    {
-//        Image image = new Image(directoryPath+FileName+".png");
-//        this.graphImage.setImage(image);
-////        switch (FileName)
-////        {
-////            case "ex2-small": {
-////                image = new Image(directoryPath+FileName+".png");
-////                break;
-////            }
-////            case "ex2-big": {
-////                image = new Image(directoryPath+FileName+".png");
-////                break;
-////            }
-////            default:
-////                throw new IllegalStateException("Unexpected value: " + FileName);
-////        }
-//
-//        this.graphImage.setImage(image);
-//    }
 
     public void getSimulationTaskParametersFromUser()
     {
