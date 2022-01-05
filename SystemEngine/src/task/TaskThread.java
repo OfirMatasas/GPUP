@@ -2,12 +2,14 @@ package task;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextArea;
 import myExceptions.FileNotFound;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
@@ -28,6 +30,7 @@ public class TaskThread extends Thread {
     private final GraphSummary graphSummary;
     private final Set<String> targetsSet;
     private final ExecutorService executor;
+    private final TextArea log;
 
     //Local use
     private final TaskOutput taskOutput;
@@ -37,7 +40,7 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, TextArea log) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
@@ -46,6 +49,7 @@ public class TaskThread extends Thread {
         this.executor = executor;
         this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
         this.targetsList = new LinkedList<>();
+        this.log = log;
         this.paused = false;
         this.stopped = false;
     }
@@ -68,29 +72,22 @@ public class TaskThread extends Thread {
         {
             while((currTargetName = targetsList.poll()) != null)
             {
-                String finalCurrTargetName = currTargetName;
-//                Platform.runLater(() -> System.out.println("Pulled target " + finalCurrTargetName + " from queue."));
                 currTarget = graph.getTarget(currTargetName);
+
                 try {
                     if(graphSummary.isSkipped(currTargetName))
-                    {
-//                        Platform.runLater(() -> System.out.println("Can't run target " + finalCurrTargetName + ", because it's skipped."));
                         continue;
-                    }
-                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet))
+                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet) && graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
                     {
                         graphSummary.addClosedSerialSets(currTarget);
-//                        Platform.runLater(() -> System.out.println("Running target " + finalCurrTargetName + "."));
+
                         if(!paused && !stopped)
-                            executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, taskOutput));
+                            executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log));
                         else
                             targetsList.addFirst(currTargetName);
                     }
                     else
-                    {
-//                        Platform.runLater(() -> System.out.println("Returning target " + finalCurrTargetName + " to the queue."));
                         targetsList.addLast(currTargetName);
-                    }
                 } catch (FileNotFound | IOException | OpeningFileCrash e) {
                     String finalCurrTarget = currTargetName;
                     Platform.runLater(() -> ErrorPopup(e, "Error with " + finalCurrTarget + " file."));
@@ -111,7 +108,9 @@ public class TaskThread extends Thread {
     }
 
     public void printStartOfTaskOnGraph(String graphName) {
-        System.out.println("Task started on graph " + graphName + "!");
+        String startingAnnouncement = taskType.toString().substring(0, 1).toUpperCase() + taskType.toString().substring(1) + " task started on graph " + graphName + "!\n\n";
+        Platform.runLater(() -> System.out.print(startingAnnouncement));
+        Platform.runLater(() -> log.appendText(startingAnnouncement));
     }
 
     private void ErrorPopup(Exception ex, String title)
@@ -135,23 +134,24 @@ public class TaskThread extends Thread {
         outputString += "Number of targets succeeded: " + results.get(TargetSummary.ResultStatus.Success) + "\n";
         outputString += "Number of targets succeeded with warnings: " + results.get(TargetSummary.ResultStatus.Warning) + "\n";
         outputString += "Number of targets failed: " + results.get(TargetSummary.ResultStatus.Failure) + "\n";
-        outputString += "Number of targets skipped: " + graphSummary.getSkippedTargets();
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
+        outputString += "Number of targets skipped: " + graphSummary.getSkippedTargets() + "\n";
 
         for(TargetSummary currentTarget : graphSummary.getTargetsSummaryMap().values())
         {
             if(currentTarget.isRunning())
-                outputTargetTaskSummary(currentTarget);
+                outputString += outputTargetTaskSummary(currentTarget);
         }
-//        System.out.println("----------------------------------\n");
+
+        outputString += "---------------------END OF TASK---------------------\n";
+
+        String finalOutputString = outputString;
+        Platform.runLater(() -> System.out.print(finalOutputString));
+        Platform.runLater(() -> log.appendText(finalOutputString));
     }
 
-    public void outputTargetTaskSummary(TargetSummary targetSummary)
+    public String outputTargetTaskSummary(TargetSummary targetSummary)
     {
         Duration time = targetSummary.getTime();
-        String targetName, timeSpentFormatted;
         String outputString = "-----------------------\n";
         outputString += "Target's name :" + targetSummary.getTargetName() + "\n";
         outputString += "Target's result status: ";
@@ -162,13 +162,9 @@ public class TaskThread extends Thread {
             outputString += targetSummary.getResultStatus() + "\n";
 
         if(!targetSummary.isSkipped())
-            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds());
+            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
 
-        String finalOutputString = outputString;
-        Platform.runLater(() ->
-        {
-            System.out.println(finalOutputString);
-        });
+        return outputString;
     }
 
     private void taskPreparations()
@@ -215,6 +211,10 @@ public class TaskThread extends Thread {
 //            currentTargetSummary.setOpenedTargetsToZero();
         }
         //Finished initializing graph summary
+
+        //Clearing the log text area
+        log.clear();
+        log.setDisable(false);
     }
 
     public Boolean getPaused() {

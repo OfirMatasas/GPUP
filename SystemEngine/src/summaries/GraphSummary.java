@@ -180,21 +180,17 @@ public class GraphSummary implements Serializable {
 
     public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets)
     {
-        String targetName = target.getTargetName();
 //        Platform.runLater(() -> System.out.println("Checking if " + targetName + " is ready to run"));
-        if(checkForCommonItems(target.getSerialSets()))
-        {
-//            Platform.runLater(() -> System.out.println(targetName + "'s serial set is closed"));
-            return false;
-        }
+        if(targetsSummaryMap.get(target.getTargetName()).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Waiting))
+            return true;
 
-        for(Target dependedTarget : target.getDependsOnTargets())
+        for(String dependedTargetName : target.getAllDependsOnTargets())
         {
             //The depended target is not "in the game"
-            if(!runningTargets.contains(dependedTarget.getTargetName()))
+            if(!runningTargets.contains(dependedTargetName))
                 continue;
 
-            TargetSummary dependedTargetSummary = getTargetsSummaryMap().get(dependedTarget.getTargetName());
+            TargetSummary dependedTargetSummary = getTargetsSummaryMap().get(dependedTargetName);
 
             if(dependedTargetSummary.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
             {
@@ -228,8 +224,8 @@ public class GraphSummary implements Serializable {
         closedSerialSets.removeAll(target.getSerialSets());
     }
 
-    public synchronized Boolean checkForCommonItems(Set<String> otherSerialSet)
+    public synchronized Boolean checkIfSerialSetsAreOpen(Set<String> otherSerialSet)
     {
-        return !Collections.disjoint(closedSerialSets, otherSerialSet);
+        return Collections.disjoint(closedSerialSets, otherSerialSet);
     }
 }
