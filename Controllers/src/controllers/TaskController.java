@@ -22,6 +22,7 @@ import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
 
+import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -270,6 +271,17 @@ public class TaskController implements Initializable {
         this.ApplyParametersButton.setDisable(flag);
 
         addListenersForSliders();
+        addListenersForTextFields();
+    }
+
+    private void addListenersForTextFields() {
+        this.successRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            successRateSlider.setValue(Double.parseDouble(newValue));
+        });
+
+        this.successWithWarningRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            successRateWithWarningsSlider.setValue(Double.parseDouble(newValue));
+        });
     }
 
     private void addListenersForSliders() {
@@ -278,7 +290,8 @@ public class TaskController implements Initializable {
 
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
-                successRateText.setText(String.valueOf(newValue));
+
+                successRateText.setText(String.format("%.3f", newValue));
             }
         });
 
@@ -286,7 +299,7 @@ public class TaskController implements Initializable {
 
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
-                successWithWarningRateText.setText(String.valueOf(newValue));
+                successWithWarningRateText.setText(String.format("%.3f", newValue));
             }
         });
     }
