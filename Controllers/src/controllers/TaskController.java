@@ -1,5 +1,7 @@
 package controllers;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -204,8 +206,7 @@ public class TaskController implements Initializable {
     @FXML
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         Set<String> targetSet = new HashSet<>();
-        //getTaskParametersForAllTargets();
-        //getTaskParametersForAllTargets();
+
         for (Target target : graph.getGraphTargets().values())
             targetSet.add(target.getTargetName());
 
@@ -267,6 +268,27 @@ public class TaskController implements Initializable {
         this.successRateText.setDisable(flag);
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
+
+        addListenersForSliders();
+    }
+
+    private void addListenersForSliders() {
+
+        this.successRateSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                successRateText.setText(String.valueOf(newValue));
+            }
+        });
+
+        this.successRateWithWarningsSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                successWithWarningRateText.setText(String.valueOf(newValue));
+            }
+        });
     }
 
     private void enableAffectedButtons() {
@@ -362,17 +384,23 @@ public class TaskController implements Initializable {
         Boolean isRandom = true;
         Double successRate = -1.0, successWithWarnings = -1.0;
 
+        try {
+            timeInMS = Integer.parseInt(processingTimeTextField.getText());
+            processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
 
-        timeInMS = Integer.parseInt(processingTimeTextField.getText());
-        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-        isRandom= !this.permanentRadioButton.isSelected();
-        successRate =this.successRateSlider.getValue();
-        successWithWarnings =this.successRateWithWarningsSlider.getValue();
+            isRandom = !this.permanentRadioButton.isSelected();
+            successRate = this.successRateSlider.getValue();
+            successWithWarnings = this.successRateWithWarningsSlider.getValue();
 
-        taskParameters.setProcessingTime(processingTime);
-        taskParameters.setRandom(isRandom);
-        taskParameters.setSuccessRate(successRate);
-        taskParameters.setSuccessWithWarnings(successWithWarnings);
+            taskParameters.setProcessingTime(processingTime);
+            taskParameters.setRandom(isRandom);
+            taskParameters.setSuccessRate(successRate);
+            taskParameters.setSuccessWithWarnings(successWithWarnings);
+        }
+        catch(Exception ex)
+        {
+            ErrorPopup(ex, "Invalid Parameters");
+        }
 
         return taskParameters;
     }
@@ -380,7 +408,6 @@ public class TaskController implements Initializable {
     public void setParallelThreads(int parallelThreads) {
         this.parallelThreads = parallelThreads;
     }
-
 
     @FXML
     void ApplyParametersToTask(ActionEvent event)
