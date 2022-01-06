@@ -651,7 +651,6 @@ public class TaskController implements Initializable {
               taskTargetDetailsList.add(taskTargetInformation);
             ++i;
         }
-
         taskTargetDetailsTableView.setItems(taskTargetDetailsList);
     }
 
