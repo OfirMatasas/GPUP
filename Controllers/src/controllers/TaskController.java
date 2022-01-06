@@ -215,7 +215,12 @@ public class TaskController implements Initializable {
     private Label currentSelectedTargetLabel;
 
     @FXML
-    void deselectAllPressed(ActionEvent event) {}
+    void deselectAllPressed(ActionEvent event) {
+        currentSelectedTargets.clear();
+
+        deselectAllButton.setDisable(true);
+        selectAllButton.setDisable(false);
+    }
 
     @FXML
     void graphViewTabPressed(Event event) {}
