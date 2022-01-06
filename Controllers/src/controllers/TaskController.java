@@ -43,25 +43,18 @@ public class TaskController implements Initializable {
     private final String Depended = "All depends-on targets";
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
+    private TaskThread taskThread;
 
     public class TaskThreadWatcher extends Thread
     {
-        private TaskThread taskThread;
-        private Button runButton;
-
         @Override
         public void run()
         {
-            runButton.setDisable(true);
+            disableTaskOptions(true);
 
             while(taskThread.isAlive()) {}
-            runButton.setDisable(false);
-        }
 
-        public void settings(TaskThread taskThread, Button runButton) {
-            this.taskThread = taskThread;
-            this.runButton = runButton;
-            this.setDaemon(true);
+            disableTaskOptions(false);
         }
     }
 
@@ -231,6 +224,8 @@ public class TaskController implements Initializable {
             currentSelectedTargets.clear();
             currentSelectedTargets.add(targetSelection.getValue());
             currentSelectedTargets.addAll(affectedTargetsSet);
+
+            incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
         }
     }
 
@@ -272,10 +267,11 @@ public class TaskController implements Initializable {
         this.taskDetailsOnTargetTextArea.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
-        TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
+        taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
                 currentRunTarget, executor, logTextArea);
 
-        taskThreadWatcher.settings(taskThread, runButton);
+        taskThreadWatcher.setDaemon(true);
+
         taskThread.start();
         taskThreadWatcher.start();
 
@@ -345,7 +341,7 @@ public class TaskController implements Initializable {
         if(!taskSelection.getSelectionModel().isEmpty())
         {
             setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
-            enableButtons();
+            disableButtons(false);
         }
     }
 
@@ -411,17 +407,48 @@ public class TaskController implements Initializable {
         this.successRateWithWarningsSlider.valueProperty().addListener((observable, oldValue, newValue) -> successWithWarningRateText.setText(String.format("%.3f", newValue)));
     }
 
-    private void enableButtons() {
+    private void disableButtons(Boolean flag) {
 
-        this.targetSelection.setDisable(false);
-        this.affectedTargets.setDisable(false);
-        this.currentSelectedTargetLabel.setDisable(false);
-        this.currentSelectedTargetListView.setDisable(false);
+        this.targetSelection.setDisable(flag);
+        this.affectedTargets.setDisable(flag);
+        this.currentSelectedTargetLabel.setDisable(flag);
+        this.currentSelectedTargetListView.setDisable(flag);
 
-        this.fromScratchRadioButton.setDisable(false);
-        this.incrementalRadioButton.setDisable(false);
+        this.fromScratchRadioButton.setDisable(flag);
 
-        this.selectAllButton.setDisable(false);
+        this.selectAllButton.setDisable(flag);
+    }
+
+    private void disableTaskOptions(Boolean flag)
+    {
+        this.runButton.setDisable(flag);
+
+        this.currentSelectedTargetLabel.setDisable(flag);
+        this.taskSelection.setDisable(flag);
+        this.targetSelection.setDisable(flag);
+        this.affectedTargets.setDisable(flag);
+
+        this.currentSelectedTargetListView.setDisable(flag);
+        this.selectAllButton.setDisable(flag);
+        this.deselectAllButton.setDisable(flag);
+
+        this.fromScratchRadioButton.setDisable(flag);
+        this.incrementalRadioButton.setDisable(flag);
+
+        setForSimulationTask(flag);
+
+//        this.processingTimeLabel.setDisable(flag);
+//        this.processingTimeTextField.setDisable(flag);
+//        this.limitedPermanentLabel.setDisable(flag);
+//        this.limitedRadioButton.setDisable(flag);
+//        this.permanentRadioButton.setDisable(flag);
+//        this.successRateLabel.setDisable(flag);
+//        this.successRateSlider.setDisable(flag);
+//        this.successRateText.setDisable(flag);
+//        this.successRateWithWarnings.setDisable(flag);
+//        this.successWithWarningRateText.setDisable(flag);
+//        this.successRateWithWarningsSlider.setDisable(flag);
+//        this.ApplyParametersButton.setDisable(flag);
     }
 
     public void setGraphImage(String fullFileName) throws FileNotFoundException {
