@@ -1,5 +1,6 @@
 package controllers;
 
+import information.TaskTargetInformation;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -9,6 +10,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -40,7 +42,8 @@ public class TaskController implements Initializable {
     private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
     private final String NONE = "none";
     private final String REQUIRED = "All required-for targets";
-    private final String Depended = "All depends-on targets";
+    private final String DEPENDED = "All depends-on targets";
+    private final ObservableList<TaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
     private TaskThread taskThread;
@@ -104,28 +107,19 @@ public class TaskController implements Initializable {
     private Tab tableViewTabPane;
 
     @FXML
-    private TableView<?> taskTargetDetailsTableView;
+    private TableView<TaskTargetInformation> taskTargetDetailsTableView;
 
     @FXML
-    private TableColumn<?, ?> numberColumn;
+    private TableColumn<TaskTargetInformation, Integer> numberColumn;
 
     @FXML
-    private TableColumn<?, ?> targetNameColumn;
+    private TableColumn<TaskTargetInformation, String> targetNameColumn;
 
     @FXML
-    private TableColumn<?, ?> positionColumn;
+    private TableColumn<TaskTargetInformation, String> positionColumn;
 
     @FXML
-    private TableColumn<?, ?> directDependsOnColumn;
-
-    @FXML
-    private TableColumn<?, ?> directRequiredForColumn;
-
-    @FXML
-    private TableColumn<?, ?> executionTimeStatus;
-
-    @FXML
-    private TableColumn<?, ?> finalStatus;
+    private TableColumn<TaskTargetInformation, String> currentRuntimeStatusColumn;
 
     @FXML
     private Tab graphViewTabPane;
@@ -200,12 +194,18 @@ public class TaskController implements Initializable {
     private TextArea taskDetailsOnTargetTextArea;
 
     @FXML
+    public void initialize() {
+        initializeGraphDetails();
+
+    }
+
+    @FXML
     void affectedTargetsPressed(ActionEvent event) {
         Set<String> affectedTargetsSet = null;
 
         switch (affectedTargets.getValue())
         {
-            case Depended:
+            case DEPENDED:
             {
                 affectedTargetsSet = graph.getTarget(targetSelection.getValue()).getAllDependsOnTargets();
                 break;
@@ -461,6 +461,7 @@ public class TaskController implements Initializable {
     public void setGraph(Graph graph) {
         this.graph = graph;
         setAllTargetsList();
+        setTaskTargetDetailsTable();
     }
 
     private void applyTaskParametersForAllTargets(TaskParameters taskParameters) {
@@ -548,7 +549,7 @@ public class TaskController implements Initializable {
         addListenersForSliders();
         addListenersForTextFields();
 
-        affectedTargetsOptions.addAll(NONE, Depended, REQUIRED);
+        affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
 
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
@@ -630,4 +631,28 @@ public class TaskController implements Initializable {
     void incrementalOptionPressed(ActionEvent event) {
 
     }
+
+    //-----------------------------------------------------------------------------------------------
+
+    private void initializeGraphDetails() {
+        this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, Integer>("number"));
+        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("targetName"));
+        this.positionColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("position"));
+        this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("currentRuntimeStatus"));
+    }
+
+    private void setTaskTargetDetailsTable() {
+        int i = 1;
+        TaskTargetInformation taskTargetInformation;
+        for (Target currentTarget : graph.getGraphTargets().values())
+        {
+              taskTargetInformation = new TaskTargetInformation(i,currentTarget.getTargetName(),
+                      currentTarget.getTargetPosition().toString(),null);
+              taskTargetDetailsList.add(taskTargetInformation);
+            ++i;
+        }
+
+        taskTargetDetailsTableView.setItems(taskTargetDetailsList);
+    }
+
 }
