@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -19,6 +20,8 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
+import javax.swing.event.ChangeListener;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -432,8 +435,10 @@ public class TaskController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation","Compilation");
+        ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation", "Compilation");
+        ObservableList<String> affectedTargetsSelection = FXCollections.observableArrayList("None", "Depends On", "Required For");
         taskSelection.setItems(taskSelectionList);
+        affectedTargets.setItems(affectedTargetsSelection);
     }
 
     public TaskParameters getSimulationTaskParametersFromUser() {
