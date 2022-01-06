@@ -275,7 +275,10 @@ public class TaskController implements Initializable {
 
     @FXML
     void selectAllPressed(ActionEvent event) {
+        graph.getGraphTargets().values().forEach(targetName -> currentSelectedTargets.add(targetName.getTargetName()));
 
+        selectAllButton.setDisable(true);
+        deselectAllButton.setDisable(false);
     }
 
     @FXML
@@ -293,6 +296,8 @@ public class TaskController implements Initializable {
 
         if(affectedTargets.getValue() != null)
             affectedTargetsPressed(event);
+
+        deselectAllButton.setDisable(false);
     }
 
     @FXML
@@ -301,7 +306,7 @@ public class TaskController implements Initializable {
         if(!taskSelection.getSelectionModel().isEmpty())
         {
             setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
-            enableAffectedButtons();
+            enableButtons();
         }
     }
 
@@ -322,13 +327,6 @@ public class TaskController implements Initializable {
         this.successRateText.setDisable(flag);
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
-
-        this.fromScratchRadioButton.setDisable(flag);
-        this.incrementalRadioButton.setDisable(flag);
-
-
-        addListenersForSliders();
-        addListenersForTextFields();
     }
 
     private void addListenersForTextFields() {
@@ -374,11 +372,17 @@ public class TaskController implements Initializable {
         this.successRateWithWarningsSlider.valueProperty().addListener((observable, oldValue, newValue) -> successWithWarningRateText.setText(String.format("%.3f", newValue)));
     }
 
-    private void enableAffectedButtons() {
+    private void enableButtons() {
+
         this.targetSelection.setDisable(false);
         this.affectedTargets.setDisable(false);
         this.currentSelectedTargetLabel.setDisable(false);
         this.currentSelectedTargetListView.setDisable(false);
+
+        this.fromScratchRadioButton.setDisable(false);
+        this.incrementalRadioButton.setDisable(false);
+
+        this.selectAllButton.setDisable(false);
     }
 
     public void setGraphImage(String fullFileName) throws FileNotFoundException {
@@ -474,6 +478,9 @@ public class TaskController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation", "Compilation");
         taskSelection.setItems(taskSelectionList);
+
+        addListenersForSliders();
+        addListenersForTextFields();
 
         affectedTargetsOptions.addAll(NONE, Depended, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
