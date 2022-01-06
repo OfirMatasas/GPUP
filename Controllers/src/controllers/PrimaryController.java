@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 
 public class PrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
@@ -40,7 +39,10 @@ public class PrimaryController {
     private ScrollPane taskPane = null;
     private int parallelThreads;
     private GraphSummary graphSummary;
-    private ArrayList<String> colors;
+    private final ArrayList<String> rootColors = new ArrayList<>();
+    private final ArrayList<String> middleColors = new ArrayList<>();
+    private final ArrayList<String>leafColors = new ArrayList<>();
+    private final ArrayList<String>independentColors = new ArrayList<>();
     private File selectedFile;
 
     @FXML
@@ -167,37 +169,41 @@ public class PrimaryController {
 
     public void setColorsForNodes()
     {
-        colors = new ArrayList<>();
-        colors.add("aqua");
-        colors.add("aquamarine");
-        colors.add("blueviolet");
-        colors.add("brown1");
-        colors.add("crimson");
-        colors.add("darkorchid");
-        colors.add("deeppink");
-        colors.add("forestgreen");
-        colors.add("goldenrod1");
-        colors.add("gray46");
-        colors.add("greenyellow");
-        colors.add("hotpink");
-        colors.add("orangered");
-        colors.add("seagreen1");
-        colors.add("steelblue1");
-        colors.add("royalblue2");
-        colors.add("teal");
-        colors.add("olive");
-        colors.add("lightcoral");
+        rootColors.add("aqua");
+        rootColors.add("aquamarine");
+        rootColors.add("blueviolet");
+        rootColors.add("brown1");
+        rootColors.add("teal");
+        middleColors.add("crimson");
+        middleColors.add("darkorchid");
+        middleColors.add("deeppink");
+        middleColors.add("forestgreen");
+        middleColors.add("olive");
+        leafColors.add("goldenrod1");
+        leafColors.add("gray46");
+        leafColors.add("greenyellow");
+        leafColors.add("hotpink");
+        leafColors.add("lightcoral");
+        independentColors.add("orangered");
+        independentColors.add("seagreen1");
+        independentColors.add("steelblue1");
+        independentColors.add("royalblue2");
     }
     public void convertXMLToDot() {
 
         setColorsForNodes();
-        Random rnd = new Random();
-        int randomColor = rnd.nextInt(colors.size());
+//        Random rnd = new Random();
+//        int rootRandomColor = rnd.nextInt(rootColors.size());
+//        int middleRandomColor = rnd.nextInt(middleColors.size());
+//        int leafRandomColor = rnd.nextInt(leafColors.size());
+//        int independentColor = rnd.nextInt(independentColors.size());
+        String currentColor;
+        Target.TargetPosition targetPosition;
         String directoryPath = graphSummary.getWorkingDirectory();
         String fileNameDOT = "GeneratedGraph.dot";
         String fileNamePNG = "GeneratedGraph.png";
         String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
-        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled fillcolor= " + colors.get(randomColor) +"]\n" +
+        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
                 "\n" +
                 "nodesep = 2;\n" +
                 "ranksep = 2;\n";
@@ -206,12 +212,31 @@ public class PrimaryController {
             FileWriter dotFile = new FileWriter(new File(directoryPath,fileNameDOT));
             dotFile.write(properties);
 
+            for (Target target : graph.getGraphTargets().values())
+            {
+                dotFile.write(target.getTargetName());
+
+                targetPosition = target.getTargetPosition();
+                if(targetPosition.equals(Target.TargetPosition.ROOT))
+                    currentColor = "dodgerblue";
+                else if(targetPosition.equals(Target.TargetPosition.MIDDLE))
+                    currentColor = "Gold";
+                else if(targetPosition.equals(Target.TargetPosition.LEAF))
+                    currentColor = "green3";
+                else
+                    currentColor = "chocolate1";
+
+                dotFile.write(" [fillcolor = " +  currentColor + "]\n");
+            }
+
             for (Target target : graph.getGraphTargets().values()) {
                 dotFile.write(target.getTargetName());
-                if (!target.getDependsOnTargets().isEmpty())
-                    dotFile.write("-> {" + printAllDependsOnTarget(target) + "}\n");
 
+                if (!target.getDependsOnTargets().isEmpty())
+                    dotFile.write("-> {" + printAllDependsOnTarget(target) + "}");
                 dotFile.write("\n");
+
+//                dotFile.write("\n");
             }
         dotFile.write("}");
         dotFile.close();

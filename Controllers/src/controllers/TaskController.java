@@ -41,6 +41,29 @@ public class TaskController implements Initializable {
     private final String NONE = "none";
     private final String REQUIRED = "All required-for targets";
     private final String Depended = "All depends-on targets";
+    private Set<String> lastRunTargets = new HashSet<>();
+    private Boolean firstRun = true;
+
+    public class TaskThreadWatcher extends Thread
+    {
+        private TaskThread taskThread;
+        private Button runButton;
+
+        @Override
+        public void run()
+        {
+            runButton.setDisable(true);
+
+            while(taskThread.isAlive()) {}
+            runButton.setDisable(false);
+        }
+
+        public void settings(TaskThread taskThread, Button runButton) {
+            this.taskThread = taskThread;
+            this.runButton = runButton;
+            this.setDaemon(true);
+        }
+    }
 
     @FXML
     private BorderPane taskBorderPane;
@@ -239,19 +262,30 @@ public class TaskController implements Initializable {
 
     @FXML
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
-        Set<String> targetSet = new HashSet<>();
         if(!checkForValidRun())
             return;
 
-        for (Target target : graph.getGraphTargets().values())
-            targetSet.add(target.getTargetName());
+        Set<String> currentRunTarget = new HashSet<>(currentSelectedTargetListView.getItems());
+        TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
+
         TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                targetSet, executor, logTextArea);
+                currentRunTarget, executor, logTextArea);
+
+        taskThreadWatcher.settings(taskThread, runButton);
         taskThread.start();
+        taskThreadWatcher.start();
+
+        if(!this.firstRun)
+        {
+            firstRun = false;
+            lastRunTargets.clear();
+        }
+
+        lastRunTargets.addAll(currentRunTarget);
     }
 
     private Boolean checkForValidRun()
@@ -262,7 +296,7 @@ public class TaskController implements Initializable {
             errorMessage = "You have to apply the parameters for the task first!";
 
 
-        if(errorMessage != null)
+        if(!errorMessage.equals(""))
         {
             ShowPopup(errorMessage, "Can't start task", Alert.AlertType.ERROR);
             return false;
