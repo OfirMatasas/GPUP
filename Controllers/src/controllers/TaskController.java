@@ -38,26 +38,9 @@ public class TaskController implements Initializable {
     private TaskParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
     private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
-
-    private enum Affection { None
-            {
-                public String toString()
-                {
-                    return "None";
-                }
-            }, Depended
-            {
-                public String toString()
-                {
-                    return "All depended-on targets";
-                }
-            }, Required
-            {
-                public String toString()
-                {
-                    return "All required-for targets";
-                }
-            }}
+    private final String NONE = "none";
+    private final String REQUIRED = "All required-for targets";
+    private final String Depended = "All depends-on targets";
 
     @FXML
     private BorderPane taskBorderPane;
@@ -202,16 +185,30 @@ public class TaskController implements Initializable {
 
     @FXML
     void affectedTargetsPressed(ActionEvent event) {
-//        if(targetSelection.getValue())
-//        Set<String> affectedTargetsSet;
-//        switch (affectedTargets.getValue())
-//        {
-//            case Affection.None.toString():
-//            {
-//                affectedTargetsSet = graph.getTarget()
-//            }
-//        }
+        Set<String> affectedTargetsSet = null;
 
+        switch (affectedTargets.getValue())
+        {
+            case Depended:
+            {
+                affectedTargetsSet = graph.getTarget(targetSelection.getValue()).getAllDependsOnTargets();
+                break;
+            }
+            case REQUIRED:
+            {
+                affectedTargetsSet = graph.getTarget(targetSelection.getValue()).getAllRequiredForTargets();
+                break;
+            }
+            default:
+                break;
+        }
+
+        if(affectedTargetsSet != null)
+        {
+            currentSelectedTargets.clear();
+            currentSelectedTargets.add(targetSelection.getValue());
+            currentSelectedTargets.addAll(affectedTargetsSet);
+        }
     }
 
     @FXML
@@ -290,12 +287,12 @@ public class TaskController implements Initializable {
     @FXML
     void targetSelectionPressed(ActionEvent event) {
         affectedTargets.setDisable(false);
-        affectedTargets.getSelectionModel().clearSelection();
 
-        if(!currentSelectedTargets.isEmpty())
-            currentSelectedTargets.remove(0);
-
+        currentSelectedTargets.clear();
         currentSelectedTargets.add(targetSelection.getValue());
+
+        if(affectedTargets.getValue() != null)
+            affectedTargetsPressed(event);
     }
 
     @FXML
@@ -478,7 +475,7 @@ public class TaskController implements Initializable {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation", "Compilation");
         taskSelection.setItems(taskSelectionList);
 
-        affectedTargetsOptions.addAll(Affection.None.toString(), Affection.Depended.toString(), Affection.Required.toString());
+        affectedTargetsOptions.addAll(NONE, Depended, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
 
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
