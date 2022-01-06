@@ -1,7 +1,7 @@
 package controllers;
 
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -20,8 +20,6 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-
-import javax.swing.event.ChangeListener;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -38,6 +36,28 @@ public class TaskController implements Initializable {
     private int parallelThreads;
     private ExecutorService executor;
     private TaskParameters taskParameters;
+    private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
+    private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
+
+    private enum Affection { None
+            {
+                public String toString()
+                {
+                    return "None";
+                }
+            }, Depended
+            {
+                public String toString()
+                {
+                    return "All depended-on targets";
+                }
+            }, Required
+            {
+                public String toString()
+                {
+                    return "All required-for targets";
+                }
+            }}
 
     @FXML
     private BorderPane taskBorderPane;
@@ -76,7 +96,7 @@ public class TaskController implements Initializable {
     private ComboBox<String> affectedTargets;
 
     @FXML
-    private ListView<?> currentSelectedTargetListView;
+    private ListView<String> currentSelectedTargetListView;
 
     @FXML
     private TabPane tabPane;
@@ -125,7 +145,6 @@ public class TaskController implements Initializable {
 
     @FXML
     private RadioButton incrementalRadioButton;
-
 
     @FXML
     private Label processingTimeLabel;
@@ -182,7 +201,18 @@ public class TaskController implements Initializable {
     private TextArea taskDetailsOnTargetTextArea;
 
     @FXML
-    void affectedTargetsPressed(ActionEvent event) {}
+    void affectedTargetsPressed(ActionEvent event) {
+//        if(targetSelection.getValue())
+//        Set<String> affectedTargetsSet;
+//        switch (affectedTargets.getValue())
+//        {
+//            case Affection.None.toString():
+//            {
+//                affectedTargetsSet = graph.getTarget()
+//            }
+//        }
+
+    }
 
     @FXML
     private Label currentSelectedTargetLabel;
@@ -247,7 +277,9 @@ public class TaskController implements Initializable {
     }
 
     @FXML
-    void selectAllPressed(ActionEvent event) {}
+    void selectAllPressed(ActionEvent event) {
+
+    }
 
     @FXML
     void stopPressed(ActionEvent event) {}
@@ -256,7 +288,15 @@ public class TaskController implements Initializable {
     void tableViewTabPressed(Event event) {}
 
     @FXML
-    void targetSelectionPressed(ActionEvent event) {}
+    void targetSelectionPressed(ActionEvent event) {
+        affectedTargets.setDisable(false);
+        affectedTargets.getSelectionModel().clearSelection();
+
+        if(!currentSelectedTargets.isEmpty())
+            currentSelectedTargets.remove(0);
+
+        currentSelectedTargets.add(targetSelection.getValue());
+    }
 
     @FXML
     void taskSelectionPressed(ActionEvent event) {
@@ -373,7 +413,7 @@ public class TaskController implements Initializable {
             return;
         }
 
-        //Random time for each target
+        //Random time for each target`
         for(Target target : graph.getGraphTargets().values())
         {
             processingTime = taskParameters.getProcessingTime();
@@ -436,9 +476,24 @@ public class TaskController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation", "Compilation");
-        ObservableList<String> affectedTargetsSelection = FXCollections.observableArrayList("None", "Depends On", "Required For");
         taskSelection.setItems(taskSelectionList);
-        affectedTargets.setItems(affectedTargetsSelection);
+
+        affectedTargetsOptions.addAll(Affection.None.toString(), Affection.Depended.toString(), Affection.Required.toString());
+        affectedTargets.setItems(affectedTargetsOptions);
+
+        currentSelectedTargets.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                while (c.next()) {
+                    for (String remitem : c.getRemoved()) {
+                        currentSelectedTargetListView.getItems().remove(remitem);
+                    }
+                    for (String additem : c.getAddedSubList()) {
+                        currentSelectedTargetListView.getItems().add(additem);
+                    }
+                }
+            }
+        });
     }
 
     public TaskParameters getSimulationTaskParametersFromUser() {
