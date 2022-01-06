@@ -90,7 +90,7 @@ public class TaskThread extends Thread {
                         targetsList.addLast(currTargetName);
                 } catch (FileNotFound | IOException | OpeningFileCrash e) {
                     String finalCurrTarget = currTargetName;
-                    Platform.runLater(() -> ErrorPopup(e, "Error with " + finalCurrTarget + " file."));
+                    Platform.runLater(() -> ShowPopUp(e.getMessage(), "Error with " + finalCurrTarget + " file.", Alert.AlertType.ERROR));
                 }
             }
         }
@@ -104,6 +104,7 @@ public class TaskThread extends Thread {
 
         graphSummary.stopTheClock();
         outputGraphSummary(graphSummary);
+        Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
 //        taskOutput.outputGraphSummary();
     }
 
@@ -113,12 +114,12 @@ public class TaskThread extends Thread {
         Platform.runLater(() -> log.appendText(startingAnnouncement));
     }
 
-    private void ErrorPopup(Exception ex, String title)
+    private void ShowPopUp(String message, String title, Alert.AlertType alertType)
     {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(ex.getMessage());
+        alert.setContentText(message);
         alert.showAndWait();
     }
 

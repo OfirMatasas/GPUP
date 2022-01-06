@@ -78,11 +78,7 @@
                          <ToggleGroup fx:id="limitedOrPermanent" />
                      </fx:define>
                      <children>
-                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" text="Limited">
-                        <toggleGroup>
-                           <ToggleGroup fx:id="limitedOrPermanent" />
-                        </toggleGroup>
-                     </RadioButton>
+                         <RadioButton fx:id="limitedRadioButton" disable="true" selected="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" text="Limited" />
                          <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
                      </children>
                  </HBox>

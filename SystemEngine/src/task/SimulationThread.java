@@ -36,7 +36,7 @@ public class SimulationThread implements Runnable {
     public void run() {
         Thread.currentThread().setName(targetName + " Thread");
         TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
-        long sleepingTime = targetSummary.getPredictedTime().toMillis();
+        long sleepingTime = targetParameters.getProcessingTime().toMillis();
         TargetSummary.ResultStatus resultStatus;
 
         //Starting the clock
@@ -78,7 +78,7 @@ public class SimulationThread implements Runnable {
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log)
     {
-        Duration time = targetSummary.getPredictedTime();
+        Duration time = targetParameters.getProcessingTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
 
         if(targetSummary.getExtraInformation() != null)
