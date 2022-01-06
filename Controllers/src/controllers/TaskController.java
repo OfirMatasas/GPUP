@@ -115,6 +115,16 @@ public class TaskController implements Initializable {
     private Pane footerPane;
 
     @FXML
+    private RadioButton fromScratchRadioButton;
+
+    @FXML
+    private ToggleGroup scratchOrIncremental;
+
+    @FXML
+    private RadioButton incrementalRadioButton;
+
+
+    @FXML
     private Label processingTimeLabel;
 
     @FXML
@@ -166,6 +176,9 @@ public class TaskController implements Initializable {
     private Button ApplyParametersButton;
 
     @FXML
+    private TextArea taskDetailsOnTargetTextArea;
+
+    @FXML
     void affectedTargetsPressed(ActionEvent event) {}
 
     @FXML
@@ -192,7 +205,6 @@ public class TaskController implements Initializable {
     @FXML
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         Set<String> targetSet = new HashSet<>();
-
         if(!checkForValidRun())
             return;
 
@@ -200,7 +212,7 @@ public class TaskController implements Initializable {
             targetSet.add(target.getTargetName());
 
         applyTaskParametersForAllTargets(taskParameters);
-
+        this.taskDetailsOnTargetTextArea.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
         TaskThread taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
                 targetSet, executor, logTextArea);
@@ -270,6 +282,10 @@ public class TaskController implements Initializable {
         this.successRateText.setDisable(flag);
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
+
+        this.fromScratchRadioButton.setDisable(flag);
+        this.incrementalRadioButton.setDisable(flag);
+
 
         addListenersForSliders();
         addListenersForTextFields();
@@ -455,6 +471,16 @@ public class TaskController implements Initializable {
     @FXML
     void ApplyParametersToTask(ActionEvent event) {
         this.taskParameters = getSimulationTaskParametersFromUser();
+
+        if(this.taskParameters.getProcessingTime()!=null) // Checking only on the processing time, because other parameters are already initialized
+           setToolBarButtonsEnable();
+    }
+
+    private void setToolBarButtonsEnable()
+    {
+        this.runButton.setDisable(false);
+        this.PauseButton.setDisable(false);
+        this.stopButton.setDisable(false);
     }
 
     private void ShowPopup(String message, String title, Alert.AlertType alertType) {
@@ -463,5 +489,15 @@ public class TaskController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    void fromScratchOptionPressed(ActionEvent event) {
+
+    }
+
+    @FXML
+    void incrementalOptionPressed(ActionEvent event) {
+
     }
 }
