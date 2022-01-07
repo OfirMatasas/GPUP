@@ -24,9 +24,14 @@
                <content>
                   <HBox fx:id="HboxForLogo" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
+                        <ImageView fx:id="fireWorksImageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" visible="false">
+                           <image>
+                              <Image url="@../resourcers/fireworks.gif" />
+                           </image>
+                        </ImageView>
                         <ImageView fx:id="PrimaryLogo" fitHeight="550.0" fitWidth="609.0" opacity="0.55" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../resourcers/GPUP logo.png" />
+                              <Image url="@../resourcers/GPUP%20logo.png" />
                            </image>
                            <effect>
                               <Bloom />
@@ -65,7 +70,7 @@
                   </Menu>
                   <Menu fx:id="themes" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="Themes">
                      <items>
-                        <RadioMenuItem fx:id="defaultTheme" mnemonicParsing="false" onAction="#defaultThemePressed" styleClass="PrimaryToolbarItemOption" selected="true" text="Default">
+                        <RadioMenuItem fx:id="defaultTheme" mnemonicParsing="false" onAction="#defaultThemePressed" selected="true" styleClass="PrimaryToolbarItemOption" text="Default">
                            <toggleGroup>
                               <ToggleGroup fx:id="templates" />
                            </toggleGroup></RadioMenuItem>

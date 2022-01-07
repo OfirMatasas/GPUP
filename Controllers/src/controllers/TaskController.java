@@ -1,6 +1,7 @@
 package controllers;
 
 import information.TaskTargetInformation;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -26,7 +27,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.SQLOutput;
+import java.sql.Time;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +51,7 @@ public class TaskController implements Initializable {
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
     private TaskThread taskThread;
+    private Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
     private GraphSummary graphSummary;
 
     public class TaskThreadWatcher extends Thread
@@ -269,7 +274,7 @@ public class TaskController implements Initializable {
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTarget, executor, logTextArea, incrementalRadioButton.isSelected());
+                currentRunTarget, executor, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
 
         taskThreadWatcher.setDaemon(true);
 
@@ -283,6 +288,7 @@ public class TaskController implements Initializable {
         }
 
         lastRunTargets.addAll(currentRunTarget);
+
     }
 
     private Boolean checkForValidRun()
@@ -461,10 +467,10 @@ public class TaskController implements Initializable {
 
     public void setGraph(Graph graph) {
         this.graph = graph;
-
-        this.graphSummary = new GraphSummary(graph, null);
+        this.graphSummary = new GraphSummary(graph,null);
         setAllTargetsList();
         setTaskTargetDetailsTable();
+
     }
 
     private void applyTaskParametersForAllTargets(TaskParameters taskParameters) {
@@ -555,6 +561,9 @@ public class TaskController implements Initializable {
 
         affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
+
+        initializeGraphDetails();
+
     }
 
     private void addListenersForSelectedTargets() {
@@ -662,11 +671,36 @@ public class TaskController implements Initializable {
         for (Target currentTarget : graph.getGraphTargets().values())
         {
               taskTargetInformation = new TaskTargetInformation(i,currentTarget.getTargetName(),
-                      currentTarget.getTargetPosition().toString(),null);
+                      currentTarget.getTargetPosition().toString(),graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).getRuntimeStatus().toString());
               taskTargetDetailsList.add(taskTargetInformation);
             ++i;
         }
         taskTargetDetailsTableView.setItems(taskTargetDetailsList);
+        updateThread.start();
+    }
+
+    private void updateTableRuntimeStatuses()
+    {
+        ObservableList<TaskTargetInformation> itemsList = taskTargetDetailsTableView.getItems();
+        LocalTime startTime;
+        LocalTime currTime;
+        startTime = LocalTime.now();
+        currTime = LocalTime.now();
+
+        while (!updateThread.isInterrupted())
+        {
+            currTime=LocalTime.now();
+            while (currTime.compareTo(startTime.plusSeconds(1)) < 0)
+            {
+                currTime = LocalTime.now();
+            }
+            startTime = LocalTime.now();
+            for (TaskTargetInformation item : itemsList)
+            {
+                item.setCurrentRuntimeStatus(graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
+            }
+            Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
+        }
     }
 
 }

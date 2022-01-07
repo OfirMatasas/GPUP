@@ -38,10 +38,11 @@ public class TaskThread extends Thread {
     private final LinkedList<String> targetsList;
     private Boolean paused;
     private Boolean stopped;
+    private Runnable inEnd;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, TextArea log, Boolean incremental, Runnable inEnd) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
@@ -53,6 +54,7 @@ public class TaskThread extends Thread {
         this.log = log;
         this.paused = false;
         this.stopped = false;
+        this.inEnd = inEnd;
         this.incremental = incremental;
     }
 
@@ -114,6 +116,7 @@ public class TaskThread extends Thread {
         outputGraphSummary(graphSummary);
         Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
 //        taskOutput.outputGraphSummary();
+        this.inEnd.run();
     }
 
     public void printStartOfTaskOnGraph(String graphName) {
