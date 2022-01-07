@@ -729,7 +729,6 @@ public class TaskController implements Initializable {
         }
         
         this.taskDetailsOnTargetTextArea.setText(detailMsg);
-
         
         
 
