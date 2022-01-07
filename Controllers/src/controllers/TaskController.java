@@ -561,7 +561,10 @@ public class TaskController implements Initializable {
 
         affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
+<<<<<<< HEAD
         initializeGraphDetails();
+=======
+    }
 
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental button
