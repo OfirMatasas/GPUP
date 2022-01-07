@@ -554,6 +554,13 @@ public class TaskController implements Initializable {
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
+                incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
+            }
+        });
+
+        currentSelectedTargets.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
                 while (c.next()) {
                     for (String remitem : c.getRemoved()) {
                         currentSelectedTargetListView.getItems().remove(remitem);
