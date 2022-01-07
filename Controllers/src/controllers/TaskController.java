@@ -586,12 +586,12 @@ public class TaskController implements Initializable {
                 }
             }
         });
-        currentSelectedTargets.addListener(new ListChangeListener<String>() {
-
-            public void onChanged(Change<? extends String> c) {
-                TaskTargetSelection.setItems(currentSelectedTargetListView.getItems());
-            }
-        });
+//        currentSelectedTargets.addListener(new ListChangeListener<String>() {
+//
+//            public void onChanged(Change<? extends String> c) {
+//                TaskTargetSelection.setItems(currentSelectedTargetListView.getItems());
+//            }
+//        });
     }
 
     public TaskParameters getSimulationTaskParametersFromUser() {
