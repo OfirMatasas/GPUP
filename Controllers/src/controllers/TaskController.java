@@ -548,10 +548,14 @@ public class TaskController implements Initializable {
 
         addListenersForSliders();
         addListenersForTextFields();
+        addListenersForSelectedTargets();
 
         affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
+    }
 
+    private void addListenersForSelectedTargets() {
+        //Enable/Disable incremental button
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
@@ -559,6 +563,7 @@ public class TaskController implements Initializable {
             }
         });
 
+        //Change listview according to chosen targets
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
