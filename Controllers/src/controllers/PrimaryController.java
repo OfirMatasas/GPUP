@@ -124,14 +124,16 @@ public class PrimaryController {
     @FXML
     void enableAnimationsPressed(ActionEvent event) {
 
+
         FadeTransition fadeTransition = new FadeTransition();
         fadeTransition.setNode(PrimaryLogo);
-        fadeTransition.setDuration(Duration.millis(1000));
+        fadeTransition.setDuration(Duration.millis(2000));
         fadeTransition.setCycleCount(TranslateTransition.INDEFINITE);
         fadeTransition.setInterpolator(Interpolator.LINEAR);
         fadeTransition.setFromValue(1);
         fadeTransition.setToValue(0);
         fadeTransition.play();
+
 
     }
 
