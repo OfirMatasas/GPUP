@@ -47,6 +47,7 @@ public class TaskController implements Initializable {
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
     private TaskThread taskThread;
+    private GraphSummary graphSummary;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -267,8 +268,8 @@ public class TaskController implements Initializable {
         this.taskDetailsOnTargetTextArea.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
-        taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, new GraphSummary(graph, null),
-                currentRunTarget, executor, logTextArea);
+        taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
+                currentRunTarget, executor, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -460,6 +461,8 @@ public class TaskController implements Initializable {
 
     public void setGraph(Graph graph) {
         this.graph = graph;
+
+        this.graphSummary = new GraphSummary(graph, null);
         setAllTargetsList();
         setTaskTargetDetailsTable();
     }
@@ -481,7 +484,7 @@ public class TaskController implements Initializable {
             return;
         }
 
-        //Random time for each target`
+        //Random time for each target
         for(Target target : graph.getGraphTargets().values())
         {
             processingTime = taskParameters.getProcessingTime();

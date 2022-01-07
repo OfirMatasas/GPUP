@@ -180,36 +180,31 @@ public class PrimaryController {
         this.taskController.setGraph(this.graph);
     }
 
-    public void setColorsForNodes()
-    {
-        rootColors.add("aqua");
-        rootColors.add("aquamarine");
-        rootColors.add("blueviolet");
-        rootColors.add("brown1");
-        rootColors.add("teal");
-        middleColors.add("crimson");
-        middleColors.add("darkorchid");
-        middleColors.add("deeppink");
-        middleColors.add("forestgreen");
-        middleColors.add("olive");
-        leafColors.add("goldenrod1");
-        leafColors.add("gray46");
-        leafColors.add("greenyellow");
-        leafColors.add("hotpink");
-        leafColors.add("lightcoral");
-        independentColors.add("orangered");
-        independentColors.add("seagreen1");
-        independentColors.add("steelblue1");
-        independentColors.add("royalblue2");
-    }
+//    public void setColorsForNodes()
+//    {
+//        rootColors.add("aqua");
+//        rootColors.add("aquamarine");
+//        rootColors.add("blueviolet");
+//        rootColors.add("brown1");
+//        rootColors.add("teal");
+//        middleColors.add("crimson");
+//        middleColors.add("darkorchid");
+//        middleColors.add("deeppink");
+//        middleColors.add("forestgreen");
+//        middleColors.add("olive");
+//        leafColors.add("goldenrod1");
+//        leafColors.add("gray46");
+//        leafColors.add("greenyellow");
+//        leafColors.add("hotpink");
+//        leafColors.add("lightcoral");
+//        independentColors.add("orangered");
+//        independentColors.add("seagreen1");
+//        independentColors.add("steelblue1");
+//        independentColors.add("royalblue2");
+//    }
     public void convertXMLToDot() {
 
-        setColorsForNodes();
-//        Random rnd = new Random();
-//        int rootRandomColor = rnd.nextInt(rootColors.size());
-//        int middleRandomColor = rnd.nextInt(middleColors.size());
-//        int leafRandomColor = rnd.nextInt(leafColors.size());
-//        int independentColor = rnd.nextInt(independentColors.size());
+//        setColorsForNodes();
         String currentColor;
         Target.TargetPosition targetPosition;
         String directoryPath = graphSummary.getWorkingDirectory();

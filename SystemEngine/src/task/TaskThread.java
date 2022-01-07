@@ -31,6 +31,7 @@ public class TaskThread extends Thread {
     private final Set<String> targetsSet;
     private final ExecutorService executor;
     private final TextArea log;
+    private final Boolean incremental;
 
     //Local use
     private final TaskOutput taskOutput;
@@ -40,7 +41,7 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, TextArea log) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
@@ -52,6 +53,7 @@ public class TaskThread extends Thread {
         this.log = log;
         this.paused = false;
         this.stopped = false;
+        this.incremental = incremental;
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
@@ -61,6 +63,12 @@ public class TaskThread extends Thread {
         String currTargetName;
         Target currTarget;
         taskPreparations();
+
+        if(targetsList.isEmpty())
+        {
+            Platform.runLater(() -> ShowPopUp("There are no targets available for the current task!", "Lack of available targets", Alert.AlertType.ERROR));
+            return;
+        }
 
         //Starting task on graph
         printStartOfTaskOnGraph(graph.getGraphName());
@@ -173,12 +181,16 @@ public class TaskThread extends Thread {
         TargetSummary currentTargetSummary;
         Target currentTarget;
         Boolean targetFrozen;
+        TargetSummary.ResultStatus resultStatus;
 
         //Preparing the graph summary
         for(Target target : graph.getGraphTargets().values())
         {
             currentTargetSummary = graphSummary.getTargetsSummaryMap().get(target.getTargetName());
-            currentTargetSummary.setRunning(targetsSet.contains(target.getTargetName()));
+            resultStatus = currentTargetSummary.getResultStatus();
+            currentTargetSummary.setRunning(targetsSet.contains(target.getTargetName())
+                    && (!incremental || resultStatus.equals(TargetSummary.ResultStatus.Failure)));
+            currentTargetSummary.setSkipped(false);
         }
         graphSummary.MakeNewClosedSerialSets();
         graphSummary.setSkippedTargetsToZero();
@@ -190,13 +202,26 @@ public class TaskThread extends Thread {
             targetFrozen = false;
             currentTarget = graph.getTarget(currentTargetName);
             currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
+            resultStatus = currentTargetSummary.getResultStatus();
+
+            //Skipping the targets who finished successfully on the last run
+            if(incremental && !resultStatus.equals(TargetSummary.ResultStatus.Failure) && !currentTargetSummary.isSkipped())
+                continue;
+
             currentTargetSummary.setResultStatus(TargetSummary.ResultStatus.Undefined);
 
-            for(Target dependedTarget : currentTarget.getDependsOnTargets())
+            for(String dependedTarget : currentTarget.getAllDependsOnTargets())
             {
                 //Check if the current target has depends-on-targets in the current run (frozen)
-                if(targetsSet.contains(dependedTarget.getTargetName()))
+                if(targetsSet.contains(dependedTarget))
                 {
+                    //Checking if the depended target will run in the current task (when incrementing)
+                    resultStatus = graphSummary.getTargetsSummaryMap().get(dependedTarget).getResultStatus();
+                    if(incremental && (resultStatus.equals(TargetSummary.ResultStatus.Success)
+                            || resultStatus.equals(TargetSummary.ResultStatus.Warning)))
+                    {
+                        continue;
+                    }
                     targetFrozen = true;
                     targetsList.addLast(currentTargetName);
                     currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Frozen);
