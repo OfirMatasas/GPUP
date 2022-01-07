@@ -8,9 +8,9 @@
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.Pane?>
 
-<ScrollPane fx:id="scrollPane" fitToWidth="true" fitToHeight="true" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
+<ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
    <content>
-      <Pane fx:id="pane" prefHeight="468.0" prefWidth="1093.0">
+      <Pane fx:id="pane" prefHeight="1280.0" prefWidth="1093.0">
          <children>
             <Label fx:id="ShowConnectionLabel" layoutX="64.0" layoutY="62.0" prefHeight="17.0" prefWidth="200.0" text="Show Connection Between 2 targets" />
             <ChoiceBox fx:id="OriginTargetChoiceBox" layoutX="145.0" layoutY="116.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OriginTargetChosen" prefHeight="25.0" prefWidth="150.0" />
@@ -22,16 +22,16 @@
             <Label fx:id="CheckCirclesLabel" layoutX="536.0" layoutY="62.0" prefHeight="17.0" prefWidth="80.0" text="Check Circles" />
             <ChoiceBox fx:id="CircleTargetChoiceBox" layoutX="541.0" layoutY="116.0" maxWidth="150.0" minWidth="100.0" onAction="#CheckIfTargetCircled" prefHeight="25.0" prefWidth="200.0" />
             <Label fx:id="ChooseCheckCircleLabel" layoutX="417.0" layoutY="120.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
-            <ChoiceBox fx:id="WhatIfChoiceBox" onAction="#WhatIfTargetSelected" layoutX="943.0" layoutY="116.0" maxWidth="150.0" minWidth="100.0" prefHeight="25.0" prefWidth="200.0" />
+            <ChoiceBox fx:id="WhatIfChoiceBox" layoutX="943.0" layoutY="116.0" maxWidth="150.0" minWidth="100.0" onAction="#WhatIfTargetSelected" prefHeight="25.0" prefWidth="200.0" />
             <Label fx:id="WhatIFLabel" layoutX="973.0" layoutY="65.0" prefHeight="17.0" prefWidth="80.0" text="What if" />
             <Label fx:id="ChooseWhatIfTarget" layoutX="834.0" layoutY="120.0" prefHeight="17.0" prefWidth="97.0" text="Choose a target " />
             <ListView fx:id="WhatIfListView" layoutX="943.0" layoutY="268.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
-            <RadioButton fx:id="DependsOnRadioButton" onAction="#WhatIfRadioButtonSelected" layoutX="882.0" layoutY="182.0" mnemonicParsing="false" selected="true" text="Depends on">
+            <RadioButton fx:id="DependsOnRadioButton" layoutX="882.0" layoutY="182.0" mnemonicParsing="false" onAction="#WhatIfRadioButtonSelected" selected="true" text="Depends on">
                <toggleGroup>
                   <ToggleGroup fx:id="whatIfValue" />
                </toggleGroup>
             </RadioButton>
-            <RadioButton fx:id="RequiredForRadioButton" onAction="#WhatIfRadioButtonSelected" layoutX="994.0" layoutY="182.0" mnemonicParsing="false" text="Required for" toggleGroup="$whatIfValue" />
+            <RadioButton fx:id="RequiredForRadioButton" layoutX="994.0" layoutY="182.0" mnemonicParsing="false" onAction="#WhatIfRadioButtonSelected" text="Required for" toggleGroup="$whatIfValue" />
             <ListView fx:id="showConnectionBetweenListView" layoutX="145.0" layoutY="268.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
             <ListView fx:id="CirclesListView" layoutX="541.0" layoutY="268.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
          </children>

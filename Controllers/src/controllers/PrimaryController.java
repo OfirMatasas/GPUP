@@ -1,9 +1,7 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -54,6 +52,9 @@ public class PrimaryController {
 
     @FXML
     private BorderPane mainBorderPane;
+
+    @FXML
+    private ImageView fireWorksImageView;
 
     @FXML
     private HBox HboxForLogo;
@@ -121,21 +122,29 @@ public class PrimaryController {
 
     }
 
-    @FXML
-    void enableAnimationsPressed(ActionEvent event) {
+   @FXML
+   void enableAnimationsPressed(ActionEvent event)
+   {
+       FadeTransition fadeTransition = new FadeTransition();
+       ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
+
+       fadeTransition.setNode(PrimaryLogo);
+       fadeTransition.setDuration(Duration.millis(2000));
+       fadeTransition.setCycleCount(TranslateTransition.INDEFINITE);
+       fadeTransition.setInterpolator(Interpolator.LINEAR);
+       fadeTransition.setFromValue(1);
+       fadeTransition.setToValue(0);
 
 
-        FadeTransition fadeTransition = new FadeTransition();
-        fadeTransition.setNode(PrimaryLogo);
-        fadeTransition.setDuration(Duration.millis(2000));
-        fadeTransition.setCycleCount(TranslateTransition.INDEFINITE);
-        fadeTransition.setInterpolator(Interpolator.LINEAR);
-        fadeTransition.setFromValue(1);
-        fadeTransition.setToValue(0);
-        fadeTransition.play();
+       this.fireWorksImageView.setVisible(true);
+       scaleTransition.setCycleCount(100);
+       scaleTransition.setToX(-1);
+       scaleTransition.setToY(-1);
 
+       fadeTransition.play();
+       scaleTransition.play();
+   }
 
-    }
 
     @FXML
     void loadXMLButtonPressed(ActionEvent event)
@@ -387,6 +396,8 @@ public class PrimaryController {
         alert.setHeaderText(null);
         alert.setContentText("The graph " + graph.getGraphName() + " loaded successfully!");
         alert.showAndWait();
+
+
     }
 
     private void ErrorPopup(Exception ex, String title)
