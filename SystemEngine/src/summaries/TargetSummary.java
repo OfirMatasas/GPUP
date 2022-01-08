@@ -220,8 +220,8 @@ public class TargetSummary implements Serializable
 
     public void startFinishingTime()
     {
-        Instant processingTimeEnded = Instant.now();
-        processingTime = Duration.between(ProcessingTimeStarted,processingTimeEnded);
+        //Instant processingTimeEnded = Instant.now();
+        //processingTime = Duration.between(ProcessingTimeStarted,processingTimeEnded);
     }
 
     @Override

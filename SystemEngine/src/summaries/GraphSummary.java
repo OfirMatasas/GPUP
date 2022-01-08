@@ -180,7 +180,7 @@ public class GraphSummary implements Serializable {
             targetSummary.startProcessingTime();
 
        else if(runtimeStatus.equals(TargetSummary.RuntimeStatus.Finished))
-           targetSummary.startFinishingTime();
+            targetSummary.startFinishingTime();
 
         removeClosedSerialSets(target);
 

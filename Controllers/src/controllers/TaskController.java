@@ -718,6 +718,7 @@ public class TaskController implements Initializable {
     {
         String detailMsg = null;
         String currentTargetName = taskTargetInformation.getTargetName();
+        TargetSummary currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
         if(currentTargetName!=null) {
             Target currentTarget = graph.getTarget(currentTargetName);
              detailMsg = "Target : " + currentTargetName + "\n"
@@ -728,32 +729,49 @@ public class TaskController implements Initializable {
             else
                 detailMsg += "Serial Sets : " + currentTarget.getSerialSets() + "\n";
 
-            switch (graphSummary.getTargetsSummaryMap().get(currentTargetName).getRuntimeStatus())
+            switch (currentTargetSummary.getRuntimeStatus())
             {
                 case Frozen:
                 {
                     detailMsg += "List of dependencies that the target " + currentTargetName + " is waiting for to finish : ";
-                    detailMsg += printTargetWaitingForTargets(currentTargetName);
+                    if(printTargetWaitingForTargets(currentTargetName).isEmpty())
+                        detailMsg += "none.";
+                    else
+                        detailMsg += printTargetWaitingForTargets(currentTargetName);
                     break;
                 }
                 case Skipped:
                 {
-
+                    detailMsg += "Target's runtime status : Skipped \n";
+                    detailMsg += "List of dependencies that their process failed are : ";
+                    if(printProcessedFailedTargets(currentTargetName).isEmpty())
+                        detailMsg += "none.";
+                    else
+                        detailMsg += printProcessedFailedTargets(currentTargetName);
                     break;
                 }
                 case Waiting:
                 {
-                    detailMsg += "The target " + currentTargetName + " is waiting for : " + graphSummary.getTargetsSummaryMap().get(currentTargetName).currentWaitingTime().toMillis() + " M\\S";
+                    detailMsg += "The target " + currentTargetName + " is waiting for : " + currentTargetSummary.currentWaitingTime().toMillis() + " M\\S";
                     break;
                 }
                 case InProcess:
                 {
-                    detailMsg += "The target " + currentTargetName + " is in process for : " + graphSummary.getTargetsSummaryMap().get(currentTargetName).currentProcessingTime().toMillis() + " M\\S";
+                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " M\\S";
                     break;
                 }
                 case Finished:
                 {
+                    Duration time = currentTargetSummary.getTime();
+                    detailMsg += "Target's result status : ";
 
+                    if(currentTargetSummary.isSkipped())
+                        detailMsg += "Skipped\n";
+                    else
+                        detailMsg += currentTargetSummary.getResultStatus() + "\n";
+
+                    if(!currentTargetSummary.isSkipped())
+                        detailMsg += String.format("Target's running time : %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
                     break;
                 }
 
@@ -778,5 +796,22 @@ public class TaskController implements Initializable {
        }
        return waitingForTargets;
     }
+
+    public String printProcessedFailedTargets(String currentTargetName)
+    {
+        String processedFailedTargets = "";
+        for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+        {
+            if(!lastRunTargets.contains(dependedOnTarget))
+                continue;
+            else
+            {
+                if(graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
+                    processedFailedTargets = processedFailedTargets + dependedOnTarget + " ";
+            }
+        }
+        return processedFailedTargets;
+    }
+
 
 }

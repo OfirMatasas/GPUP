@@ -118,7 +118,7 @@
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                               </TableView>
-                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" layoutX="43.0" layoutY="291.0" prefHeight="200.0" prefWidth="471.0" style="-fx-background-color: black;" />
+                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="43.0" layoutY="291.0" prefHeight="141.0" prefWidth="471.0" style="-fx-background-color: black;" />
                            </children>
                         </Pane>
                      </content>
