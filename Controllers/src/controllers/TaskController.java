@@ -86,6 +86,15 @@ public class TaskController implements Initializable {
     private HBox toolBarHBox;
 
     @FXML
+    private ProgressBar progressBar;
+
+    @FXML
+    private Label targetsFinishedLabel;
+
+    @FXML
+    private Label progressBarLabel;
+
+    @FXML
     private Button addSelectedButton;
 
     @FXML
@@ -221,7 +230,12 @@ public class TaskController implements Initializable {
     private TextArea taskDetailsOnTargetTextArea;
 
     @FXML
-    void removeSelectedRowFromTable(ActionEvent event) {
+    void removeSelectedRowFromTable(ActionEvent event)
+    {
+        if(taskTargetDetailsTableView.getItems().isEmpty())
+            ShowPopup("The table is already empty","Error", Alert.AlertType.ERROR);
+        else
+            this.taskTargetDetailsTableView.getItems().removeAll(taskTargetDetailsTableView.getSelectionModel().getSelectedItem());
 
     }
 
@@ -312,10 +326,13 @@ public class TaskController implements Initializable {
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
+        this.progressBar.setDisable(false);
+        this.progressBarLabel.setDisable(false);
+        this.targetsFinishedLabel.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, executor, logTextArea, incrementalRadioButton.isSelected(), updateThread);
+                currentRunTargets, executor, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -330,7 +347,6 @@ public class TaskController implements Initializable {
         }
 
         lastRunTargets.addAll(currentRunTargets);
-
     }
 
     private Boolean checkForValidRun()
@@ -531,43 +547,6 @@ public class TaskController implements Initializable {
         }
     }
 
-//    private TaskParameters getTaskParametersFromUser()
-//    {
-////        Scanner scanner = new Scanner(System.in);
-//        Duration processingTime = null;
-//        long timeInMS = -1;
-//        Boolean isRandom = true;
-//        Double successRate = -1.0, successWithWarnings = -1.0;
-//        TaskParameters taskParameters = new TaskParameters();
-////
-////        System.out.print("Enter the processing time (in m/s) for each task: ");
-////        timeInMS = scanner.nextLong();
-////        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-////
-////        System.out.print("Choose if the processing time is limited by the value you just entered, or permanent (0 - limited, 1 - permanent): ");
-////        int temp = scanner.nextInt();
-////        isRandom = temp == 0;
-////
-////        System.out.print("Enter the success rate of the task (value between 0 and 1): ");
-////        successRate = scanner.nextDouble();
-////
-////        System.out.print("If the task ended successfully, what is the chance that it ended with warnings? (value between 0 and 1): ");
-////        successWithWarnings = scanner.nextDouble();
-//
-//        timeInMS = 5000;
-//        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-//        isRandom = true;
-//        successRate = 0.7;
-//        successWithWarnings = 0.3;
-//
-//        taskParameters.setProcessingTime(processingTime);
-//        taskParameters.setRandom(isRandom);
-//        taskParameters.setSuccessRate(successRate);
-//        taskParameters.setSuccessWithWarnings(successWithWarnings);
-//
-//        return taskParameters;
-//    }
-
     private void setAllTargetsList() {
         int i = 0;
         ObservableList<String> allTargetsList = FXCollections.observableArrayList();
@@ -594,6 +573,9 @@ public class TaskController implements Initializable {
         initializeGraphDetails();
 
     }
+
+
+
 
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental button
@@ -697,20 +679,6 @@ public class TaskController implements Initializable {
         this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("resultStatus"));
     }
 
-//    private void setTaskTargetDetailsTable() {
-//        int i = 1;
-//        TaskTargetInformation taskTargetInformation;
-//        for (Target currentTarget : graph.getGraphTargets().values())
-//        {
-//              taskTargetInformation = new TaskTargetInformation(i,currentTarget.getTargetName(),
-//                      currentTarget.getTargetPosition().toString(),graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).getRuntimeStatus().toString(),null);
-//              taskTargetDetailsList.add(taskTargetInformation);
-//            ++i;
-//        }
-//        taskTargetDetailsTableView.setItems(taskTargetDetailsList);
-//        updateThread.start();
-//    }
-
     private void setTaskTargetDetailsTable()
     {
         int i = 1;
@@ -762,6 +730,7 @@ public class TaskController implements Initializable {
 
     public void getSelectedRow(MouseEvent mouseEvent)
     {
+
         TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
         showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
     }
@@ -863,5 +832,11 @@ public class TaskController implements Initializable {
             }
         }
         return processedFailedTargets;
+    }
+
+
+    public void updateProgressBar()
+    {
+
     }
 }
