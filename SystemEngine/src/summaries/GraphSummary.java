@@ -2,7 +2,6 @@ package summaries;
 
 import target.Graph;
 import target.Target;
-
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,6 +18,8 @@ public class GraphSummary implements Serializable {
     private Integer skippedTargets;
     private final String workingDirectory;
     private Set<String> closedSerialSets;
+    private Instant timePaused;
+    private Duration totalPausedTime;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public GraphSummary(Graph graph, String workingDirectory) {
@@ -26,6 +27,8 @@ public class GraphSummary implements Serializable {
         this.firstRun = true;
         this.graphName = graph.getGraphName();
         this.workingDirectory = workingDirectory;
+        this.totalPausedTime = Duration.ZERO;
+        this.timePaused = null;
 
         TargetSummary currentTargetSummary;
         for(Target currentTarget : graph.getGraphTargets().values())
@@ -44,38 +47,24 @@ public class GraphSummary implements Serializable {
         return this.firstRun;
     }
 
-    public String getGraphName() {
-        return this.graphName;
-    }
+    public String getGraphName() { return this.graphName; }
 
-    public Map<TargetSummary.ResultStatus, Integer> getAllResultStatus() {
-        return this.allResultStatus;
-    }
+    public Map<TargetSummary.ResultStatus, Integer> getAllResultStatus() { return this.allResultStatus; }
 
-    public Duration getTime() {
-        return this.totalTime;
-    }
+    public Duration getTime() { return this.totalTime; }
 
-    public Map<String, TargetSummary> getTargetsSummaryMap() {
-        return this.targetsSummaryMap;
-    }
+    public Map<String, TargetSummary> getTargetsSummaryMap() { return this.targetsSummaryMap; }
 
     public Integer getSkippedTargets() { return this.skippedTargets; }
 
     public String getWorkingDirectory() { return workingDirectory; }
 
-    public void setSkippedTargetsToZero() {
-        this.skippedTargets = 0;
-    }
+    public void setSkippedTargetsToZero() { this.skippedTargets = 0; }
 
-    public Set<String> getClosedSerialSets() {
-        return closedSerialSets;
-    }
+    public Set<String> getClosedSerialSets() { return closedSerialSets; }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
-    public void setFirstRun(Boolean firstRun) {
-        this.firstRun = firstRun;
-    }
+    public void setFirstRun(Boolean firstRun) { this.firstRun = firstRun; }
 
     public void setRunningTargets(Target currentTarget, Boolean runningOrNot)
     {
@@ -119,7 +108,24 @@ public class GraphSummary implements Serializable {
     public void stopTheClock()
     {
         Instant timeEnded = Instant.now();
-        this.totalTime = Duration.between(this.timeStarted, timeEnded);
+
+        if(timePaused != null)
+            continueTheClock();
+
+        this.totalTime = Duration.between(this.timeStarted, timeEnded).minus(this.totalPausedTime);
+    }
+
+    public void pauseTheClock()
+    {
+        timePaused = Instant.now();
+    }
+
+    public void continueTheClock()
+    {
+        Instant timeEnded = Instant.now();
+
+        this.totalPausedTime = Duration.between(this.timePaused, timeEnded).plus(totalPausedTime);
+        timePaused = null;
     }
 
     public void calculateResults()

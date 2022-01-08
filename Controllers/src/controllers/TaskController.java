@@ -23,12 +23,11 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
-import java.sql.SQLOutput;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -53,6 +52,8 @@ public class TaskController implements Initializable {
     private TaskThread taskThread;
     private Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
     private GraphSummary graphSummary;
+    private ObservableList<String> allTargetsList;
+    private TaskThreadWatcher taskThreadWatcher;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -60,10 +61,65 @@ public class TaskController implements Initializable {
         public void run()
         {
             disableTaskOptions(true);
+            PauseButton.setDisable(false);
+            stopButton.setDisable(false);
 
-            while(taskThread.isAlive()) {}
+            while(taskThread.isAlive())
+            {
+                if(taskThread.getStatusChanged())
+                    taskPausedOrStopped();
+            }
 
             disableTaskOptions(false);
+            PauseButton.setDisable(true);
+            stopButton.setDisable(true);
+            Platform.runLater(() -> PauseButton.setText("Pause"));
+        }
+
+        public void taskPausedOrStopped()
+        {
+            if(taskThread.getStopped()) //Stopped
+            {
+                logTextArea.appendText("\nWaiting for the task to stop...\n\n");
+
+                while(!executor.isTerminated()) {}
+
+                Platform.runLater(() -> logTextArea.appendText("\nTask stopped!\n\n"));
+            }
+            else //Paused / Resumed
+            {
+                String firstOutput, secondOutput = "", newButtonText;
+
+                if(taskThread.getPaused()) //Paused
+                {
+                    firstOutput = "\nWaiting for the task to pause...\n\n";
+                    newButtonText = "Resume";
+                    secondOutput = "\nTask paused!\n\n";
+                }
+                else //Resumed
+                {
+                    firstOutput = "\nTask resumed!\n\n";
+                    newButtonText = "Pause";
+                }
+
+                PauseButton.setDisable(true);
+                stopButton.setDisable(true);
+                logTextArea.appendText(firstOutput);
+
+                if(taskThread.getPaused())
+                    while(!executor.isTerminated()) {}
+
+                String finalSecondOutput = secondOutput;
+                Platform.runLater(() ->
+                        {
+                            logTextArea.appendText(finalSecondOutput);
+                            PauseButton.setText(newButtonText);
+                        });
+                PauseButton.setDisable(false);
+                stopButton.setDisable(false);
+            }
+
+            taskThread.resetStatusChanged();
         }
     }
 
@@ -242,8 +298,9 @@ public class TaskController implements Initializable {
     void deselectAllPressed(ActionEvent event) {
         currentSelectedTargets.clear();
 
-        deselectAllButton.setDisable(true);
-        selectAllButton.setDisable(false);
+
+//        deselectAllButton.setDisable(true);
+//        selectAllButton.setDisable(false);
     }
 
     @FXML
@@ -256,7 +313,12 @@ public class TaskController implements Initializable {
     void logViewTabPressed(Event event) {}
 
     @FXML
-    void pausePressed(ActionEvent event) {}
+    void pausePressed(ActionEvent event) {
+        if(!taskThread.getPaused()) //Pausing the task
+            taskThread.pauseTheTask();
+        else //Resuming the task
+            taskThread.continueTheTask();
+    }
 
     @FXML
     void permanentOptionPressed(ActionEvent event) {}
@@ -267,14 +329,14 @@ public class TaskController implements Initializable {
             return;
 
         Set<String> currentRunTarget = new HashSet<>(currentSelectedTargetListView.getItems());
-        TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
+        this.taskThreadWatcher = new TaskThreadWatcher();
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTarget, executor, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
+                currentRunTarget, this.executor, parallelThreads, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
 
         taskThreadWatcher.setDaemon(true);
 
@@ -288,7 +350,6 @@ public class TaskController implements Initializable {
         }
 
         lastRunTargets.addAll(currentRunTarget);
-
     }
 
     private Boolean checkForValidRun()
@@ -317,14 +378,17 @@ public class TaskController implements Initializable {
 
     @FXML
     void selectAllPressed(ActionEvent event) {
+        currentSelectedTargets.clear();
         graph.getGraphTargets().values().forEach(targetName -> currentSelectedTargets.add(targetName.getTargetName()));
 
-        selectAllButton.setDisable(true);
-        deselectAllButton.setDisable(false);
+//        selectAllButton.setDisable(true);
+//        deselectAllButton.setDisable(false);
     }
 
     @FXML
-    void stopPressed(ActionEvent event) {}
+    void stopPressed(ActionEvent event) {
+        taskThread.stopTheTask();
+    }
 
     @FXML
     void tableViewTabPressed(Event event) {}
@@ -339,7 +403,7 @@ public class TaskController implements Initializable {
         if(affectedTargets.getValue() != null)
             affectedTargetsPressed(event);
 
-        deselectAllButton.setDisable(false);
+//        deselectAllButton.setDisable(false);
     }
 
     @FXML
@@ -541,7 +605,7 @@ public class TaskController implements Initializable {
 
     private void setAllTargetsList() {
         int i = 0;
-        ObservableList<String> allTargetsList = FXCollections.observableArrayList();
+        allTargetsList = FXCollections.observableArrayList();
 
         for(Target currentTargetName : graph.getGraphTargets().values())
             allTargetsList.add(i++, currentTargetName.getTargetName());
@@ -567,28 +631,42 @@ public class TaskController implements Initializable {
     }
 
     private void addListenersForSelectedTargets() {
-        //Enable/Disable incremental button
+        //Enable/Disable incremental, selectAll, deselectAll button
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
                 incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
-            }
-        });
 
-        //Change listview according to chosen targets
-        currentSelectedTargets.addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(Change<? extends String> c) {
+                boolean containAll = currentSelectedTargets.containsAll(allTargetsList);
+                selectAllButton.setDisable(containAll);
+                deselectAllButton.setDisable(!containAll);
+
                 while (c.next()) {
                     for (String remitem : c.getRemoved()) {
                         currentSelectedTargetListView.getItems().remove(remitem);
                     }
                     for (String additem : c.getAddedSubList()) {
                         currentSelectedTargetListView.getItems().add(additem);
+
                     }
                 }
             }
         });
+
+        //Change listview according to chosen targets
+//        currentSelectedTargets.addListener(new ListChangeListener<String>() {
+//            @Override
+//            public void onChanged(Change<? extends String> c) {
+//                while (c.next()) {
+//                    for (String remitem : c.getRemoved()) {
+//                        currentSelectedTargetListView.getItems().remove(remitem);
+//                    }
+//                    for (String additem : c.getAddedSubList()) {
+//                        currentSelectedTargetListView.getItems().add(additem);
+//                    }
+//                }
+//            }
+//        });
     }
 
     public TaskParameters getSimulationTaskParametersFromUser() {
@@ -628,14 +706,7 @@ public class TaskController implements Initializable {
         this.taskParameters = getSimulationTaskParametersFromUser();
 
         if(this.taskParameters.getProcessingTime()!=null) // Checking only on the processing time, because other parameters are already initialized
-           setToolBarButtonsEnable();
-    }
-
-    private void setToolBarButtonsEnable()
-    {
-        this.runButton.setDisable(false);
-        this.PauseButton.setDisable(false);
-        this.stopButton.setDisable(false);
+            this.runButton.setDisable(false);
     }
 
     private void ShowPopup(String message, String title, Alert.AlertType alertType) {
