@@ -12,7 +12,7 @@ public class TargetSummary implements Serializable
 {
     private Boolean isRoot;
     //--------------------------------------------------Enums-------------------------------------------------------//
-    public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished }
+    public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished , Undefined }
     public enum ResultStatus { Success, Warning, Failure, Undefined }
 
     //--------------------------------------------------Members-----------------------------------------------------//

@@ -97,6 +97,7 @@
                </HBox>
                <Button fx:id="selectAllButton" disable="true" layoutX="223.0" layoutY="279.0" mnemonicParsing="false" onAction="#selectAllPressed" text="Select All" />
                <Button fx:id="deselectAllButton" disable="true" layoutX="223.0" layoutY="309.0" mnemonicParsing="false" onAction="#deselectAllPressed" text="Deselect All" />
+               <Button fx:id="addSelectedButton" disable="true" layoutX="223.0" layoutY="346.0" mnemonicParsing="false" onAction="#addSelectedTargetsToTable" prefHeight="53.0" prefWidth="79.0" text="Add &#10;Selected" textAlignment="CENTER" />
              </Pane>
          </left>
          <center>
@@ -119,6 +120,8 @@
                                  </columnResizePolicy>
                               </TableView>
                               <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="43.0" layoutY="291.0" prefHeight="141.0" prefWidth="471.0" style="-fx-background-color: black;" />
+                              <Button fx:id="removeSelectedButton" disable="true" layoutX="522.0" layoutY="132.0" mnemonicParsing="false" onAction="#removeSelectedRowFromTable" text="Remove Selected" />
+                              <Button fx:id="clearTableButton" layoutX="522.0" layoutY="242.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
                            </children>
                         </Pane>
                      </content>

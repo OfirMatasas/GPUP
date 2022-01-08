@@ -116,7 +116,6 @@ public class TaskThread extends Thread {
         outputGraphSummary(graphSummary);
         Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
 //        taskOutput.outputGraphSummary();
-        this.inEnd.run();
     }
 
     public void printStartOfTaskOnGraph(String graphName) {

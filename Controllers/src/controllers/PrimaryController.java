@@ -130,10 +130,10 @@ public class PrimaryController {
 
        fadeTransition.setNode(PrimaryLogo);
        fadeTransition.setDuration(Duration.millis(2000));
-       fadeTransition.setCycleCount(TranslateTransition.INDEFINITE);
+       fadeTransition.setCycleCount(1);
        fadeTransition.setInterpolator(Interpolator.LINEAR);
-       fadeTransition.setFromValue(1);
-       fadeTransition.setToValue(0);
+       fadeTransition.setFromValue(0);
+       fadeTransition.setToValue(1);
 
 
        this.fireWorksImageView.setVisible(true);
