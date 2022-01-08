@@ -14,6 +14,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -130,6 +132,9 @@ public class TaskController implements Initializable {
     private ToolBar toolBar;
 
     @FXML
+    private ComboBox<String> TaskTargetSelection;
+
+    @FXML
     private HBox toolBarHBox;
 
     @FXML
@@ -182,6 +187,9 @@ public class TaskController implements Initializable {
 
     @FXML
     private TableColumn<TaskTargetInformation, String> currentRuntimeStatusColumn;
+
+    @FXML
+    private TableColumn<TaskTargetInformation, String> resultStatusColumn;
 
     @FXML
     private Tab graphViewTabPane;
@@ -256,9 +264,9 @@ public class TaskController implements Initializable {
     private TextArea taskDetailsOnTargetTextArea;
 
     @FXML
-    public void initialize() {
+    public void initialize()
+    {
         initializeGraphDetails();
-
     }
 
     @FXML
@@ -333,6 +341,7 @@ public class TaskController implements Initializable {
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
+        this.TaskTargetSelection.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
@@ -507,19 +516,6 @@ public class TaskController implements Initializable {
         this.incrementalRadioButton.setDisable(flag);
 
         setForSimulationTask(flag);
-
-//        this.processingTimeLabel.setDisable(flag);
-//        this.processingTimeTextField.setDisable(flag);
-//        this.limitedPermanentLabel.setDisable(flag);
-//        this.limitedRadioButton.setDisable(flag);
-//        this.permanentRadioButton.setDisable(flag);
-//        this.successRateLabel.setDisable(flag);
-//        this.successRateSlider.setDisable(flag);
-//        this.successRateText.setDisable(flag);
-//        this.successRateWithWarnings.setDisable(flag);
-//        this.successWithWarningRateText.setDisable(flag);
-//        this.successRateWithWarningsSlider.setDisable(flag);
-//        this.ApplyParametersButton.setDisable(flag);
     }
 
     public void setGraphImage(String fullFileName) throws FileNotFoundException {
@@ -652,21 +648,6 @@ public class TaskController implements Initializable {
                 }
             }
         });
-
-        //Change listview according to chosen targets
-//        currentSelectedTargets.addListener(new ListChangeListener<String>() {
-//            @Override
-//            public void onChanged(Change<? extends String> c) {
-//                while (c.next()) {
-//                    for (String remitem : c.getRemoved()) {
-//                        currentSelectedTargetListView.getItems().remove(remitem);
-//                    }
-//                    for (String additem : c.getAddedSubList()) {
-//                        currentSelectedTargetListView.getItems().add(additem);
-//                    }
-//                }
-//            }
-//        });
     }
 
     public TaskParameters getSimulationTaskParametersFromUser() {
@@ -734,6 +715,7 @@ public class TaskController implements Initializable {
         this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("targetName"));
         this.positionColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("position"));
         this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("currentRuntimeStatus"));
+        this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("resultStatus"));
     }
 
     private void setTaskTargetDetailsTable() {
@@ -742,7 +724,7 @@ public class TaskController implements Initializable {
         for (Target currentTarget : graph.getGraphTargets().values())
         {
               taskTargetInformation = new TaskTargetInformation(i,currentTarget.getTargetName(),
-                      currentTarget.getTargetPosition().toString(),graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).getRuntimeStatus().toString());
+                      currentTarget.getTargetPosition().toString(),graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).getRuntimeStatus().toString(),null);
               taskTargetDetailsList.add(taskTargetInformation);
             ++i;
         }
@@ -774,4 +756,31 @@ public class TaskController implements Initializable {
         }
     }
 
+
+    public void showDetailsOfSelectedTargetInTextArea()
+    {
+        String detailMsg = null;
+        String currentTargetName = this.TaskTargetSelection.getValue();
+        if(currentTargetName!=null) {
+            Target currentTarget = graph.getTarget(currentTargetName);
+             detailMsg = "Target : " + currentTarget + "\n"
+                    + "Position :" + currentTarget.getTargetPosition() + "\n";
+
+            if (currentTarget.getSerialSets().isEmpty())
+                detailMsg += "Serial Sets : None";
+            else
+                detailMsg += "Serial Sets : " + currentTarget.getSerialSets();
+
+            switch (graphSummary.getTargetsSummaryMap().get(currentTargetName).getRuntimeStatus()) {
+                case Frozen:
+
+            }
+        }
+        
+        this.taskDetailsOnTargetTextArea.setText(detailMsg);
+        
+        
+
+
+    }
 }
