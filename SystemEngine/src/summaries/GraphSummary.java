@@ -172,6 +172,16 @@ public class GraphSummary implements Serializable {
         TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
         targetSummary.setResultStatus(resultStatus);
         targetSummary.setRuntimeStatus(runtimeStatus);
+
+        if(runtimeStatus.equals(TargetSummary.RuntimeStatus.Waiting))
+            targetSummary.startWaitingTime();
+
+       else if(runtimeStatus.equals(TargetSummary.RuntimeStatus.InProcess))
+            targetSummary.startProcessingTime();
+
+       else if(runtimeStatus.equals(TargetSummary.RuntimeStatus.Finished))
+           targetSummary.startFinishingTime();
+
         removeClosedSerialSets(target);
 
         if(resultStatus.equals(TargetSummary.ResultStatus.Failure))
@@ -228,4 +238,7 @@ public class GraphSummary implements Serializable {
     {
         return Collections.disjoint(closedSerialSets, otherSerialSet);
     }
+
+
+
 }

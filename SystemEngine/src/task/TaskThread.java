@@ -227,14 +227,15 @@ public class TaskThread extends Thread {
                     }
                     targetFrozen = true;
                     targetsList.addLast(currentTargetName);
-                    currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Frozen);
+                    graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen);
+
                     break;
                 }
             }
             if(!targetFrozen)
             {
                 targetsList.addFirst(currentTargetName);
-                currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Waiting);
+                graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
             }
 
 //            currentTargetSummary.setOpenedTargetsToZero();

@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
+import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 import task.TaskParameters;
@@ -56,6 +57,8 @@ public class TaskController implements Initializable {
     private TaskThread taskThread;
     private Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
     private GraphSummary graphSummary;
+
+
 
     public class TaskThreadWatcher extends Thread
     {
@@ -275,16 +278,15 @@ public class TaskController implements Initializable {
         if(!checkForValidRun())
             return;
 
-        Set<String> currentRunTarget = new HashSet<>(currentSelectedTargetListView.getItems());
+        Set<String> currentRunTargets = new HashSet<>(currentSelectedTargetListView.getItems());
         TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
-        this.TaskTargetSelection.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTarget, executor, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
+                currentRunTargets, executor, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
 
         taskThreadWatcher.setDaemon(true);
 
@@ -297,7 +299,7 @@ public class TaskController implements Initializable {
             lastRunTargets.clear();
         }
 
-        lastRunTargets.addAll(currentRunTarget);
+        lastRunTargets.addAll(currentRunTargets);
 
     }
 
@@ -706,32 +708,75 @@ public class TaskController implements Initializable {
             Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
         }
     }
+    public void getSelectedRow(MouseEvent mouseEvent)
+    {
+        TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+        showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
+    }
 
-
-    public void showDetailsOfSelectedTargetInTextArea()
+    public void showDetailsOfSelectedTargetInTextArea(TaskTargetInformation taskTargetInformation)
     {
         String detailMsg = null;
-        String currentTargetName = this.TaskTargetSelection.getValue();
+        String currentTargetName = taskTargetInformation.getTargetName();
         if(currentTargetName!=null) {
             Target currentTarget = graph.getTarget(currentTargetName);
-             detailMsg = "Target : " + currentTarget + "\n"
-                    + "Position :" + currentTarget.getTargetPosition() + "\n";
+             detailMsg = "Target : " + currentTargetName + "\n"
+                    + "Position : " + currentTarget.getTargetPosition() + "\n";
 
             if (currentTarget.getSerialSets().isEmpty())
-                detailMsg += "Serial Sets : None";
+                detailMsg += "Serial Sets : None" + "\n";
             else
-                detailMsg += "Serial Sets : " + currentTarget.getSerialSets();
+                detailMsg += "Serial Sets : " + currentTarget.getSerialSets() + "\n";
 
-            switch (graphSummary.getTargetsSummaryMap().get(currentTargetName).getRuntimeStatus()) {
+            switch (graphSummary.getTargetsSummaryMap().get(currentTargetName).getRuntimeStatus())
+            {
                 case Frozen:
+                {
+                    detailMsg += "List of dependencies that the target " + currentTargetName + " is waiting for to finish : ";
+                    detailMsg += printTargetWaitingForTargets(currentTargetName);
+                    break;
+                }
+                case Skipped:
+                {
+
+                    break;
+                }
+                case Waiting:
+                {
+                    detailMsg += "The target " + currentTargetName + " is waiting for : " + graphSummary.getTargetsSummaryMap().get(currentTargetName).currentWaitingTime().toMillis() + " M\\S";
+                    break;
+                }
+                case InProcess:
+                {
+                    detailMsg += "The target " + currentTargetName + " is in process for : " + graphSummary.getTargetsSummaryMap().get(currentTargetName).currentProcessingTime().toMillis() + " M\\S";
+                    break;
+                }
+                case Finished:
+                {
+
+                    break;
+                }
 
             }
         }
-        
+
         this.taskDetailsOnTargetTextArea.setText(detailMsg);
-        
-        
-
-
     }
+
+    public String printTargetWaitingForTargets(String currentTargetName)
+    {
+        String waitingForTargets = "";
+       for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+       {
+            if(!lastRunTargets.contains(dependedOnTarget))
+                continue;
+            else
+            {
+                if(!graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
+                    waitingForTargets = waitingForTargets + dependedOnTarget + " ";
+            }
+       }
+       return waitingForTargets;
+    }
+
 }

@@ -106,7 +106,7 @@
                      <content>
                         <Pane prefHeight="656.0" prefWidth="669.0">
                            <children>
-                              <TableView fx:id="taskTargetDetailsTableView" layoutX="43.0" layoutY="47.0" prefHeight="220.0" prefWidth="470.0">
+                              <TableView fx:id="taskTargetDetailsTableView" layoutX="43.0" layoutY="47.0" onMouseClicked="#getSelectedRow" prefHeight="220.0" prefWidth="470.0">
                                 <columns>
                                   <TableColumn fx:id="numberColumn" prefWidth="22.0" text="#" />
                                   <TableColumn fx:id="targetNameColumn" prefWidth="85.0" text="Target Name" />
@@ -118,8 +118,7 @@
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                               </TableView>
-                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" layoutX="143.0" layoutY="281.0" prefHeight="200.0" prefWidth="432.0" style="-fx-background-color: black;" />
-                              <ComboBox fx:id="TaskTargetSelection" disable="true" layoutX="12.0" layoutY="370.0" onAction="#targetSelectionPressed" prefHeight="25.0" prefWidth="122.0" promptText="-Target-" />
+                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" layoutX="43.0" layoutY="291.0" prefHeight="200.0" prefWidth="471.0" style="-fx-background-color: black;" />
                            </children>
                         </Pane>
                      </content>
