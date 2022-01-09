@@ -9,6 +9,7 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -56,31 +57,34 @@
                  <BorderPane.margin>
                      <Insets />
                  </BorderPane.margin>
-                 <ComboBox fx:id="taskSelection" layoutX="28.0" layoutY="52.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
-                 <ComboBox fx:id="targetSelection" disable="true" layoutX="28.0" layoutY="103.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
-                 <ComboBox fx:id="affectedTargets" disable="true" layoutX="28.0" layoutY="158.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
-                 <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="28.0" layoutY="243.0" prefHeight="156.0" prefWidth="190.0" />
-                 <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="61.0" layoutY="217.0" text="Current Selected Targets" />
-                 <Label fx:id="processingTimeLabel" disable="true" layoutX="18.0" layoutY="470.0" text="Processing Time (m/s) : " />
-                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="20.0" layoutY="508.0" text="Limited/Permanent : " />
-                 <Label fx:id="successRateLabel" disable="true" layoutX="18.0" layoutY="540.0" text="Success Rate :" />
-                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="17.0" layoutY="569.0" text="Success Rate&#10;With Warnings : " />
-                 <HBox layoutX="131.0" layoutY="508.0">
+                 <ComboBox fx:id="taskSelection" layoutX="30.0" layoutY="14.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
+                 <ComboBox fx:id="targetSelection" disable="true" layoutX="30.0" layoutY="61.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
+                 <ComboBox fx:id="affectedTargets" disable="true" layoutX="30.0" layoutY="104.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
+                 <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="20.0" layoutY="166.0" prefHeight="156.0" prefWidth="190.0" />
+                 <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="50.0" layoutY="142.0" text="Current Selected Targets" />
+                 <Label fx:id="processingTimeLabel" disable="true" layoutX="10.0" layoutY="374.0" text="Processing Time (m/s) : " />
+                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="11.0" layoutY="412.0" text="Limited/Permanent : " />
+                 <Label fx:id="successRateLabel" disable="true" layoutX="12.0" layoutY="436.0" text="Success Rate :" />
+                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="11.0" layoutY="465.0" text="Success Rate&#10;With Warnings : " />
+                 <HBox layoutX="123.0" layoutY="412.0">
                      <fx:define>
                          <ToggleGroup fx:id="limitedOrPermanent" />
                      </fx:define>
                      <children>
-                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" selected="true" text="Limited" toggleGroup="$limitedOrPermanent" />
+                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" selected="true" text="Limited">
+                        <toggleGroup>
+                           <ToggleGroup fx:id="limitedOrPermanent" />
+                        </toggleGroup></RadioButton>
                          <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
                      </children>
                  </HBox>
-                  <Slider fx:id="successRateSlider" disable="true" layoutX="103.0" layoutY="542.0" max="1.0" showTickLabels="true" showTickMarks="true" />
-                 <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="103.0" layoutY="589.0" max="1.0" showTickLabels="true" showTickMarks="true" />
-                 <TextField fx:id="processingTimeTextField" disable="true" layoutX="149.0" layoutY="466.0" promptText="Time In M/S" />
-               <TextField fx:id="successWithWarningRateText" disable="true" layoutX="243.0" layoutY="584.0" prefHeight="25.0" prefWidth="45.0" />
-               <TextField fx:id="successRateText" disable="true" layoutX="243.0" layoutY="536.0" prefHeight="25.0" prefWidth="45.0" />
-               <Button fx:id="ApplyParametersButton" disable="true" layoutX="89.0" layoutY="624.0" mnemonicParsing="false" onAction="#ApplyParametersToTask" text="Apply Parameters" />
-               <HBox alignment="CENTER" layoutX="26.0" layoutY="408.0" prefHeight="40.0" prefWidth="207.0">
+                  <Slider fx:id="successRateSlider" disable="true" layoutX="97.0" layoutY="438.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                 <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="97.0" layoutY="485.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                 <TextField fx:id="processingTimeTextField" disable="true" layoutX="141.0" layoutY="370.0" promptText="Time In M/S" />
+               <TextField fx:id="successWithWarningRateText" disable="true" layoutX="237.0" layoutY="480.0" prefHeight="25.0" prefWidth="45.0" />
+               <TextField fx:id="successRateText" disable="true" layoutX="237.0" layoutY="432.0" prefHeight="25.0" prefWidth="45.0" />
+               <Button fx:id="ApplyParametersButton" disable="true" layoutX="69.0" layoutY="586.0" mnemonicParsing="false" onAction="#ApplyParametersToTask" text="Apply Parameters" />
+               <HBox alignment="CENTER" layoutX="20.0" layoutY="330.0" prefHeight="40.0" prefWidth="207.0">
                   <children>
                      <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" onAction="#fromScratchOptionPressed" selected="true" text="From Scratch">
                         <toggleGroup>
@@ -94,9 +98,11 @@
                      </RadioButton>
                   </children>
                </HBox>
-               <Button fx:id="selectAllButton" disable="true" layoutX="223.0" layoutY="279.0" mnemonicParsing="false" onAction="#selectAllPressed" text="Select All" />
-               <Button fx:id="deselectAllButton" disable="true" layoutX="223.0" layoutY="309.0" mnemonicParsing="false" onAction="#deselectAllPressed" text="Deselect All" />
-               <Button fx:id="addSelectedButton" disable="true" layoutX="223.0" layoutY="346.0" mnemonicParsing="false" onAction="#addSelectedTargetsToTable" prefHeight="53.0" prefWidth="79.0" text="Add &#10;Selected" textAlignment="CENTER" />
+               <Button fx:id="selectAllButton" disable="true" layoutX="214.0" layoutY="201.0" mnemonicParsing="false" onAction="#selectAllPressed" text="Select All" />
+               <Button fx:id="deselectAllButton" disable="true" layoutX="214.0" layoutY="231.0" mnemonicParsing="false" onAction="#deselectAllPressed" text="Deselect All" />
+               <Button fx:id="addSelectedButton" disable="true" layoutX="214.0" layoutY="269.0" mnemonicParsing="false" onAction="#addSelectedTargetsToTable" prefHeight="53.0" prefWidth="79.0" text="Add &#10;Selected" textAlignment="CENTER" />
+               <Spinner fx:id="threadsSpinner" disable="true" layoutX="120.0" layoutY="537.0" prefHeight="25.0" prefWidth="95.0" />
+               <Label fx:id="numberOfThreadToExecuteLabel" disable="true" layoutX="9.0" layoutY="532.0" text="Number Of Thread&#10; To Execute :&#10;" />
              </Pane>
          </left>
          <center>

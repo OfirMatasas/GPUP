@@ -181,6 +181,8 @@ public class TaskController implements Initializable {
     @FXML private TextField successRateText;
     @FXML private Button ApplyParametersButton;
     @FXML private TextArea taskDetailsOnTargetTextArea;
+    @FXML private Spinner<Integer> threadsSpinner;
+    @FXML private Label numberOfThreadToExecuteLabel;
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
@@ -434,6 +436,9 @@ public class TaskController implements Initializable {
         this.successRateText.setDisable(flag);
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
+
+        this.threadsSpinner.setDisable(flag);
+        this.numberOfThreadToExecuteLabel.setDisable(flag);
     }
 
     private void addListenersForTextFields() {
@@ -592,6 +597,11 @@ public class TaskController implements Initializable {
         initializeGraphDetails();
     }
 
+    private void setSpinnerNumericBounds()
+    {
+        this.threadsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,parallelThreads));
+    }
+
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental, selectAll, deselectAll button
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
@@ -644,6 +654,7 @@ public class TaskController implements Initializable {
             taskParameters.setRandom(isRandom);
             taskParameters.setSuccessRate(successRate);
             taskParameters.setSuccessWithWarnings(successWithWarnings);
+            parallelThreads = threadsSpinner.getValue();
         }
         catch(Exception ex)
         {
@@ -655,6 +666,7 @@ public class TaskController implements Initializable {
 
     public void setMaxParallelThreads(int parallelThreads) {
         this.maxParallelThreads = parallelThreads;
+        setSpinnerNumericBounds();
     }
 
     @FXML void ApplyParametersToTask(ActionEvent event) {
@@ -715,7 +727,6 @@ public class TaskController implements Initializable {
         {
             startTime = LocalTime.now();
             updateTable(itemsList, startTime, currTime);
-
         }
         updateTable(itemsList, startTime, currTime);
     }
