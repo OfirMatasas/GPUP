@@ -50,8 +50,6 @@ public class TaskController implements Initializable {
     private final String REQUIRED = "All required-for targets";
     private final String DEPENDED = "All depends-on targets";
     private final ObservableList<TaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
-    private Set<String> lastRunTargets = new HashSet<>();
-    private Boolean firstRun = true;
     private TaskThread taskThread;
     private Thread updateThread;
     private GraphSummary graphSummary;
@@ -220,7 +218,7 @@ public class TaskController implements Initializable {
     @FXML void addSelectedTargetsToTable(ActionEvent event)
     {
         setTaskTargetDetailsTable();
-        incrementalRadioButton.setDisable(true);
+        incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     private void enableTargetInfoTextArea(boolean flag) {
@@ -272,8 +270,17 @@ public class TaskController implements Initializable {
             currentSelectedTargets.add(targetSelection.getValue());
             currentSelectedTargets.addAll(affectedTargetsSet);
 
-            incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
+            incrementalRadioButton.setDisable(incrementalIsOptional());
         }
+    }
+
+    private boolean incrementalIsOptional() {
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+        {
+            if(curr.getResultStatus().equals("Undefined"))
+                return false;
+        }
+        return true;
     }
 
     @FXML private Label currentSelectedTargetLabel;
@@ -326,14 +333,6 @@ public class TaskController implements Initializable {
         createNewProgressBar();
         taskThreadWatcher.start();
         updateThread.start();
-
-        if(!this.firstRun)
-        {
-            firstRun = false;
-            lastRunTargets.clear();
-        }
-
-        lastRunTargets.addAll(currentRunTargets);
     }
 
     private void turnOnProgressBar() {
@@ -382,6 +381,9 @@ public class TaskController implements Initializable {
 
         if(taskParameters == null)
             errorMessage = "You have to apply the parameters for the task first!";
+
+        if(incrementalRadioButton.isSelected() && incrementalRadioButton.isDisabled())
+            errorMessage = "Incremental is not optional!\nChoose \"From scratch\" or select other targets";
 
         if(!errorMessage.equals(""))
         {
@@ -504,7 +506,6 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(flag);
 
         this.fromScratchRadioButton.setDisable(flag);
-
         this.selectAllButton.setDisable(flag);
     }
 
@@ -520,6 +521,7 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(flag);
         this.selectAllButton.setDisable(flag);
         this.deselectAllButton.setDisable(flag);
+        this.addSelectedButton.setDisable(flag);
 
         this.fromScratchRadioButton.setDisable(flag);
         this.incrementalRadioButton.setDisable(flag);
@@ -599,7 +601,7 @@ public class TaskController implements Initializable {
 
     private void setSpinnerNumericBounds()
     {
-        this.threadsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,parallelThreads));
+        this.threadsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,maxParallelThreads));
     }
 
     private void addListenersForSelectedTargets() {
@@ -621,6 +623,9 @@ public class TaskController implements Initializable {
                         addSelectedButton.setDisable(false);
                     }
                 }
+
+                if(currentSelectedTargets.isEmpty())
+                    addSelectedButton.setDisable(true);
             }
         });
     }
@@ -631,6 +636,8 @@ public class TaskController implements Initializable {
             @Override
             public void onChanged(Change<? extends TaskTargetInformation> c) {
                 removeSelectedButton.setDisable(c.getList().isEmpty());
+
+                incrementalRadioButton.setDisable(!incrementalIsOptional());
             }
         });
     }
@@ -654,7 +661,7 @@ public class TaskController implements Initializable {
             taskParameters.setRandom(isRandom);
             taskParameters.setSuccessRate(successRate);
             taskParameters.setSuccessWithWarnings(successWithWarnings);
-            parallelThreads = threadsSpinner.getValue();
+            maxParallelThreads = threadsSpinner.getValue();
         }
         catch(Exception ex)
         {
@@ -832,30 +839,32 @@ public class TaskController implements Initializable {
 
     public String printTargetWaitingForTargets(String currentTargetName)
     {
-        String waitingForTargets = "";
-       for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
-       {
-            if(!lastRunTargets.contains(dependedOnTarget))
-                continue;
-            else
+        String waitingForTargets = "", dependedOnTarget;
+        Set<String> dependedTargets = graph.getTarget(currentTargetName).getAllDependsOnTargets();
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+        {
+            dependedOnTarget = curr.getTargetName();
+            if(dependedTargets.contains(dependedOnTarget))
             {
                 if(!graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
                     waitingForTargets = waitingForTargets + dependedOnTarget + " ";
             }
-       }
-       return waitingForTargets;
+        }
+        return waitingForTargets;
     }
 
     public String printProcessedFailedTargets(String currentTargetName)
     {
-        String processedFailedTargets = "";
-        for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+        String processedFailedTargets = "", dependedOnTarget;
+        Set<String> dependedTargets = graph.getTarget(currentTargetName).getAllDependsOnTargets();
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
         {
-            if(!lastRunTargets.contains(dependedOnTarget))
-                continue;
-            else
+            dependedOnTarget = curr.getTargetName();
+            if (dependedTargets.contains(dependedOnTarget))
             {
-                if(graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
+                if (graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
                     processedFailedTargets = processedFailedTargets + dependedOnTarget + " ";
             }
         }
