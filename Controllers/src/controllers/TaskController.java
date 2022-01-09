@@ -29,6 +29,7 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -37,14 +38,11 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap = new HashMap<>();
     private int maxParallelThreads;
-    private ExecutorService executor;
     private TaskParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
     private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
@@ -91,7 +89,7 @@ public class TaskController implements Initializable {
                 if(!taskThread.getPaused())
                     logTextArea.appendText("\nWaiting for the task to stop...\n\n");
 
-                while(!executor.isTerminated()) {}
+                while(!taskThread.getExecutor().isTerminated()) {}
 
                 Platform.runLater(() -> logTextArea.appendText("\nTask stopped!\n\n"));
             }
@@ -119,10 +117,12 @@ public class TaskController implements Initializable {
                 logTextArea.appendText(firstOutput);
 
                 if(taskThread.getPaused())
-                    while(!executor.isTerminated()) {}
+                    while(!taskThread.getExecutor().isTerminated()) {}
 
                 updateThreadButton.setVisible(updateThread);
                 updateThreadButton.setDisable(!updateThread);
+                numberOfThreadToExecuteLabel.setDisable(!updateThread);
+                threadsSpinner.setDisable(!updateThread);
 
                 String finalSecondOutput = secondOutput;
                 Platform.runLater(() ->
@@ -338,7 +338,11 @@ public class TaskController implements Initializable {
 
     @FXML void pausePressed(ActionEvent event) {
         if(!taskThread.getPaused()) //Pausing the task
+        {
+            PauseButton.setDisable(true);
+            stopButton.setDisable(true);
             taskThread.pauseTheTask();
+        }
         else //Resuming the task
             taskThread.continueTheTask();
     }
@@ -359,10 +363,9 @@ public class TaskController implements Initializable {
         this.progressBar.setDisable(false);
         this.progressBarLabel.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
-        this.executor = Executors.newFixedThreadPool(numOfThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, this.executor, numOfThreads, logTextArea, incrementalRadioButton.isSelected());
+                currentRunTargets, numOfThreads, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -566,6 +569,9 @@ public class TaskController implements Initializable {
 
         this.fromScratchRadioButton.setDisable(flag);
         this.incrementalRadioButton.setDisable(flag);
+
+        this.threadsSpinner.setDisable(flag);
+        this.numberOfThreadToExecuteLabel.setDisable(flag);
 
         setForSimulationTask(flag);
     }

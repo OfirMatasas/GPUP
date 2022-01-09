@@ -9,6 +9,7 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
@@ -44,14 +45,14 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, int numOfThreads, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, int numOfThreads, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
         this.graphSummary = graphSummary;
         this.targetsSet = targetsSet;
         this.numOfThreads = numOfThreads;
-        this.executor = executor;
+        this.executor = Executors.newFixedThreadPool(numOfThreads);
         this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
         this.targetsList = new LinkedList<>();
         this.log = log;
@@ -284,6 +285,10 @@ public class TaskThread extends Thread {
     public Boolean getStopped() { return this.stopped; }
 
     public Boolean getStatusChanged() { return this.statusChanged; }
+
+    public ExecutorService getExecutor() {
+        return executor;
+    }
 
     public void stopTheTask()
     {
