@@ -69,17 +69,12 @@ import javafx.beans.property.StringProperty;
         public void setCurrentRuntimeStatus(String currentRuntimeStatus) {
             this.currentRuntimeStatus.set(currentRuntimeStatus);
         }
+        public String getResultStatus() {return resultStatus.get();}
 
-        public String getFinalStatus() {
-            return resultStatus.get();
-        }
+        public SimpleStringProperty resultStatusProperty() {return resultStatus;}
 
-        public SimpleStringProperty finalStatusProperty() {
-            return resultStatus;
-        }
+        public void setResultStatus(String resultStatus) {this.resultStatus.set(resultStatus);}
 
-        public void setFinalStatus(String finalStatus) {
-            this.resultStatus.set(finalStatus);
-        }
+
 
     }

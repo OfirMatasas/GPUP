@@ -12,7 +12,7 @@ public class TargetSummary implements Serializable
 {
     private Boolean isRoot;
     //--------------------------------------------------Enums-------------------------------------------------------//
-    public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished }
+    public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished , Undefined }
     public enum ResultStatus { Success, Warning, Failure, Undefined }
 
     //--------------------------------------------------Members-----------------------------------------------------//
@@ -25,6 +25,10 @@ public class TargetSummary implements Serializable
     private Instant timeStarted;
     private Set<String> skippedByTargets;
     private final Set<String> openedTargets;
+    private Instant waitingTimeStarted;
+    private Instant ProcessingTimeStarted;
+    private Duration waitingTime;
+    private Duration processingTime;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public TargetSummary(String targetName) {
@@ -37,6 +41,8 @@ public class TargetSummary implements Serializable
         this.isSkipped = false;
         this.openedTargets = new HashSet<>();
         this.isRoot = false;
+        this.waitingTime = Duration.ZERO;
+        this.processingTime = Duration.ZERO;
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//
@@ -84,6 +90,10 @@ public class TargetSummary implements Serializable
         return this.isRoot;
     }
 
+    public Duration getWaitingTime() { return waitingTime; }
+
+    public Duration getProcessingTime() { return processingTime; }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setRunning(boolean running) {
         this.running = running;
@@ -101,9 +111,7 @@ public class TargetSummary implements Serializable
         isSkipped = skipped;
     }
 
-    public void setResultStatus(ResultStatus resultStatus) {
-        this.resultStatus = resultStatus;
-    }
+    public void setResultStatus(ResultStatus resultStatus) { this.resultStatus = resultStatus; }
 
     public void setRoot(Boolean root) {
         isRoot = root;
@@ -113,6 +121,11 @@ public class TargetSummary implements Serializable
     {
         this.openedTargets.clear();
     }
+
+    public void setWaitingTime(Duration waitingTime) { this.waitingTime = waitingTime; }
+
+    public void setProcessingTime(Duration processingTime) { this.processingTime = processingTime; }
+
 
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void startTheClock()
@@ -176,6 +189,39 @@ public class TargetSummary implements Serializable
             graphSummary.getTargetsSummaryMap().get(requiredForTarget.getTargetName()).setRuntimeStatus(runtimeStatus);
             setAllRequiredForTargetsRuntimeStatus(requiredForTarget, graphSummary, runtimeStatus);
         }
+    }
+
+    public void startWaitingTime()
+    {
+        waitingTimeStarted = Instant.now();
+    }
+
+    public Duration currentWaitingTime()
+    {
+        Instant timeNow = Instant.now();
+        return Duration.between(waitingTimeStarted, timeNow);
+    }
+
+    public void startProcessingTime()
+    {
+        //stopping waiting time , the target is in processing time
+        Instant waitingTimeEnded = Instant.now();
+        waitingTime = Duration.between(waitingTimeStarted, waitingTimeEnded);
+
+        //starting processing time
+        ProcessingTimeStarted = Instant.now();
+    }
+
+    public Duration currentProcessingTime()
+    {
+        Instant timeNow = Instant.now();
+        return Duration.between(ProcessingTimeStarted, timeNow);
+    }
+
+    public void startFinishingTime()
+    {
+        //Instant processingTimeEnded = Instant.now();
+        //processingTime = Duration.between(ProcessingTimeStarted,processingTimeEnded);
     }
 
     @Override

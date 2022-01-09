@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
+import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 import task.TaskParameters;
@@ -50,10 +51,12 @@ public class TaskController implements Initializable {
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
     private TaskThread taskThread;
-    private Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
+    private Thread updateThread;
     private GraphSummary graphSummary;
     private ObservableList<String> allTargetsList;
     private TaskThreadWatcher taskThreadWatcher;
+
+
 
     public class TaskThreadWatcher extends Thread
     {
@@ -135,6 +138,24 @@ public class TaskController implements Initializable {
 
     @FXML
     private HBox toolBarHBox;
+
+    @FXML
+    private ProgressBar progressBar;
+
+    @FXML
+    private Label targetsFinishedLabel;
+
+    @FXML
+    private Label progressBarLabel;
+
+    @FXML
+    private Button addSelectedButton;
+
+    @FXML
+    private Button removeSelectedButton;
+
+    @FXML
+    private Button clearTableButton;
 
     @FXML
     private Button runButton;
@@ -263,6 +284,31 @@ public class TaskController implements Initializable {
     private TextArea taskDetailsOnTargetTextArea;
 
     @FXML
+    void removeSelectedRowFromTable(ActionEvent event)
+    {
+        if(taskTargetDetailsTableView.getItems().isEmpty())
+            ShowPopup("The table is already empty","Error", Alert.AlertType.ERROR);
+        else
+            this.taskTargetDetailsTableView.getItems().removeAll(taskTargetDetailsTableView.getSelectionModel().getSelectedItem());
+
+    }
+
+    @FXML
+    void ClearTable(ActionEvent event)
+    {
+        for ( int i = 0; i<taskTargetDetailsTableView.getItems().size(); i++)
+        {
+            taskTargetDetailsTableView.getItems().clear();
+        }
+    }
+
+    @FXML
+    void addSelectedTargetsToTable(ActionEvent event)
+    {
+        setTaskTargetDetailsTable();
+    }
+
+    @FXML
     public void initialize()
     {
         initializeGraphDetails();
@@ -334,13 +380,15 @@ public class TaskController implements Initializable {
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         if(!checkForValidRun())
             return;
-
-        Set<String> currentRunTarget = new HashSet<>(currentSelectedTargetListView.getItems());
+        updateThread = new Thread(this::updateTableRuntimeStatuses);
+        Set<String> currentRunTargets = new HashSet<>(currentSelectedTargetListView.getItems());
         this.taskThreadWatcher = new TaskThreadWatcher();
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
-        this.TaskTargetSelection.setDisable(false);
+        this.progressBar.setDisable(false);
+        this.progressBarLabel.setDisable(false);
+        this.targetsFinishedLabel.setDisable(false);
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
@@ -350,6 +398,7 @@ public class TaskController implements Initializable {
 
         taskThread.start();
         taskThreadWatcher.start();
+        updateThread.start();
 
         if(!this.firstRun)
         {
@@ -357,7 +406,7 @@ public class TaskController implements Initializable {
             lastRunTargets.clear();
         }
 
-        lastRunTargets.addAll(currentRunTarget);
+        lastRunTargets.addAll(currentRunTargets);
     }
 
     private Boolean checkForValidRun()
@@ -561,43 +610,6 @@ public class TaskController implements Initializable {
         }
     }
 
-//    private TaskParameters getTaskParametersFromUser()
-//    {
-////        Scanner scanner = new Scanner(System.in);
-//        Duration processingTime = null;
-//        long timeInMS = -1;
-//        Boolean isRandom = true;
-//        Double successRate = -1.0, successWithWarnings = -1.0;
-//        TaskParameters taskParameters = new TaskParameters();
-////
-////        System.out.print("Enter the processing time (in m/s) for each task: ");
-////        timeInMS = scanner.nextLong();
-////        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-////
-////        System.out.print("Choose if the processing time is limited by the value you just entered, or permanent (0 - limited, 1 - permanent): ");
-////        int temp = scanner.nextInt();
-////        isRandom = temp == 0;
-////
-////        System.out.print("Enter the success rate of the task (value between 0 and 1): ");
-////        successRate = scanner.nextDouble();
-////
-////        System.out.print("If the task ended successfully, what is the chance that it ended with warnings? (value between 0 and 1): ");
-////        successWithWarnings = scanner.nextDouble();
-//
-//        timeInMS = 5000;
-//        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-//        isRandom = true;
-//        successRate = 0.7;
-//        successWithWarnings = 0.3;
-//
-//        taskParameters.setProcessingTime(processingTime);
-//        taskParameters.setRandom(isRandom);
-//        taskParameters.setSuccessRate(successRate);
-//        taskParameters.setSuccessWithWarnings(successWithWarnings);
-//
-//        return taskParameters;
-//    }
-
     private void setAllTargetsList() {
         int i = 0;
         allTargetsList = FXCollections.observableArrayList();
@@ -625,6 +637,9 @@ public class TaskController implements Initializable {
 
     }
 
+
+
+
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental, selectAll, deselectAll button
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
@@ -639,10 +654,11 @@ public class TaskController implements Initializable {
                 while (c.next()) {
                     for (String remitem : c.getRemoved()) {
                         currentSelectedTargetListView.getItems().remove(remitem);
+                        addSelectedButton.setDisable(true);
                     }
                     for (String additem : c.getAddedSubList()) {
                         currentSelectedTargetListView.getItems().add(additem);
-
+                        addSelectedButton.setDisable(false);
                     }
                 }
             }
@@ -717,69 +733,164 @@ public class TaskController implements Initializable {
         this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("resultStatus"));
     }
 
-    private void setTaskTargetDetailsTable() {
+    private void setTaskTargetDetailsTable()
+    {
         int i = 1;
+        String targetPosition, targetRuntimeStatus, targetResultStatus;
         TaskTargetInformation taskTargetInformation;
-        for (Target currentTarget : graph.getGraphTargets().values())
+        for(String currentTarget : currentSelectedTargetListView.getItems())
         {
-              taskTargetInformation = new TaskTargetInformation(i,currentTarget.getTargetName(),
-                      currentTarget.getTargetPosition().toString(),graphSummary.getTargetsSummaryMap().get(currentTarget.getTargetName()).getRuntimeStatus().toString(),null);
-              taskTargetDetailsList.add(taskTargetInformation);
+            targetPosition = graph.getTarget(currentTarget).getTargetPosition().toString();
+            targetRuntimeStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getRuntimeStatus().toString();
+            targetResultStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getResultStatus().toString();
+            taskTargetInformation = new TaskTargetInformation(i,currentTarget,targetPosition,TargetSummary.RuntimeStatus.Undefined.toString(), TargetSummary.ResultStatus.Undefined.toString());
+            taskTargetDetailsList.add(taskTargetInformation);
             ++i;
         }
         taskTargetDetailsTableView.setItems(taskTargetDetailsList);
-        updateThread.start();
     }
 
     private void updateTableRuntimeStatuses()
     {
         ObservableList<TaskTargetInformation> itemsList = taskTargetDetailsTableView.getItems();
-        LocalTime startTime;
-        LocalTime currTime;
-        startTime = LocalTime.now();
-        currTime = LocalTime.now();
+        LocalTime startTime = LocalTime.now();
+        LocalTime currTime = LocalTime.now();
 
-        while (!updateThread.isInterrupted())
+        while (taskThread.isAlive())
         {
-            currTime=LocalTime.now();
-            while (currTime.compareTo(startTime.plusSeconds(1)) < 0)
-            {
-                currTime = LocalTime.now();
-            }
             startTime = LocalTime.now();
-            for (TaskTargetInformation item : itemsList)
-            {
-                item.setCurrentRuntimeStatus(graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
-            }
-            Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
+            updateTable(itemsList, startTime, currTime);
         }
+        updateTable(itemsList, startTime, currTime);
+    }
+
+    public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)
+    {
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        for (TaskTargetInformation item : itemsList)
+        {
+            item.setCurrentRuntimeStatus(graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
+            item.setResultStatus(graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getResultStatus().toString());
+        }
+        Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
     }
 
 
-    public void showDetailsOfSelectedTargetInTextArea()
+    public void getSelectedRow(MouseEvent mouseEvent)
+    {
+
+        TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+        showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
+    }
+
+    public void showDetailsOfSelectedTargetInTextArea(TaskTargetInformation taskTargetInformation)
     {
         String detailMsg = null;
-        String currentTargetName = this.TaskTargetSelection.getValue();
+        String currentTargetName = taskTargetInformation.getTargetName();
+        TargetSummary currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
         if(currentTargetName!=null) {
             Target currentTarget = graph.getTarget(currentTargetName);
-             detailMsg = "Target : " + currentTarget + "\n"
-                    + "Position :" + currentTarget.getTargetPosition() + "\n";
+             detailMsg = "Target : " + currentTargetName + "\n"
+                    + "Position : " + currentTarget.getTargetPosition() + "\n";
 
             if (currentTarget.getSerialSets().isEmpty())
-                detailMsg += "Serial Sets : None";
+                detailMsg += "Serial Sets : None" + "\n";
             else
-                detailMsg += "Serial Sets : " + currentTarget.getSerialSets();
+                detailMsg += "Serial Sets : " + currentTarget.getSerialSets() + "\n";
 
-            switch (graphSummary.getTargetsSummaryMap().get(currentTargetName).getRuntimeStatus()) {
+            switch (currentTargetSummary.getRuntimeStatus())
+            {
                 case Frozen:
+                {
+                    detailMsg += "List of dependencies that the target " + currentTargetName + " is waiting for to finish : ";
+                    if(printTargetWaitingForTargets(currentTargetName).isEmpty())
+                        detailMsg += "none.";
+                    else
+                        detailMsg += printTargetWaitingForTargets(currentTargetName);
+                    break;
+                }
+                case Skipped:
+                {
+                    detailMsg += "Target's runtime status : Skipped \n";
+                    detailMsg += "List of dependencies that their process failed are : ";
+                    if(printProcessedFailedTargets(currentTargetName).isEmpty())
+                        detailMsg += "none.";
+                    else
+                        detailMsg += printProcessedFailedTargets(currentTargetName);
+                    break;
+                }
+                case Waiting:
+                {
+                    detailMsg += "The target " + currentTargetName + " is waiting for : " + currentTargetSummary.currentWaitingTime().toMillis() + " M\\S";
+                    break;
+                }
+                case InProcess:
+                {
+                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " M\\S";
+                    break;
+                }
+                case Finished:
+                {
+                    Duration time = currentTargetSummary.getTime();
+                    detailMsg += "Target's result status : ";
+
+                    if(currentTargetSummary.isSkipped())
+                        detailMsg += "Skipped\n";
+                    else
+                        detailMsg += currentTargetSummary.getResultStatus() + "\n";
+
+                    if(!currentTargetSummary.isSkipped())
+                        detailMsg += String.format("Target's running time : %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
+                    break;
+                }
 
             }
         }
-        
-        this.taskDetailsOnTargetTextArea.setText(detailMsg);
-        
-        
 
+        this.taskDetailsOnTargetTextArea.setText(detailMsg);
+    }
+
+    public String printTargetWaitingForTargets(String currentTargetName)
+    {
+        String waitingForTargets = "";
+       for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+       {
+            if(!lastRunTargets.contains(dependedOnTarget))
+                continue;
+            else
+            {
+                if(!graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
+                    waitingForTargets = waitingForTargets + dependedOnTarget + " ";
+            }
+       }
+       return waitingForTargets;
+    }
+
+    public String printProcessedFailedTargets(String currentTargetName)
+    {
+        String processedFailedTargets = "";
+        for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+        {
+            if(!lastRunTargets.contains(dependedOnTarget))
+                continue;
+            else
+            {
+                if(graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
+                    processedFailedTargets = processedFailedTargets + dependedOnTarget + " ";
+            }
+        }
+        return processedFailedTargets;
+    }
+
+
+    public void updateProgressBar()
+    {
 
     }
 }

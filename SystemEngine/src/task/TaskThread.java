@@ -40,7 +40,6 @@ public class TaskThread extends Thread {
     private final LinkedList<String> targetsList;
     private Boolean paused;
     private Boolean stopped;
-    private Runnable inEnd;
     private Boolean pausedBefore;
     private Boolean statusChanged;
 
@@ -60,7 +59,6 @@ public class TaskThread extends Thread {
         this.paused = false;
         this.stopped = false;
         this.statusChanged = false;
-        this.inEnd = inEnd;
         this.incremental = incremental;
         this.pausedBefore = false;
     }
@@ -150,7 +148,6 @@ public class TaskThread extends Thread {
         outputGraphSummary(graphSummary);
         Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
 //        taskOutput.outputGraphSummary();
-        this.inEnd.run();
     }
 
     public void printStartOfTaskOnGraph(String graphName) {
@@ -261,14 +258,15 @@ public class TaskThread extends Thread {
                     }
                     targetFrozen = true;
                     targetsList.addLast(currentTargetName);
-                    currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Frozen);
+                    graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen);
+
                     break;
                 }
             }
             if(!targetFrozen)
             {
                 targetsList.addFirst(currentTargetName);
-                currentTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Waiting);
+                graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
             }
 
 //            currentTargetSummary.setOpenedTargetsToZero();
