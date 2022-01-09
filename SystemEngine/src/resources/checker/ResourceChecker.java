@@ -96,6 +96,8 @@ public class ResourceChecker
 
                 if(!checkValidConnectionBetweenTwoTargets(currentTarget, secondTarget, dep.getType()))
                     throw new InvalidConnectionBetweenTargets(currentTargetName, secondTargetName);
+
+                currentTarget.setFQN(currentgpupTarget.getGPUPUserData());
             }
         }
 

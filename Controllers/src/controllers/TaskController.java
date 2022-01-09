@@ -33,7 +33,6 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,14 +42,11 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap = new HashMap<>();
-    private int parallelThreads;
-    private ExecutorService executor;
+    private int maxParallelThreads;
     private TaskParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
     private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
@@ -60,16 +56,14 @@ public class TaskController implements Initializable {
     private final String SIMULATION ="Simulation";
     private final String COMPILATION ="Compilation";
     private final ObservableList<TaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
-    private Set<String> lastRunTargets = new HashSet<>();
-    private Boolean firstRun = true;
     private TaskThread taskThread;
     private Thread updateThread;
     private GraphSummary graphSummary;
     private ObservableList<String> allTargetsList;
     private TaskThreadWatcher taskThreadWatcher;
-    private int finishedTargets = 0;
+    private int finishedTargets;
     private Task<Void> task;
-    private File selectedFile;
+    private int numOfThreads;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -99,24 +93,27 @@ public class TaskController implements Initializable {
                 if(!taskThread.getPaused())
                     logTextArea.appendText("\nWaiting for the task to stop...\n\n");
 
-                while(!executor.isTerminated()) {}
+                while(!taskThread.getExecutor().isTerminated()) {}
 
                 Platform.runLater(() -> logTextArea.appendText("\nTask stopped!\n\n"));
             }
             else //Paused / Resumed
             {
                 String firstOutput, secondOutput = "", newButtonText;
+                boolean updateThread;
 
                 if(taskThread.getPaused()) //Paused
                 {
                     firstOutput = "\nWaiting for the task to pause...\n\n";
                     newButtonText = "Resume";
                     secondOutput = "\nTask paused!\n\n";
+                    updateThread = true;
                 }
                 else //Resumed
                 {
                     firstOutput = "\nTask resumed!\n\n";
                     newButtonText = "Pause";
+                    updateThread = false;
                 }
 
                 PauseButton.setDisable(true);
@@ -124,7 +121,12 @@ public class TaskController implements Initializable {
                 logTextArea.appendText(firstOutput);
 
                 if(taskThread.getPaused())
-                    while(!executor.isTerminated()) {}
+                    while(!taskThread.getExecutor().isTerminated()) {}
+
+                updateThreadButton.setVisible(updateThread);
+                updateThreadButton.setDisable(!updateThread);
+                numberOfThreadToExecuteLabel.setDisable(!updateThread);
+                threadsSpinner.setDisable(!updateThread);
 
                 String finalSecondOutput = secondOutput;
                 Platform.runLater(() ->
@@ -206,10 +208,10 @@ public class TaskController implements Initializable {
     @FXML private Label sourceCodePathLabel;
     @FXML private Label outputPathLabel;
 
-
     @FXML
     void updateThreadsInPause(ActionEvent event) {
-
+        numOfThreads = threadsSpinner.getValue();
+        taskThread.setNumOfThreads(numOfThreads);
     }
     @FXML
     void chooseOutputDirectory(ActionEvent event)
@@ -261,7 +263,7 @@ public class TaskController implements Initializable {
     @FXML void addSelectedTargetsToTable(ActionEvent event)
     {
         setTaskTargetDetailsTable();
-        incrementalRadioButton.setDisable(true);
+        incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     private void enableTargetInfoTextArea(boolean flag) {
@@ -313,8 +315,17 @@ public class TaskController implements Initializable {
             currentSelectedTargets.add(targetSelection.getValue());
             currentSelectedTargets.addAll(affectedTargetsSet);
 
-            incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
+            incrementalRadioButton.setDisable(incrementalIsOptional());
         }
+    }
+
+    private boolean incrementalIsOptional() {
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+        {
+            if(curr.getResultStatus().equals("Undefined"))
+                return false;
+        }
+        return true;
     }
 
     @FXML private Label currentSelectedTargetLabel;
@@ -335,7 +346,11 @@ public class TaskController implements Initializable {
 
     @FXML void pausePressed(ActionEvent event) {
         if(!taskThread.getPaused()) //Pausing the task
+        {
+            PauseButton.setDisable(true);
+            stopButton.setDisable(true);
             taskThread.pauseTheTask();
+        }
         else //Resuming the task
             taskThread.continueTheTask();
     }
@@ -356,10 +371,9 @@ public class TaskController implements Initializable {
         this.progressBar.setDisable(false);
         this.progressBarLabel.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
-        this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, this.executor, parallelThreads, logTextArea, incrementalRadioButton.isSelected());
+                currentRunTargets, numOfThreads, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -367,14 +381,6 @@ public class TaskController implements Initializable {
         createNewProgressBar();
         taskThreadWatcher.start();
         updateThread.start();
-
-        if(!this.firstRun)
-        {
-            firstRun = false;
-            lastRunTargets.clear();
-        }
-
-        lastRunTargets.addAll(currentRunTargets);
     }
 
     private void turnOnProgressBar() {
@@ -423,6 +429,9 @@ public class TaskController implements Initializable {
 
         if(taskParameters == null)
             errorMessage = "You have to apply the parameters for the task first!";
+
+        if(incrementalRadioButton.isSelected() && incrementalRadioButton.isDisabled())
+            errorMessage = "Incremental is not optional!\nChoose \"From scratch\" or select other targets";
 
         if(!errorMessage.equals(""))
         {
@@ -548,7 +557,6 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(flag);
 
         this.fromScratchRadioButton.setDisable(flag);
-
         this.selectAllButton.setDisable(flag);
     }
 
@@ -564,9 +572,13 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetListView.setDisable(flag);
         this.selectAllButton.setDisable(flag);
         this.deselectAllButton.setDisable(flag);
+        this.addSelectedButton.setDisable(flag);
 
         this.fromScratchRadioButton.setDisable(flag);
         this.incrementalRadioButton.setDisable(flag);
+
+        this.threadsSpinner.setDisable(flag);
+        this.numberOfThreadToExecuteLabel.setDisable(flag);
 
         setForSimulationTask(flag);
     }
@@ -654,6 +666,7 @@ public class TaskController implements Initializable {
 
     private void setVisibilityOfTask(boolean flag)
     {
+        //Compilation
         compilationOutputLabel.setVisible(flag);
         compilationSourceCodeLabel.setVisible(flag);
         toCompileButton.setVisible(flag);
@@ -661,11 +674,11 @@ public class TaskController implements Initializable {
         sourceCodePathLabel.setVisible(flag);
         outputPathLabel.setVisible(flag);
 
+        //Simulation
         processingTimeLabel.setVisible(!flag);
         processingTimeTextField.setVisible(!flag);
         successRateSlider.setVisible(!flag);
         successRateWithWarningsSlider.setVisible(!flag);
-
         limitedPermanentLabel.setVisible(!flag);
         limitedRadioButton.setVisible(!flag);
         permanentRadioButton.setVisible(!flag);
@@ -676,14 +689,11 @@ public class TaskController implements Initializable {
         incrementalRadioButton.setVisible(!flag);
         successRateLabel.setVisible(!flag);
         successRateWithWarnings.setVisible(!flag);
-
-
-
     }
 
     private void setSpinnerNumericBounds()
     {
-        this.threadsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,parallelThreads));
+        this.threadsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,maxParallelThreads));
     }
 
     private void addListenersForSelectedTargets() {
@@ -705,6 +715,9 @@ public class TaskController implements Initializable {
                         addSelectedButton.setDisable(false);
                     }
                 }
+
+                if(currentSelectedTargets.isEmpty())
+                    addSelectedButton.setDisable(true);
             }
         });
     }
@@ -715,6 +728,8 @@ public class TaskController implements Initializable {
             @Override
             public void onChanged(Change<? extends TaskTargetInformation> c) {
                 removeSelectedButton.setDisable(c.getList().isEmpty());
+
+                incrementalRadioButton.setDisable(!incrementalIsOptional());
             }
         });
     }
@@ -738,7 +753,7 @@ public class TaskController implements Initializable {
             taskParameters.setRandom(isRandom);
             taskParameters.setSuccessRate(successRate);
             taskParameters.setSuccessWithWarnings(successWithWarnings);
-            parallelThreads = threadsSpinner.getValue();
+            numOfThreads = threadsSpinner.getValue();
         }
         catch(Exception ex)
         {
@@ -748,8 +763,8 @@ public class TaskController implements Initializable {
         return taskParameters;
     }
 
-    public void setParallelThreads(int parallelThreads) {
-        this.parallelThreads = parallelThreads;
+    public void setMaxParallelThreads(int parallelThreads) {
+        this.maxParallelThreads = parallelThreads;
         setSpinnerNumericBounds();
     }
 
@@ -916,30 +931,32 @@ public class TaskController implements Initializable {
 
     public String printTargetWaitingForTargets(String currentTargetName)
     {
-        String waitingForTargets = "";
-       for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
-       {
-            if(!lastRunTargets.contains(dependedOnTarget))
-                continue;
-            else
+        String waitingForTargets = "", dependedOnTarget;
+        Set<String> dependedTargets = graph.getTarget(currentTargetName).getAllDependsOnTargets();
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+        {
+            dependedOnTarget = curr.getTargetName();
+            if(dependedTargets.contains(dependedOnTarget))
             {
                 if(!graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished))
                     waitingForTargets = waitingForTargets + dependedOnTarget + " ";
             }
-       }
-       return waitingForTargets;
+        }
+        return waitingForTargets;
     }
 
     public String printProcessedFailedTargets(String currentTargetName)
     {
-        String processedFailedTargets = "";
-        for(String dependedOnTarget : graph.getTarget(currentTargetName).getAllDependsOnTargets())
+        String processedFailedTargets = "", dependedOnTarget;
+        Set<String> dependedTargets = graph.getTarget(currentTargetName).getAllDependsOnTargets();
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
         {
-            if(!lastRunTargets.contains(dependedOnTarget))
-                continue;
-            else
+            dependedOnTarget = curr.getTargetName();
+            if (dependedTargets.contains(dependedOnTarget))
             {
-                if(graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
+                if (graphSummary.getTargetsSummaryMap().get(dependedOnTarget).getResultStatus().equals(TargetSummary.ResultStatus.Failure))
                     processedFailedTargets = processedFailedTargets + dependedOnTarget + " ";
             }
         }

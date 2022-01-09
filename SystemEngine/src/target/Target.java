@@ -19,6 +19,7 @@ public class Target implements Serializable
     private String extraInformation;
     private final Set<String> allDependsOnTargets;
     private final Set<String> allRequiredForTargets;
+    private String FQN;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Target() {
@@ -58,7 +59,12 @@ public class Target implements Serializable
     public Set<String> getAllRequiredForTargets() {
         return allRequiredForTargets;
     }
+
     public String getExtraInformation() {return extraInformation;}
+
+    public String getFQN() {
+        return FQN;
+    }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setTargetName(String targetName) {
@@ -74,6 +80,10 @@ public class Target implements Serializable
     }
 
     public void addSerialSet(String newSerialSet) { serialSets.add(newSerialSet); }
+
+    public void setFQN(String FQN) {
+        this.FQN = FQN;
+    }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void addToDependsOn(Target dependsOn) { dependsOnTargets.add(dependsOn); }
