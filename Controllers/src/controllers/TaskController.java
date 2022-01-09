@@ -14,8 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -82,7 +80,8 @@ public class TaskController implements Initializable {
         {
             if(taskThread.getStopped()) //Stopped
             {
-                logTextArea.appendText("\nWaiting for the task to stop...\n\n");
+                if(!taskThread.getPaused())
+                    logTextArea.appendText("\nWaiting for the task to stop...\n\n");
 
                 while(!executor.isTerminated()) {}
 

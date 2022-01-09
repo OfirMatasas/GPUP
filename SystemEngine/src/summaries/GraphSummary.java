@@ -113,6 +113,7 @@ public class GraphSummary implements Serializable {
             continueTheClock();
 
         this.totalTime = Duration.between(this.timeStarted, timeEnded).minus(this.totalPausedTime);
+        this.totalPausedTime = Duration.ZERO;
     }
 
     public void pauseTheClock()

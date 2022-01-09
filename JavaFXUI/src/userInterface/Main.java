@@ -16,7 +16,7 @@ public class Main extends Application
         primaryStage.setTitle("G.P.U.P");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("PrimaryScene.fxml"));
         Parent root = loader.load();
-        primaryStage.setScene(new Scene(root, 800,600));
+        primaryStage.setScene(new Scene(root, 1000,750));
         primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LIGHT_MAIN_THEME);
         primaryStage.getIcons().add(new Image("/resourcers/GPUP logo.png"));
 
