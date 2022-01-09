@@ -102,6 +102,8 @@ public class ResourceChecker
         //Get all serial sets names and fill them up with targets' names
         setAllSerialSets(descriptor, graph);
 
+        //Sets MaxParallelism
+
         //Calculate all depends-on and all required-for for all targets
         graph.calculateAllDependsOn();
         graph.calculateAllRequiredFor();

@@ -10,6 +10,7 @@ public class Graph implements Serializable {
     private final Map<Target.TargetPosition, Set<Target>> targetsByPositions;
     private Map<String, Set<String>> serialSetsMap;
     private Set<String> serialSetsNames;
+    private int MaxParallelism;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
@@ -44,6 +45,7 @@ public class Graph implements Serializable {
     public Map<String, Set<String>> getSerialSetsMap() {
         return serialSetsMap;
     }
+    public int getMaxParallelism() {return MaxParallelism;}
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
@@ -58,6 +60,7 @@ public class Graph implements Serializable {
         this.serialSetsNames = serialSetsNames;
     }
 
+    public void setMaxParallelism(int maxParallelism) {MaxParallelism = maxParallelism;}
     //--------------------------------------------------Methods-----------------------------------------------------//
     public int numberOfTargetsByProperty(Target.TargetPosition position)
     {
