@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 public class TaskController implements Initializable {
     private Graph graph;
     private Map<String, TaskParameters> taskParametersMap = new HashMap<>();
-    private int parallelThreads;
+    private int maxParallelThreads;
     private ExecutorService executor;
     private TaskParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
@@ -313,10 +313,10 @@ public class TaskController implements Initializable {
         this.progressBar.setDisable(false);
         this.progressBarLabel.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
-        this.executor = Executors.newFixedThreadPool(parallelThreads);
+        this.executor = Executors.newFixedThreadPool(maxParallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, this.executor, parallelThreads, logTextArea, incrementalRadioButton.isSelected());
+                currentRunTargets, this.executor, maxParallelThreads, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -653,8 +653,8 @@ public class TaskController implements Initializable {
         return taskParameters;
     }
 
-    public void setParallelThreads(int parallelThreads) {
-        this.parallelThreads = parallelThreads;
+    public void setMaxParallelThreads(int parallelThreads) {
+        this.maxParallelThreads = parallelThreads;
     }
 
     @FXML void ApplyParametersToTask(ActionEvent event) {

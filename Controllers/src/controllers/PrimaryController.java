@@ -39,7 +39,7 @@ public class PrimaryController {
     private ScrollPane graphDetailsPane;
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
-    private int parallelThreads;
+    private int maxParallelThreads;
     private GraphSummary graphSummary;
     private final ArrayList<String> rootColors = new ArrayList<>();
     private final ArrayList<String> middleColors = new ArrayList<>();
@@ -165,7 +165,7 @@ public class PrimaryController {
         try{
             //Loading the graph from the xml file
             graph = rc.extractFromXMLToGraph(selectedFile.toPath());
-            parallelThreads = rc.getParallelThreads();
+            maxParallelThreads = rc.getParallelThreads();
 
             //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
@@ -446,7 +446,7 @@ public class PrimaryController {
         try {
             taskPane = loader.load(url.openStream());
             taskController = loader.getController();
-            taskController.setParallelThreads(parallelThreads);
+            taskController.setMaxParallelThreads(maxParallelThreads);
         } catch (IOException e) {
             e.printStackTrace();
         }
