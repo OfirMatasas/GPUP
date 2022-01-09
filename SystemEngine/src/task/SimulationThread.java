@@ -11,7 +11,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-public class SimulationThread implements Runnable {
+public class SimulationThread implements Runnable
+{
     private final TaskParameters targetParameters;
     private final GraphSummary graphSummary;
     private final TextArea log;

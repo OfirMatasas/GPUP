@@ -2,10 +2,18 @@ package controllers;
 
 import information.TaskTargetInformation;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ObservableValueBase;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -55,6 +63,8 @@ public class TaskController implements Initializable {
     private GraphSummary graphSummary;
     private ObservableList<String> allTargetsList;
     private TaskThreadWatcher taskThreadWatcher;
+    private int finishedTargets = 0;
+    private Task<Void> task;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -392,8 +402,11 @@ public class TaskController implements Initializable {
         taskThreadWatcher.setDaemon(true);
 
         taskThread.start();
+        createNewProgressBar();
         taskThreadWatcher.start();
+
         updateThread.start();
+
 
         if(!this.firstRun)
         {
@@ -402,6 +415,35 @@ public class TaskController implements Initializable {
         }
 
         lastRunTargets.addAll(currentRunTargets);
+    }
+
+    private void createNewProgressBar()
+    {
+
+        task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                int maxSize = taskTargetDetailsTableView.getItems().size();
+                while(taskThread.isAlive())
+                {
+                    Thread.sleep(200);
+                    getFinishedTargetsInRealTime();
+                    updateProgress(finishedTargets,maxSize);
+                }
+                updateProgress(maxSize,maxSize);
+                return null;
+            }
+        };
+        this.progressBar.progressProperty().bind(task.progressProperty());
+        this.progressBarLabel.textProperty().bind( new ObservableValue<String>() {
+            @Override
+            public String getValue() {
+                return String.valueOf(task.progressProperty().getValue() * 100) + "%";
+            }
+        });
+        Thread progressBarThread = new Thread(task);
+        progressBarThread.setDaemon(true);
+        progressBarThread.start();
     }
 
     private Boolean checkForValidRun()
@@ -738,7 +780,7 @@ public class TaskController implements Initializable {
     {
         int i = 1;
         String targetPosition, targetRuntimeStatus, targetResultStatus;
-        TaskTargetInformation taskTargetInformation;
+        TaskTargetInformation taskTargetInformation = null;
         for(String currentTarget : currentSelectedTargetListView.getItems())
         {
             targetPosition = graph.getTarget(currentTarget).getTargetPosition().toString();
@@ -761,18 +803,19 @@ public class TaskController implements Initializable {
         {
             startTime = LocalTime.now();
             updateTable(itemsList, startTime, currTime);
+
         }
         updateTable(itemsList, startTime, currTime);
     }
 
     public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)
     {
-
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
 
         for (TaskTargetInformation item : itemsList)
         {
@@ -891,9 +934,15 @@ public class TaskController implements Initializable {
         return processedFailedTargets;
     }
 
-
-    public void updateProgressBar()
+    public void getFinishedTargetsInRealTime()
     {
-
+        finishedTargets = 0;
+        for(TaskTargetInformation currItem : taskTargetDetailsTableView.getItems())
+        {
+            if(currItem.getCurrentRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished.toString())||currItem.getCurrentRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped.toString()))
+                finishedTargets++;
+        }
     }
+
+
 }
