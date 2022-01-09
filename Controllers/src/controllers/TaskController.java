@@ -31,6 +31,7 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -402,9 +403,7 @@ public class TaskController implements Initializable {
         taskThread.start();
         createNewProgressBar();
         taskThreadWatcher.start();
-
         updateThread.start();
-
 
         if(!this.firstRun)
         {
@@ -417,7 +416,6 @@ public class TaskController implements Initializable {
 
     private void createNewProgressBar()
     {
-
         task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -426,7 +424,7 @@ public class TaskController implements Initializable {
                 {
                     Thread.sleep(200);
                     getFinishedTargetsInRealTime();
-                    updateProgress(finishedTargets,maxSize);
+                    updateProgress(finishedTargets, maxSize);
                 }
                 updateProgress(maxSize,maxSize);
                 return null;
@@ -936,6 +934,4 @@ public class TaskController implements Initializable {
                 finishedTargets++;
         }
     }
-
-
 }
