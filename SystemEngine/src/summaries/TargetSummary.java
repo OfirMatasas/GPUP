@@ -36,8 +36,8 @@ public class TargetSummary implements Serializable
         this.actualTime = Duration.ZERO;
         this.predictedTime = Duration.ZERO;
         this.extraInformation = null;
-        this.resultStatus = ResultStatus.Failure;
-        this.runtimeStatus = RuntimeStatus.Frozen;
+        this.resultStatus = ResultStatus.Undefined;
+        this.runtimeStatus = RuntimeStatus.Undefined;
         this.isSkipped = false;
         this.openedTargets = new HashSet<>();
         this.isRoot = false;
