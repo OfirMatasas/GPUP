@@ -3,6 +3,8 @@ package controllers;
 import information.TaskTargetInformation;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -49,6 +51,8 @@ public class TaskController implements Initializable {
     private final String NONE = "none";
     private final String REQUIRED = "All required-for targets";
     private final String DEPENDED = "All depends-on targets";
+    private final String SIMULATION ="Simulation";
+    private final String COMPILATION ="Compilation";
     private final ObservableList<TaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
     private Set<String> lastRunTargets = new HashSet<>();
     private Boolean firstRun = true;
@@ -183,6 +187,32 @@ public class TaskController implements Initializable {
     @FXML private TextArea taskDetailsOnTargetTextArea;
     @FXML private Spinner<Integer> threadsSpinner;
     @FXML private Label numberOfThreadToExecuteLabel;
+    @FXML private Tab compilationTab;
+    @FXML private Pane leftPaneCompilation;
+    @FXML private Button toCompileButton;
+    @FXML private Button compiledOutputButton;
+    @FXML private TabPane SimulationCompilationTabPane;
+    @FXML private Tab simulationTab;
+    @FXML private Button updateThreadButton;
+    @FXML private Label compilationSourceCodeLabel;
+    @FXML private Label compilationOutputLabel;
+    @FXML private Label sourceCodePathLabel;
+    @FXML private Label outputPathLabel;
+
+
+    @FXML
+    void updateThreadsInPause(ActionEvent event) {
+
+    }
+    @FXML
+    void chooseOutputDirectory(ActionEvent event) {
+
+    }
+
+    @FXML
+    void chooseSourceCodeDirectoryToCompile(ActionEvent event) {
+
+    }
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
@@ -415,8 +445,12 @@ public class TaskController implements Initializable {
     @FXML void taskSelectionPressed(ActionEvent event) {
         if(!taskSelection.getSelectionModel().isEmpty())
         {
-            setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
+            setForSimulationTask(!taskSelection.getValue().equals(SIMULATION));
             disableButtons(false);
+            threadsSpinner.setVisible(true);
+            numberOfThreadToExecuteLabel.setVisible(true);
+            threadsSpinner.setDisable(false);
+            numberOfThreadToExecuteLabel.setDisable(false);
         }
     }
 
@@ -437,8 +471,8 @@ public class TaskController implements Initializable {
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
 
-        this.threadsSpinner.setDisable(flag);
-        this.numberOfThreadToExecuteLabel.setDisable(flag);
+//        this.threadsSpinner.setDisable(flag);
+//        this.numberOfThreadToExecuteLabel.setDisable(flag);
     }
 
     private void addListenersForTextFields() {
@@ -583,18 +617,58 @@ public class TaskController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ObservableList<String> taskSelectionList = FXCollections.observableArrayList("Simulation", "Compilation");
+        ObservableList<String> taskSelectionList = FXCollections.observableArrayList(SIMULATION,COMPILATION );
         taskSelection.setItems(taskSelectionList);
 
         addListenersForSliders();
         addListenersForTextFields();
         addListenersForSelectedTargets();
         addListenersToButtons();
+        addListenersForCompilationButtons();
 
         affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
 
         initializeGraphDetails();
+    }
+
+    private void addListenersForCompilationButtons() {
+
+        this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    setVisibilityOfTask(taskSelection.getValue().equals(COMPILATION));
+            }
+        });
+    }
+
+    private void setVisibilityOfTask(boolean flag)
+    {
+        compilationOutputLabel.setVisible(flag);
+        compilationSourceCodeLabel.setVisible(flag);
+        toCompileButton.setVisible(flag);
+        compiledOutputButton.setVisible(flag);
+        sourceCodePathLabel.setVisible(flag);
+        outputPathLabel.setVisible(flag);
+
+        processingTimeLabel.setVisible(!flag);
+        processingTimeTextField.setVisible(!flag);
+        successRateSlider.setVisible(!flag);
+        successRateWithWarningsSlider.setVisible(!flag);
+
+        limitedPermanentLabel.setVisible(!flag);
+        limitedRadioButton.setVisible(!flag);
+        permanentRadioButton.setVisible(!flag);
+        successWithWarningRateText.setVisible(!flag);
+        successRateText.setVisible(!flag);
+        ApplyParametersButton.setVisible(!flag);
+        fromScratchRadioButton.setVisible(!flag);
+        incrementalRadioButton.setVisible(!flag);
+        successRateLabel.setVisible(!flag);
+        successRateWithWarnings.setVisible(!flag);
+
+
+
     }
 
     private void setSpinnerNumericBounds()
