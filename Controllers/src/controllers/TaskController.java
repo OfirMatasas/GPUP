@@ -64,6 +64,8 @@ public class TaskController implements Initializable {
     private int finishedTargets;
     private Task<Void> task;
     private int numOfThreads;
+    private File sourceCodeDirectory;
+    private File outputDirectory;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -214,18 +216,27 @@ public class TaskController implements Initializable {
         taskThread.setNumOfThreads(numOfThreads);
     }
     @FXML
-    void chooseOutputDirectory(ActionEvent event)
-    {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
-    }
-
-    @FXML
     void chooseSourceCodeDirectoryToCompile(ActionEvent event)
     {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
+        sourceCodeDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
+        if(sourceCodeDirectory!=null)
+            this.sourceCodePathLabel.setText("Source Code Path : " +sourceCodeDirectory.getAbsolutePath());
     }
+    @FXML
+    void chooseOutputDirectory(ActionEvent event)
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        outputDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
+        if(outputDirectory!=null)
+            this.outputPathLabel.setText("Output Path : " +outputDirectory.getAbsolutePath());
+        else
+        {
+
+        }
+    }
+
+
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {

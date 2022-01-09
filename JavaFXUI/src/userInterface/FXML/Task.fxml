@@ -106,8 +106,8 @@
                <Label fx:id="compilationOutputLabel" layoutX="9.0" layoutY="450.0" text="Please Choose The Output Directory&#10;Of The Compiled Code" visible="false" />
                <Button fx:id="toCompileButton" layoutX="215.0" layoutY="362.0" mnemonicParsing="false" onAction="#chooseSourceCodeDirectoryToCompile" text="Browse..." visible="false" />
                <Button fx:id="compiledOutputButton" layoutX="215.0" layoutY="454.0" mnemonicParsing="false" onAction="#chooseOutputDirectory" text="Browse..." visible="false" />
-               <Label fx:id="sourceCodePathLabel" layoutX="20.0" layoutY="412.0" text="Path :" visible="false" />
-               <Label fx:id="outputPathLabel" layoutX="20.0" layoutY="505.0" text="Path :" visible="false" />
+               <Label fx:id="sourceCodePathLabel" layoutX="10.0" layoutY="412.0" text="Path :" visible="false" />
+               <Label fx:id="outputPathLabel" layoutX="9.0" layoutY="505.0" text="Path :" visible="false" />
              </Pane>
          </left>
          <center>
