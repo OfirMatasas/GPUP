@@ -13,7 +13,6 @@ import javafx.beans.property.StringProperty;
         private final SimpleStringProperty currentRuntimeStatus;
         private final SimpleStringProperty resultStatus;
 
-
         public TaskTargetInformation(int number, String targetName, String position, String currentRuntimeStatus, String resultStatus) {
             this.number = new SimpleIntegerProperty(number);
             this.targetName = new SimpleStringProperty(targetName);
@@ -23,7 +22,7 @@ import javafx.beans.property.StringProperty;
         }
 
         public int getNumber() {
-            return number.get();
+            return number.intValue();
         }
 
         public IntegerProperty numberProperty() {
