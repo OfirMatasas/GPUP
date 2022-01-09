@@ -45,7 +45,7 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
-                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, int numOfThreads, TextArea log, Boolean incremental, Runnable inEnd) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, ExecutorService executor, int numOfThreads, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;

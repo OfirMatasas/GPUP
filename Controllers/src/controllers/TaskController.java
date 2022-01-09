@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -24,7 +25,6 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -55,8 +55,6 @@ public class TaskController implements Initializable {
     private GraphSummary graphSummary;
     private ObservableList<String> allTargetsList;
     private TaskThreadWatcher taskThreadWatcher;
-
-
 
     public class TaskThreadWatcher extends Thread
     {
@@ -286,20 +284,13 @@ public class TaskController implements Initializable {
     @FXML
     void removeSelectedRowFromTable(ActionEvent event)
     {
-        if(taskTargetDetailsTableView.getItems().isEmpty())
-            ShowPopup("The table is already empty","Error", Alert.AlertType.ERROR);
-        else
-            this.taskTargetDetailsTableView.getItems().removeAll(taskTargetDetailsTableView.getSelectionModel().getSelectedItem());
-
+        this.taskTargetDetailsTableView.getItems().removeAll(taskTargetDetailsTableView.getSelectionModel().getSelectedItem());
     }
 
     @FXML
     void ClearTable(ActionEvent event)
     {
-        for ( int i = 0; i<taskTargetDetailsTableView.getItems().size(); i++)
-        {
-            taskTargetDetailsTableView.getItems().clear();
-        }
+        taskTargetDetailsTableView.getItems().clear();
     }
 
     @FXML
@@ -380,8 +371,12 @@ public class TaskController implements Initializable {
     void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         if(!checkForValidRun())
             return;
+
         updateThread = new Thread(this::updateTableRuntimeStatuses);
-        Set<String> currentRunTargets = new HashSet<>(currentSelectedTargetListView.getItems());
+        Set<String> currentRunTargets = new HashSet<>();
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+            currentRunTargets.add(curr.getTargetName());
+
         this.taskThreadWatcher = new TaskThreadWatcher();
 
         applyTaskParametersForAllTargets(taskParameters);
@@ -392,7 +387,7 @@ public class TaskController implements Initializable {
         this.executor = Executors.newFixedThreadPool(parallelThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTarget, this.executor, parallelThreads, logTextArea, incrementalRadioButton.isSelected(), ()->{updateThread.interrupt();});
+                currentRunTargets, this.executor, parallelThreads, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -415,7 +410,6 @@ public class TaskController implements Initializable {
 
         if(taskParameters == null)
             errorMessage = "You have to apply the parameters for the task first!";
-
 
         if(!errorMessage.equals(""))
         {
@@ -629,16 +623,13 @@ public class TaskController implements Initializable {
         addListenersForSliders();
         addListenersForTextFields();
         addListenersForSelectedTargets();
+        addListenersToButtons();
 
         affectedTargetsOptions.addAll(NONE, DEPENDED, REQUIRED);
         affectedTargets.setItems(affectedTargetsOptions);
 
         initializeGraphDetails();
-
     }
-
-
-
 
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental, selectAll, deselectAll button
@@ -661,6 +652,16 @@ public class TaskController implements Initializable {
                         addSelectedButton.setDisable(false);
                     }
                 }
+            }
+        });
+    }
+
+    private void addListenersToButtons()
+    {
+        taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<TaskTargetInformation>() {
+            @Override
+            public void onChanged(Change<? extends TaskTargetInformation> c) {
+                removeSelectedButton.setDisable(c.getList().isEmpty());
             }
         });
     }
@@ -784,9 +785,11 @@ public class TaskController implements Initializable {
 
     public void getSelectedRow(MouseEvent mouseEvent)
     {
-
         TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
         showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
+        taskDetailsOnTargetTextArea.setVisible(true);
+        taskDetailsOnTargetTextArea.setDisable(false);
+        removeSelectedButton.setDisable(false);
     }
 
     public void showDetailsOfSelectedTargetInTextArea(TaskTargetInformation taskTargetInformation)
