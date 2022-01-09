@@ -283,9 +283,7 @@ public class TaskThread extends Thread {
 
     public Boolean getStopped() { return this.stopped; }
 
-    public Boolean getStatusChanged() {
-        return this.statusChanged;
-    }
+    public Boolean getStatusChanged() { return this.statusChanged; }
 
     public void stopTheTask()
     {
@@ -300,7 +298,5 @@ public class TaskThread extends Thread {
         this.statusChanged = true;
     }
 
-    public void resetStatusChanged() {
-        this.statusChanged = false;
-    }
+    public void resetStatusChanged() { this.statusChanged = false; }
 }

@@ -59,8 +59,9 @@ public class TaskController implements Initializable {
     private GraphSummary graphSummary;
     private ObservableList<String> allTargetsList;
     private TaskThreadWatcher taskThreadWatcher;
-    private int finishedTargets = 0;
+    private int finishedTargets;
     private Task<Void> task;
+    private int numOfThreads;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -97,17 +98,20 @@ public class TaskController implements Initializable {
             else //Paused / Resumed
             {
                 String firstOutput, secondOutput = "", newButtonText;
+                boolean updateThread;
 
                 if(taskThread.getPaused()) //Paused
                 {
                     firstOutput = "\nWaiting for the task to pause...\n\n";
                     newButtonText = "Resume";
                     secondOutput = "\nTask paused!\n\n";
+                    updateThread = true;
                 }
                 else //Resumed
                 {
                     firstOutput = "\nTask resumed!\n\n";
                     newButtonText = "Pause";
+                    updateThread = false;
                 }
 
                 PauseButton.setDisable(true);
@@ -116,6 +120,9 @@ public class TaskController implements Initializable {
 
                 if(taskThread.getPaused())
                     while(!executor.isTerminated()) {}
+
+                updateThreadButton.setVisible(updateThread);
+                updateThreadButton.setDisable(!updateThread);
 
                 String finalSecondOutput = secondOutput;
                 Platform.runLater(() ->
@@ -197,10 +204,10 @@ public class TaskController implements Initializable {
     @FXML private Label sourceCodePathLabel;
     @FXML private Label outputPathLabel;
 
-
     @FXML
     void updateThreadsInPause(ActionEvent event) {
-
+        numOfThreads = threadsSpinner.getValue();
+        taskThread.setNumOfThreads(numOfThreads);
     }
     @FXML
     void chooseOutputDirectory(ActionEvent event) {
@@ -352,10 +359,10 @@ public class TaskController implements Initializable {
         this.progressBar.setDisable(false);
         this.progressBarLabel.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
-        this.executor = Executors.newFixedThreadPool(maxParallelThreads);
+        this.executor = Executors.newFixedThreadPool(numOfThreads);
 
         taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, this.executor, maxParallelThreads, logTextArea, incrementalRadioButton.isSelected());
+                currentRunTargets, this.executor, numOfThreads, logTextArea, incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -646,6 +653,7 @@ public class TaskController implements Initializable {
 
     private void setVisibilityOfTask(boolean flag)
     {
+        //Compilation
         compilationOutputLabel.setVisible(flag);
         compilationSourceCodeLabel.setVisible(flag);
         toCompileButton.setVisible(flag);
@@ -653,11 +661,11 @@ public class TaskController implements Initializable {
         sourceCodePathLabel.setVisible(flag);
         outputPathLabel.setVisible(flag);
 
+        //Simulation
         processingTimeLabel.setVisible(!flag);
         processingTimeTextField.setVisible(!flag);
         successRateSlider.setVisible(!flag);
         successRateWithWarningsSlider.setVisible(!flag);
-
         limitedPermanentLabel.setVisible(!flag);
         limitedRadioButton.setVisible(!flag);
         permanentRadioButton.setVisible(!flag);
@@ -668,9 +676,6 @@ public class TaskController implements Initializable {
         incrementalRadioButton.setVisible(!flag);
         successRateLabel.setVisible(!flag);
         successRateWithWarnings.setVisible(!flag);
-
-
-
     }
 
     private void setSpinnerNumericBounds()
@@ -735,7 +740,7 @@ public class TaskController implements Initializable {
             taskParameters.setRandom(isRandom);
             taskParameters.setSuccessRate(successRate);
             taskParameters.setSuccessWithWarnings(successWithWarnings);
-            maxParallelThreads = threadsSpinner.getValue();
+            numOfThreads = threadsSpinner.getValue();
         }
         catch(Exception ex)
         {
