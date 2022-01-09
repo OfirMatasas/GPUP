@@ -47,71 +47,28 @@ public class PrimaryController {
     private final ArrayList<String>independentColors = new ArrayList<>();
     private File selectedFile;
 
-    @FXML
-    private ToggleGroup templates;
-
-    @FXML
-    private BorderPane mainBorderPane;
-
-    @FXML
-    private ImageView fireWorksImageView;
-
-    @FXML
-    private HBox HboxForLogo;
-
-    @FXML
-    private ImageView PrimaryLogo;
-
-    @FXML
-    private ScrollPane statusBar;
-
-    @FXML
-    private Button graphDetailsButton;
-
-    @FXML
-    private Button connectionsButton;
-
-    @FXML
-    private Button taskButton;
-
-    @FXML
-    private Menu file;
-
-    @FXML
-    private MenuItem loadXMLButton;
-
-    @FXML
-    private MenuItem saveProgressButton;
-
-    @FXML
-    private MenuItem exitButton;
-
-    @FXML
-    private Menu animations;
-
-    @FXML
-    private CheckBox enableAnimations;
-
-    @FXML
-    private Menu themes;
-
-    @FXML
-    private RadioMenuItem defaultTheme;
-
-    @FXML
-    private RadioMenuItem darkModeTheme;
-
-    @FXML
-    private RadioMenuItem rainbowTheme;
-
-    @FXML
-    private Menu Help;
-
-    @FXML
-    private MenuItem about;
-
-    @FXML
-    private AnchorPane StatusBar;
+    @FXML private ToggleGroup templates;
+    @FXML private BorderPane mainBorderPane;
+    @FXML private ImageView fireWorksImageView;
+    @FXML private HBox HboxForLogo;
+    @FXML private ImageView PrimaryLogo;
+    @FXML private ScrollPane statusBar;
+    @FXML private Button graphDetailsButton;
+    @FXML private Button connectionsButton;
+    @FXML private Button taskButton;
+    @FXML private Menu file;
+    @FXML private MenuItem loadXMLButton;
+    @FXML private MenuItem saveProgressButton;
+    @FXML private MenuItem exitButton;
+    @FXML private Menu animations;
+    @FXML private CheckBox enableAnimations;
+    @FXML private Menu themes;
+    @FXML private RadioMenuItem defaultTheme;
+    @FXML private RadioMenuItem darkModeTheme;
+    @FXML private RadioMenuItem rainbowTheme;
+    @FXML private Menu Help;
+    @FXML private MenuItem about;
+    @FXML private AnchorPane StatusBar;
     private SimpleStringProperty selectedFileProperty;
     private SimpleBooleanProperty isFileSelected;
 

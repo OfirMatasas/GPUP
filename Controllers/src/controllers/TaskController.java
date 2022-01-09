@@ -22,6 +22,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
@@ -29,6 +33,8 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -63,6 +69,7 @@ public class TaskController implements Initializable {
     private TaskThreadWatcher taskThreadWatcher;
     private int finishedTargets = 0;
     private Task<Void> task;
+    private File selectedFile;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -205,13 +212,17 @@ public class TaskController implements Initializable {
 
     }
     @FXML
-    void chooseOutputDirectory(ActionEvent event) {
-
+    void chooseOutputDirectory(ActionEvent event)
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
     }
 
     @FXML
-    void chooseSourceCodeDirectoryToCompile(ActionEvent event) {
-
+    void chooseSourceCodeDirectoryToCompile(ActionEvent event)
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
     }
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
@@ -471,8 +482,7 @@ public class TaskController implements Initializable {
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
 
-//        this.threadsSpinner.setDisable(flag);
-//        this.numberOfThreadToExecuteLabel.setDisable(flag);
+
     }
 
     private void addListenersForTextFields() {
