@@ -9,7 +9,6 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
@@ -33,7 +32,7 @@ public class TaskThread extends Thread {
     private ExecutorService executor;
     private final TextArea log;
     private final Boolean incremental;
-    private final int numOfThreads;
+    private int numOfThreads;
 
     //Local use
     private final TaskOutput taskOutput;
@@ -277,6 +276,8 @@ public class TaskThread extends Thread {
         log.clear();
         log.setDisable(false);
     }
+
+    public void setNumOfThreads(int numOfThreads) { this.numOfThreads = numOfThreads; }
 
     public Boolean getPaused() { return this.paused; }
 

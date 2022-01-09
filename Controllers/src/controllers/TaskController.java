@@ -2,11 +2,7 @@ package controllers;
 
 import information.TaskTargetInformation;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -31,7 +27,6 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -134,188 +129,123 @@ public class TaskController implements Initializable {
         }
     }
 
-    @FXML
-    private BorderPane taskBorderPane;
+    @FXML private BorderPane taskBorderPane;
+    @FXML private ToolBar toolBar;
+    @FXML private ComboBox<String> TaskTargetSelection;
+    @FXML private HBox toolBarHBox;
+    @FXML private ProgressBar progressBar;
+    @FXML private Label targetsFinishedLabel;
+    @FXML private Label progressBarLabel;
+    @FXML private Button addSelectedButton;
+    @FXML private Button removeSelectedButton;
+    @FXML private Button clearTableButton;
+    @FXML private Button runButton;
+    @FXML private Button PauseButton;
+    @FXML private Button stopButton;
+    @FXML private Button selectAllButton;
+    @FXML private Button deselectAllButton;
+    @FXML private Pane leftPane;
+    @FXML private ComboBox<String> taskSelection;
+    @FXML private ComboBox<String> targetSelection;
+    @FXML private ComboBox<String> affectedTargets;
+    @FXML private ListView<String> currentSelectedTargetListView;
+    @FXML private TabPane tabPane;
+    @FXML private Tab tableViewTabPane;
+    @FXML private TableView<TaskTargetInformation> taskTargetDetailsTableView;
+    @FXML private TableColumn<TaskTargetInformation, Integer> numberColumn;
+    @FXML private TableColumn<TaskTargetInformation, String> targetNameColumn;
+    @FXML private TableColumn<TaskTargetInformation, String> positionColumn;
+    @FXML private TableColumn<TaskTargetInformation, String> currentRuntimeStatusColumn;
+    @FXML private TableColumn<TaskTargetInformation, String> resultStatusColumn;
+    @FXML private Tab graphViewTabPane;
+    @FXML private Tab graphViewTabPane1;
+    @FXML private Pane footerPane;
+    @FXML private RadioButton fromScratchRadioButton;
+    @FXML private ToggleGroup scratchOrIncremental;
+    @FXML private RadioButton incrementalRadioButton;
+    @FXML private Label processingTimeLabel;
+    @FXML private Label limitedPermanentLabel;
+    @FXML private Label successRateLabel;
+    @FXML private TextField processingTimeTextField;
+    @FXML private TextArea logTextArea;
+    @FXML private Label successRateWithWarnings;
+    @FXML private Spinner<?> processingTimeSpinner;
+    @FXML private RadioButton limitedRadioButton;
+    @FXML private ToggleGroup limitedOrPermanent;
+    @FXML private ImageView graphImage;
+    @FXML private RadioButton permanentRadioButton;
+    @FXML private Slider successRateSlider;
+    @FXML private Slider successRateWithWarningsSlider;
+    @FXML private Tab logPane;
+    @FXML private TextField successWithWarningRateText;
+    @FXML private TextField successRateText;
+    @FXML private Button ApplyParametersButton;
+    @FXML private TextArea taskDetailsOnTargetTextArea;
 
-    @FXML
-    private ToolBar toolBar;
-
-    @FXML
-    private ComboBox<String> TaskTargetSelection;
-
-    @FXML
-    private HBox toolBarHBox;
-
-    @FXML
-    private ProgressBar progressBar;
-
-    @FXML
-    private Label targetsFinishedLabel;
-
-    @FXML
-    private Label progressBarLabel;
-
-    @FXML
-    private Button addSelectedButton;
-
-    @FXML
-    private Button removeSelectedButton;
-
-    @FXML
-    private Button clearTableButton;
-
-    @FXML
-    private Button runButton;
-
-    @FXML
-    private Button PauseButton;
-
-    @FXML
-    private Button stopButton;
-
-    @FXML
-    private Button selectAllButton;
-
-    @FXML
-    private Button deselectAllButton;
-
-    @FXML
-    private Pane leftPane;
-
-    @FXML
-    private ComboBox<String> taskSelection;
-
-    @FXML
-    private ComboBox<String> targetSelection;
-
-    @FXML
-    private ComboBox<String> affectedTargets;
-
-    @FXML
-    private ListView<String> currentSelectedTargetListView;
-
-    @FXML
-    private TabPane tabPane;
-
-    @FXML
-    private Tab tableViewTabPane;
-
-    @FXML
-    private TableView<TaskTargetInformation> taskTargetDetailsTableView;
-
-    @FXML
-    private TableColumn<TaskTargetInformation, Integer> numberColumn;
-
-    @FXML
-    private TableColumn<TaskTargetInformation, String> targetNameColumn;
-
-    @FXML
-    private TableColumn<TaskTargetInformation, String> positionColumn;
-
-    @FXML
-    private TableColumn<TaskTargetInformation, String> currentRuntimeStatusColumn;
-
-    @FXML
-    private TableColumn<TaskTargetInformation, String> resultStatusColumn;
-
-    @FXML
-    private Tab graphViewTabPane;
-
-    @FXML
-    private Tab graphViewTabPane1;
-
-    @FXML
-    private Pane footerPane;
-
-    @FXML
-    private RadioButton fromScratchRadioButton;
-
-    @FXML
-    private ToggleGroup scratchOrIncremental;
-
-    @FXML
-    private RadioButton incrementalRadioButton;
-
-    @FXML
-    private Label processingTimeLabel;
-
-    @FXML
-    private Label limitedPermanentLabel;
-
-    @FXML
-    private Label successRateLabel;
-
-    @FXML
-    private TextField processingTimeTextField;
-
-    @FXML
-    private TextArea logTextArea;
-
-    @FXML
-    private Label successRateWithWarnings;
-
-    @FXML
-    private Spinner<?> processingTimeSpinner;
-
-    @FXML
-    private RadioButton limitedRadioButton;
-
-    @FXML
-    private ToggleGroup limitedOrPermanent;
-
-    @FXML
-    private ImageView graphImage;
-
-    @FXML
-    private RadioButton permanentRadioButton;
-
-    @FXML
-    private Slider successRateSlider;
-
-    @FXML
-    private Slider successRateWithWarningsSlider;
-
-    @FXML
-    private Tab logPane;
-
-    @FXML
-    private TextField successWithWarningRateText;
-
-    @FXML
-    private TextField successRateText;
-
-    @FXML
-    private Button ApplyParametersButton;
-
-    @FXML
-    private TextArea taskDetailsOnTargetTextArea;
-
-    @FXML
-    void removeSelectedRowFromTable(ActionEvent event)
+    @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
-        this.taskTargetDetailsTableView.getItems().removeAll(taskTargetDetailsTableView.getSelectionModel().getSelectedItem());
+        TaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+        int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
+
+        this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
+
+        while(size - 1 > index)
+        {
+            chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
+            chosenTarget.setNumber(++index);
+        }
+
+        updateTargetTaskDetailsInTextArea();
+        turnOnIncrementalButton();
     }
 
-    @FXML
-    void ClearTable(ActionEvent event)
+    private void updateTargetTaskDetailsInTextArea() {
+        if(!taskTargetDetailsTableView.getItems().isEmpty())
+        {
+            TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
+        }
+        else
+            enableTargetInfoTextArea(false);
+    }
+
+    @FXML void ClearTable(ActionEvent event)
     {
         taskTargetDetailsTableView.getItems().clear();
+        enableTargetInfoTextArea(false);
     }
 
-    @FXML
-    void addSelectedTargetsToTable(ActionEvent event)
+    @FXML void addSelectedTargetsToTable(ActionEvent event)
     {
         setTaskTargetDetailsTable();
+        incrementalRadioButton.setDisable(true);
     }
 
-    @FXML
-    public void initialize()
+    private void enableTargetInfoTextArea(boolean flag) {
+        taskDetailsOnTargetTextArea.setVisible(flag);
+        taskDetailsOnTargetTextArea.setDisable(!flag);
+    }
+
+    private void turnOnIncrementalButton() {
+        boolean change = false;
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+        {
+            if(curr.getResultStatus().equals("Undefined"))
+            {
+                change = true;
+                break;
+            }
+        }
+        incrementalRadioButton.setDisable(change);
+    }
+
+    @FXML public void initialize()
     {
         initializeGraphDetails();
     }
 
-    @FXML
-    void affectedTargetsPressed(ActionEvent event) {
+    @FXML void affectedTargetsPressed(ActionEvent event) {
         Set<String> affectedTargetsSet = null;
 
         switch (affectedTargets.getValue())
@@ -344,11 +274,9 @@ public class TaskController implements Initializable {
         }
     }
 
-    @FXML
-    private Label currentSelectedTargetLabel;
+    @FXML private Label currentSelectedTargetLabel;
 
-    @FXML
-    void deselectAllPressed(ActionEvent event) {
+    @FXML void deselectAllPressed(ActionEvent event) {
         currentSelectedTargets.clear();
 
 
@@ -356,37 +284,29 @@ public class TaskController implements Initializable {
 //        selectAllButton.setDisable(false);
     }
 
-    @FXML
-    void graphViewTabPressed(Event event) {}
+    @FXML void graphViewTabPressed(Event event) {}
 
-    @FXML
-    void limitedOptionPressed(ActionEvent event) {}
+    @FXML void limitedOptionPressed(ActionEvent event) {}
 
-    @FXML
-    void logViewTabPressed(Event event) {}
+    @FXML void logViewTabPressed(Event event) {}
 
-    @FXML
-    void pausePressed(ActionEvent event) {
+    @FXML void pausePressed(ActionEvent event) {
         if(!taskThread.getPaused()) //Pausing the task
             taskThread.pauseTheTask();
         else //Resuming the task
             taskThread.continueTheTask();
     }
 
-    @FXML
-    void permanentOptionPressed(ActionEvent event) {}
+    @FXML void permanentOptionPressed(ActionEvent event) {}
 
-    @FXML
-    void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
+    @FXML void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
         if(!checkForValidRun())
             return;
 
         updateThread = new Thread(this::updateTableRuntimeStatuses);
-        Set<String> currentRunTargets = new HashSet<>();
-        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
-            currentRunTargets.add(curr.getTargetName());
-
         this.taskThreadWatcher = new TaskThreadWatcher();
+        Set<String> currentRunTargets = setCurrentRunTargets();
+        turnOnProgressBar();
 
         applyTaskParametersForAllTargets(taskParameters);
         this.taskDetailsOnTargetTextArea.setDisable(false);
@@ -414,6 +334,21 @@ public class TaskController implements Initializable {
         lastRunTargets.addAll(currentRunTargets);
     }
 
+    private void turnOnProgressBar() {
+        this.progressBar.setDisable(false);
+        this.progressBarLabel.setDisable(false);
+        this.targetsFinishedLabel.setDisable(false);
+    }
+
+    private Set<String> setCurrentRunTargets() {
+        Set<String> currentRunTargets = new HashSet<>();
+
+        for(TaskTargetInformation curr : taskTargetDetailsTableView.getItems())
+            currentRunTargets.add(curr.getTargetName());
+
+        return currentRunTargets;
+    }
+
     private void createNewProgressBar()
     {
         task = new Task<Void>() {
@@ -431,7 +366,9 @@ public class TaskController implements Initializable {
             }
         };
         this.progressBar.progressProperty().bind(task.progressProperty());
-        this.progressBarLabel.textProperty().bind(new SimpleDoubleProperty().asString());
+        this.progressBarLabel.textProperty().bind
+                (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
+
         Thread progressBarThread = new Thread(task);
         progressBarThread.setDaemon(true);
         progressBarThread.start();
@@ -452,33 +389,18 @@ public class TaskController implements Initializable {
         return true;
     }
 
-    @FXML
-    void getProcessingTime(ActionEvent event) {
-//        long timeInMS = -1;
-//        timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
-//        processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-//        getSimulationTaskParametersFromUser();
-    }
-
-    @FXML
-    void selectAllPressed(ActionEvent event) {
+    @FXML void selectAllPressed(ActionEvent event) {
         currentSelectedTargets.clear();
         graph.getGraphTargets().values().forEach(targetName -> currentSelectedTargets.add(targetName.getTargetName()));
-
-//        selectAllButton.setDisable(true);
-//        deselectAllButton.setDisable(false);
     }
 
-    @FXML
-    void stopPressed(ActionEvent event) {
+    @FXML void stopPressed(ActionEvent event) {
         taskThread.stopTheTask();
     }
 
-    @FXML
-    void tableViewTabPressed(Event event) {}
+    @FXML void tableViewTabPressed(Event event) {}
 
-    @FXML
-    void targetSelectionPressed(ActionEvent event) {
+    @FXML void targetSelectionPressed(ActionEvent event) {
         affectedTargets.setDisable(false);
 
         currentSelectedTargets.clear();
@@ -486,13 +408,9 @@ public class TaskController implements Initializable {
 
         if(affectedTargets.getValue() != null)
             affectedTargetsPressed(event);
-
-//        deselectAllButton.setDisable(false);
     }
 
-    @FXML
-    void taskSelectionPressed(ActionEvent event) {
-
+    @FXML void taskSelectionPressed(ActionEvent event) {
         if(!taskSelection.getSelectionModel().isEmpty())
         {
             setForSimulationTask(!taskSelection.getValue().equals("Simulation"));
@@ -501,7 +419,6 @@ public class TaskController implements Initializable {
     }
 
     private void setForSimulationTask(boolean flag) {
-
         this.processingTimeLabel.setDisable(flag);
         this.limitedPermanentLabel.setDisable(flag);
         this.successRateLabel.setDisable(flag);
@@ -521,6 +438,7 @@ public class TaskController implements Initializable {
 
     private void addListenersForTextFields() {
         this.successRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
             if(newValue.equals(""))
                 return;
 
@@ -536,9 +454,15 @@ public class TaskController implements Initializable {
             }
             else
                 successRateSlider.setValue(Double.parseDouble(newValue));
+        } catch(Exception ex)
+        {
+            ShowPopup("Invalid input in task parameters!", "Invalid input", Alert.AlertType.ERROR);
+            successRateText.clear();
+        }
         });
 
         this.successWithWarningRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
             if(newValue.equals(""))
                 return;
 
@@ -554,6 +478,11 @@ public class TaskController implements Initializable {
             }
             else
                 successRateWithWarningsSlider.setValue(Double.parseDouble(newValue));
+            } catch(Exception ex)
+            {
+                ShowPopup("Invalid input in task parameters!", "Invalid input", Alert.AlertType.ERROR);
+                successWithWarningRateText.clear();
+            }
         });
     }
 
@@ -605,7 +534,6 @@ public class TaskController implements Initializable {
         this.graphSummary = new GraphSummary(graph,null);
         setAllTargetsList();
         setTaskTargetDetailsTable();
-
     }
 
     private void applyTaskParametersForAllTargets(TaskParameters taskParameters) {
@@ -669,8 +597,6 @@ public class TaskController implements Initializable {
         currentSelectedTargets.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
-                incrementalRadioButton.setDisable(!lastRunTargets.containsAll(currentSelectedTargets));
-
                 boolean containAll = currentSelectedTargets.containsAll(allTargetsList);
                 selectAllButton.setDisable(containAll);
                 deselectAllButton.setDisable(!containAll);
@@ -731,8 +657,7 @@ public class TaskController implements Initializable {
         this.parallelThreads = parallelThreads;
     }
 
-    @FXML
-    void ApplyParametersToTask(ActionEvent event) {
+    @FXML void ApplyParametersToTask(ActionEvent event) {
         this.taskParameters = getSimulationTaskParametersFromUser();
 
         if(this.taskParameters.getProcessingTime()!=null) // Checking only on the processing time, because other parameters are already initialized
@@ -747,18 +672,11 @@ public class TaskController implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
-    void fromScratchOptionPressed(ActionEvent event) {
+    @FXML void fromScratchOptionPressed(ActionEvent event) { }
 
-    }
-
-    @FXML
-    void incrementalOptionPressed(ActionEvent event) {
-
-    }
+    @FXML void incrementalOptionPressed(ActionEvent event) { }
 
     //-----------------------------------------------------------------------------------------------
-
     private void initializeGraphDetails() {
         this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, Integer>("number"));
         this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("targetName"));
@@ -769,17 +687,20 @@ public class TaskController implements Initializable {
 
     private void setTaskTargetDetailsTable()
     {
-        int i = 1;
+        int i = taskTargetDetailsTableView.getItems().size() + 1;
         String targetPosition, targetRuntimeStatus, targetResultStatus;
-        TaskTargetInformation taskTargetInformation = null;
+        TaskTargetInformation taskTargetInformation;
+        ObservableList<TaskTargetInformation> tableList = taskTargetDetailsTableView.getItems();
+
         for(String currentTarget : currentSelectedTargetListView.getItems())
         {
-            targetPosition = graph.getTarget(currentTarget).getTargetPosition().toString();
-            targetRuntimeStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getRuntimeStatus().toString();
-            targetResultStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getResultStatus().toString();
-            taskTargetInformation = new TaskTargetInformation(i,currentTarget,targetPosition,TargetSummary.RuntimeStatus.Undefined.toString(), TargetSummary.ResultStatus.Undefined.toString());
-            taskTargetDetailsList.add(taskTargetInformation);
-            ++i;
+            if(!targetExistedInTable(tableList, currentTarget)) {
+                targetPosition = graph.getTarget(currentTarget).getTargetPosition().toString();
+                targetRuntimeStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getRuntimeStatus().toString();
+                targetResultStatus = graphSummary.getTargetsSummaryMap().get(currentTarget).getResultStatus().toString();
+                taskTargetInformation = new TaskTargetInformation(i++, currentTarget, targetPosition, targetRuntimeStatus, targetResultStatus);
+                taskTargetDetailsList.add(taskTargetInformation);
+            }
         }
         taskTargetDetailsTableView.setItems(taskTargetDetailsList);
     }
@@ -807,7 +728,6 @@ public class TaskController implements Initializable {
             e.printStackTrace();
         }
 
-
         for (TaskTargetInformation item : itemsList)
         {
             item.setCurrentRuntimeStatus(graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
@@ -816,14 +736,20 @@ public class TaskController implements Initializable {
         Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
     }
 
-
     public void getSelectedRow(MouseEvent mouseEvent)
     {
-        TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
-        showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
-        taskDetailsOnTargetTextArea.setVisible(true);
-        taskDetailsOnTargetTextArea.setDisable(false);
+        updateTargetTaskDetailsInTextArea();
+        enableTargetInfoTextArea(true);
         removeSelectedButton.setDisable(false);
+    }
+
+    private boolean targetExistedInTable(ObservableList<TaskTargetInformation> tableList, String currentTargetName) {
+        for(TaskTargetInformation currInfo : tableList)
+        {
+            if(currInfo.getTargetName().equals(currentTargetName))
+                return true;
+        }
+        return false;
     }
 
     public void showDetailsOfSelectedTargetInTextArea(TaskTargetInformation taskTargetInformation)
