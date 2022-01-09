@@ -174,7 +174,7 @@ public class GraphSummary implements Serializable {
         this.closedSerialSets = new HashSet<>();
     }
 
-    public synchronized void UpdateTargetSummary(Target target, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus)
+    public synchronized void UpdateTargetSummary(Target target, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus, boolean init)
     {
         TargetSummary targetSummary = targetsSummaryMap.get(target.getTargetName());
         targetSummary.setResultStatus(resultStatus);
@@ -189,7 +189,8 @@ public class GraphSummary implements Serializable {
        else if(runtimeStatus.equals(TargetSummary.RuntimeStatus.Finished))
             targetSummary.startFinishingTime();
 
-        removeClosedSerialSets(target);
+       if(!init)
+           removeClosedSerialSets(target);
 
         if(resultStatus.equals(TargetSummary.ResultStatus.Failure))
             setAllRequiredForTargetsOnSkipped(target, target);
@@ -225,7 +226,7 @@ public class GraphSummary implements Serializable {
         }
 
         //Runnable
-        UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
+        UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, false);
 //        Platform.runLater(() -> System.out.println(targetName + " is ready to run!"));
         return true;
     }
@@ -245,7 +246,4 @@ public class GraphSummary implements Serializable {
     {
         return Collections.disjoint(closedSerialSets, otherSerialSet);
     }
-
-
-
 }

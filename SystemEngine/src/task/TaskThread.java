@@ -257,7 +257,7 @@ public class TaskThread extends Thread {
                     }
                     targetFrozen = true;
                     targetsList.addLast(currentTargetName);
-                    graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen);
+                    graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen, true);
 
                     break;
                 }
@@ -265,7 +265,7 @@ public class TaskThread extends Thread {
             if(!targetFrozen)
             {
                 targetsList.addFirst(currentTargetName);
-                graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
+                graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
             }
 
 //            currentTargetSummary.setOpenedTargetsToZero();

@@ -43,7 +43,7 @@ public class SimulationThread implements Runnable
         //Starting the clock
         targetSummary.startTheClock();
         outputStartingTaskOnTarget(targetSummary, log);
-        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
+        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
 
         //Going to sleep
         try {
@@ -59,7 +59,7 @@ public class SimulationThread implements Runnable
             resultStatus = TargetSummary.ResultStatus.Failure;
 
         targetSummary.stopTheClock();
-        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished);
+        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
         outputEndingTaskOnTarget(targetSummary);
     }
 
