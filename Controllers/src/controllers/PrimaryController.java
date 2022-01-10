@@ -22,6 +22,7 @@ import target.Graph;
 import target.Target;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -73,6 +74,7 @@ public class PrimaryController {
     @FXML private AnchorPane StatusBar;
     private SimpleStringProperty selectedFileProperty;
     private SimpleBooleanProperty isFileSelected;
+    private FileWriter dotFile;
 
     //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML
@@ -144,11 +146,11 @@ public class PrimaryController {
 
             //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
-            setGraphOnControllers();
-            graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
 
+            graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
+            setGraphOnControllers();
             //Setting Graphviz and display its outcome
-            convertXMLToDot();
+
             RefreshCurrentCenterPane();
 
             //Knowing the user the file loaded successfully
@@ -160,8 +162,8 @@ public class PrimaryController {
         }
     }
 
-    private void setGraphOnControllers() {
-        this.graphDetailsController.setGraph(this.graph);
+    private void setGraphOnControllers() throws FileNotFoundException {
+        this.graphDetailsController.setGraph(this.graph,this.graphSummary);
         this.connectionsController.setGraph(this.graph);
         this.taskController.setGraph(this.graph);
     }
@@ -188,72 +190,9 @@ public class PrimaryController {
 //        independentColors.add("steelblue1");
 //        independentColors.add("royalblue2");
 //    }
-    public void convertXMLToDot() {
 
-//        setColorsForNodes();
-        String currentColor;
-        Target.TargetPosition targetPosition;
-        String directoryPath = graphSummary.getWorkingDirectory();
-        String fileNameDOT = "GeneratedGraph.dot";
-        String fileNamePNG = "GeneratedGraph.png";
-        String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
-        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
-                "\n" +
-                "nodesep = 2;\n" +
-                "ranksep = 2;\n";
 
-        try {
-            FileWriter dotFile = new FileWriter(new File(directoryPath,fileNameDOT));
-            dotFile.write(properties);
 
-            for (Target target : graph.getGraphTargets().values())
-            {
-                dotFile.write(target.getTargetName());
-
-                targetPosition = target.getTargetPosition();
-                if(targetPosition.equals(Target.TargetPosition.ROOT))
-                    currentColor = "dodgerblue";
-                else if(targetPosition.equals(Target.TargetPosition.MIDDLE))
-                    currentColor = "Gold";
-                else if(targetPosition.equals(Target.TargetPosition.LEAF))
-                    currentColor = "green3";
-                else
-                    currentColor = "chocolate1";
-
-                dotFile.write(" [fillcolor = " +  currentColor + "]\n");
-            }
-
-            for (Target target : graph.getGraphTargets().values()) {
-                dotFile.write(target.getTargetName());
-
-                if (!target.getDependsOnTargets().isEmpty())
-                    dotFile.write("-> {" + printAllDependsOnTarget(target) + "}");
-                dotFile.write("\n");
-
-//                dotFile.write("\n");
-            }
-        dotFile.write("}");
-        dotFile.close();
-
-        Process process = Runtime.getRuntime().exec("cmd /c cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
-        process.waitFor();
-        taskController.setGraphImage(directoryPath + "\\" + fileNamePNG);
-        }
-        catch(IOException | InterruptedException e) {
-        System.out.println("An error occurred.");
-        e.printStackTrace();
-    }
-    }
-
-    private String printAllDependsOnTarget(Target curTarget)
-    {
-        String DependedTarget = "";
-        for (Target dependsOnTarget : curTarget.getDependsOnTargets())
-        {
-            DependedTarget = DependedTarget + dependsOnTarget.getTargetName() + " ";
-        }
-        return DependedTarget;
-    }
 
     private void RefreshCurrentCenterPane() {
         graphDetailsButtonPressed(new ActionEvent());

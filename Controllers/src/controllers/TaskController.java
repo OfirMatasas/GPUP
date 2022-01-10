@@ -183,7 +183,6 @@ public class TaskController implements Initializable {
     @FXML private Spinner<?> processingTimeSpinner;
     @FXML private RadioButton limitedRadioButton;
     @FXML private ToggleGroup limitedOrPermanent;
-    @FXML private ImageView graphImage;
     @FXML private RadioButton permanentRadioButton;
     @FXML private Slider successRateSlider;
     @FXML private Slider successRateWithWarningsSlider;
@@ -619,13 +618,6 @@ public class TaskController implements Initializable {
         this.numberOfThreadToExecuteLabel.setDisable(flag);
 
         setForSimulationTask(flag);
-    }
-
-    public void setGraphImage(String fullFileName) throws FileNotFoundException {
-        InputStream stream = new FileInputStream(fullFileName);
-        Image image = new Image(stream);
-
-        graphImage.setImage(image);
     }
 
     public void setGraph(Graph graph) {

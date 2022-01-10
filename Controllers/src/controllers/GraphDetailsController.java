@@ -4,14 +4,24 @@ import information.GraphPositionsInformation;
 import information.TargetDetails;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
+import summaries.GraphSummary;
 import target.Graph;
 import target.Target;
+
+import javax.imageio.ImageIO;
+import java.io.*;
+import java.nio.file.Files;
 
 public class GraphDetailsController {
     private Graph graph = null;
@@ -19,6 +29,9 @@ public class GraphDetailsController {
     private final ObservableList<GraphPositionsInformation> graphPositionsList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsNameList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsInformationList = FXCollections.observableArrayList();
+    private FileWriter dotFile;
+    private String directoryPath;
+    private  GraphSummary graphSummary;
 
     @FXML
     public void initialize() {
@@ -117,12 +130,54 @@ public class GraphDetailsController {
     @FXML
     private PieChart PositionsPie;
 
-    public void setGraph(Graph graph) {
+    @FXML private ImageView graphImage;
+
+    @FXML private ScrollPane graphImageScrollPane;
+
+
+
+    @FXML
+    private Button saveGraphButton;
+
+    @FXML
+    void saveGraphButtonToUserSelection(ActionEvent event) throws IOException
+    {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Image");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file (*.PNG)", "*.PNG"));
+        fileChooser.setInitialFileName("GeneratedGraph".concat(".PNG"));
+        File file = fileChooser.showSaveDialog(AnchorPane.getParent().getScene().getWindow());
+        if (file != null) {
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(graphImage.getImage(),
+                        null), "PNG", file);
+
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+            this.directoryPath = file.getParent();
+            convertXMLToDot();
+        }
+
+    }
+
+    public void setGraph(Graph graph, GraphSummary graphSummary) throws FileNotFoundException {
         this.graph = graph;
+        this.graphSummary = graphSummary;
+        this.directoryPath = this.graphSummary.getWorkingDirectory();
         setTargetDetailsTable();
         setGraphPositionsTable();
         setTargetSerialSetChoiceBox();
         initializePie();
+        convertXMLToDot();
+        setGraphImage(directoryPath + "\\" + "GeneratedGraph.png");
+    }
+
+    public void setGraphImage(String fullFileName) throws FileNotFoundException {
+        InputStream stream = new FileInputStream(fullFileName);
+        Image image = new Image(stream);
+        graphImage.fitWidthProperty().bind(AnchorPane.widthProperty());
+        graphImage.setImage(image);
     }
 
     private void setTargetDetailsTable() {
@@ -187,5 +242,82 @@ public class GraphDetailsController {
                     Tooltip.install(data.getNode(), tooltip);
                 });
     }
+
+    public void setDotFile(FileWriter dotFile)
+    {
+        this.dotFile = dotFile;
+    }
+
+    public void convertXMLToDot() {
+
+        String currentColor;
+        Target.TargetPosition targetPosition;
+        String fileNameDOT = "GeneratedGraph.dot";
+        String fileNamePNG = "GeneratedGraph.png";
+        String workingDirectory = graphSummary.getWorkingDirectory();
+        String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
+        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
+                "\n" +
+                "nodesep = 2;\n" +
+                "ranksep = 2;\n";
+
+        try {
+            dotFile = new FileWriter(new File(directoryPath,fileNameDOT));
+            dotFile.write(properties);
+
+            for (Target target : graph.getGraphTargets().values())
+            {
+                dotFile.write(target.getTargetName());
+
+                targetPosition = target.getTargetPosition();
+                if(targetPosition.equals(Target.TargetPosition.ROOT))
+                    currentColor = "dodgerblue";
+                else if(targetPosition.equals(Target.TargetPosition.MIDDLE))
+                    currentColor = "Gold";
+                else if(targetPosition.equals(Target.TargetPosition.LEAF))
+                    currentColor = "green3";
+                else
+                    currentColor = "chocolate1";
+
+                dotFile.write(" [fillcolor = " +  currentColor + "]\n");
+            }
+            dotFile.write("rankdir=TB; \n");
+            dotFile.write("Roots [shape=plaintext fillcolor=dodgerblue]\n");
+            dotFile.write("Middles [shape=plaintext fillcolor=Gold]\n");
+            dotFile.write("Leaves [shape=plaintext fillcolor=green3]\n");
+            dotFile.write("Independents [shape=plaintext fillcolor=chocolate1]\n");
+
+
+            for (Target target : graph.getGraphTargets().values()) {
+                dotFile.write(target.getTargetName());
+
+                if (!target.getDependsOnTargets().isEmpty())
+                    dotFile.write("-> {" + printAllDependsOnTarget(target) + "}");
+                dotFile.write("\n");
+
+//                dotFile.write("\n");
+            }
+            dotFile.write("}");
+            dotFile.close();
+
+            Process process = Runtime.getRuntime().exec("cmd /c cmd.exe /K \"cd \\ && cd " + directoryPath + " && " + createPNGFromDOT + " && exit");
+            process.waitFor();
+        }
+        catch(IOException | InterruptedException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+    }
+    private String printAllDependsOnTarget(Target curTarget)
+    {
+        String DependedTarget = "";
+        for (Target dependsOnTarget : curTarget.getDependsOnTargets())
+        {
+            DependedTarget = DependedTarget + dependsOnTarget.getTargetName() + " ";
+        }
+        return DependedTarget;
+    }
+
 }
 

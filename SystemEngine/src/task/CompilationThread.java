@@ -96,16 +96,16 @@ public class CompilationThread implements Runnable
 //        Platform.runLater(() -> System.out.println(finalOutputString));
 //        Platform.runLater(() -> log.appendText(finalOutputString));
 
-        if(targetSummary.getExtraInformation() != null)
-            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-
-        outputString+= "Task is going to execute : " + Arrays.toString(c) +"\n";
-
-        outputString += "------------------------------------------\n";
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+//        if(targetSummary.getExtraInformation() != null)
+//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
+//
+//        outputString+= "Task is going to execute : " + Arrays.toString(c) +"\n";
+//
+//        outputString += "------------------------------------------\n";
+//
+//        String finalOutputString = outputString;
+//        Platform.runLater(() -> System.out.println(finalOutputString));
+//        Platform.runLater(() -> log.appendText(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
