@@ -46,6 +46,8 @@ public class PrimaryController {
     private final ArrayList<String>leafColors = new ArrayList<>();
     private final ArrayList<String>independentColors = new ArrayList<>();
     private File selectedFile;
+    private FadeTransition fadeTransition;
+    private ScaleTransition scaleTransition;
 
     @FXML private ToggleGroup templates;
     @FXML private BorderPane mainBorderPane;
@@ -82,26 +84,42 @@ public class PrimaryController {
    @FXML
    void enableAnimationsPressed(ActionEvent event)
    {
-       FadeTransition fadeTransition = new FadeTransition();
-       ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
+       if(!this.enableAnimations.isSelected())
+       {
+           this.fadeTransition.stop();
+           this.scaleTransition.stop();
+           this.fireWorksImageView.setVisible(false);
 
-       fadeTransition.setNode(PrimaryLogo);
-       fadeTransition.setDuration(Duration.millis(2000));
-       fadeTransition.setCycleCount(1);
-       fadeTransition.setInterpolator(Interpolator.LINEAR);
-       fadeTransition.setFromValue(0);
-       fadeTransition.setToValue(1);
+           this.fadeTransition.setDuration(Duration.millis(0));
+           this.fadeTransition.setCycleCount(1);
+           this.fadeTransition.setAutoReverse(false);
+           this.fadeTransition.setInterpolator(Interpolator.LINEAR);
 
+           this.fadeTransition.play();
+           this.scaleTransition.play();
+
+           return;
+       }
+
+       this.fadeTransition = new FadeTransition();
+       this.scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
+
+       this.fadeTransition.setNode(this.PrimaryLogo);
+       this.fadeTransition.setDuration(Duration.millis(2000));
+       this.fadeTransition.setCycleCount(Animation.INDEFINITE);
+       this.fadeTransition.setAutoReverse(true);
+       this.fadeTransition.setInterpolator(Interpolator.LINEAR);
+       this.fadeTransition.setFromValue(0);
+       this.fadeTransition.setToValue(1);
 
        this.fireWorksImageView.setVisible(true);
-       scaleTransition.setCycleCount(100);
-       scaleTransition.setToX(-1);
-       scaleTransition.setToY(-1);
+       this.scaleTransition.setCycleCount(100);
+       this.scaleTransition.setToX(-1);
+       this.scaleTransition.setToY(-1);
 
-       fadeTransition.play();
-       scaleTransition.play();
+       this.fadeTransition.play();
+       this.scaleTransition.play();
    }
-
 
     @FXML
     void loadXMLButtonPressed(ActionEvent event)
