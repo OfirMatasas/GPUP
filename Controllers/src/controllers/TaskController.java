@@ -22,6 +22,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
@@ -29,7 +33,7 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -60,6 +64,8 @@ public class TaskController implements Initializable {
     private int finishedTargets;
     private Task<Void> task;
     private int numOfThreads;
+    private File sourceCodeDirectory;
+    private File outputDirectory;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -210,14 +216,27 @@ public class TaskController implements Initializable {
         taskThread.setNumOfThreads(numOfThreads);
     }
     @FXML
-    void chooseOutputDirectory(ActionEvent event) {
-
+    void chooseSourceCodeDirectoryToCompile(ActionEvent event)
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        sourceCodeDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
+        if(sourceCodeDirectory!=null)
+            this.sourceCodePathLabel.setText("Source Code Path : " +sourceCodeDirectory.getAbsolutePath());
     }
-
     @FXML
-    void chooseSourceCodeDirectoryToCompile(ActionEvent event) {
+    void chooseOutputDirectory(ActionEvent event)
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        outputDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
+        if(outputDirectory!=null)
+            this.outputPathLabel.setText("Output Path : " +outputDirectory.getAbsolutePath());
+        else
+        {
 
+        }
     }
+
+
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
@@ -483,8 +502,7 @@ public class TaskController implements Initializable {
         this.successWithWarningRateText.setDisable(flag);
         this.ApplyParametersButton.setDisable(flag);
 
-//        this.threadsSpinner.setDisable(flag);
-//        this.numberOfThreadToExecuteLabel.setDisable(flag);
+
     }
 
     private void addListenersForTextFields() {
