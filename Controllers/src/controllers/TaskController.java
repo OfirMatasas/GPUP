@@ -832,6 +832,30 @@ public class TaskController implements Initializable {
         this.positionColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("position"));
         this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("currentRuntimeStatus"));
         this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("resultStatus"));
+
+        this.taskTargetDetailsTableView.setRowFactory(tv -> new TableRow<TaskTargetInformation>()
+        {
+            protected void updateItem(TaskTargetInformation item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null)
+                    setStyle("");
+                else if (item.getCurrentRuntimeStatus().equals("Skipped"))
+                    setStyle("-fx-background-color: gray;");
+                else if (item.getResultStatus().equals("Failure"))
+                    setStyle("-fx-background-color: red;" + "-fx-text-fill: white;");
+                else if (item.getResultStatus().equals("Success"))
+                    setStyle("-fx-background-color: green;" + "-fx-text-fill: white;");
+                else if (item.getResultStatus().equals("Warning"))
+                    setStyle("-fx-background-color: orange;");
+                else if (item.getCurrentRuntimeStatus().equals("In process"))
+                    setStyle("-fx-background-color: yellow;");
+                else if (item.getCurrentRuntimeStatus().equals("Frozen"))
+                    setStyle("-fx-background-color: #469eff;");
+                else if (item.getCurrentRuntimeStatus().equals("Waiting"))
+                    setStyle("-fx-background-color: #e47bff;");
+            }
+        });
     }
 
     private void setTaskTargetDetailsTable()
