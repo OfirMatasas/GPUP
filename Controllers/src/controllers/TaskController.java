@@ -893,7 +893,7 @@ public class TaskController implements Initializable {
                 }
                 case Waiting:
                 {
-                    detailMsg += "The target " + currentTargetName + " is waiting for : " + currentTargetSummary.currentWaitingTime().toMillis() + " M\\S";
+                    detailMsg += "The target " + currentTargetName + " is waiting for : " + (currentTargetSummary.currentWaitingTime().toMillis() - currentTargetSummary.getTotalPausingTime().toMillis()) + " M\\S";
                     break;
                 }
                 case InProcess:

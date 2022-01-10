@@ -4,8 +4,9 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import summaries.TargetSummary;
 
-    public class TaskTargetInformation {
+public class TaskTargetInformation {
 
         private final SimpleIntegerProperty number;
         private final SimpleStringProperty targetName;
@@ -66,7 +67,10 @@ import javafx.beans.property.StringProperty;
         }
 
         public void setCurrentRuntimeStatus(String currentRuntimeStatus) {
-            this.currentRuntimeStatus.set(currentRuntimeStatus);
+            if(currentRuntimeStatus.equals(TargetSummary.RuntimeStatus.InProcess.toString()))
+                this.currentRuntimeStatus.set("In process");
+            else
+                this.currentRuntimeStatus.set(currentRuntimeStatus);
         }
         public String getResultStatus() {return resultStatus.get();}
 

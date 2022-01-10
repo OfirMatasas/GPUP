@@ -1,6 +1,7 @@
 package summaries;
 
 import target.Target;
+
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,9 +27,11 @@ public class TargetSummary implements Serializable
     private Set<String> skippedByTargets;
     private final Set<String> openedTargets;
     private Instant waitingTimeStarted;
-    private Instant ProcessingTimeStarted;
+    private Instant processingTimeStarted;
     private Duration waitingTime;
     private Duration processingTime;
+    private Instant pausingTime;
+    private Duration totalPausingTime;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public TargetSummary(String targetName) {
@@ -43,39 +46,40 @@ public class TargetSummary implements Serializable
         this.isRoot = false;
         this.waitingTime = Duration.ZERO;
         this.processingTime = Duration.ZERO;
+        this.totalPausingTime = Duration.ZERO;
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     public String getExtraInformation() {
-        return extraInformation;
+        return this.extraInformation;
     }
 
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
     public Set<String> getSkippedByTargets() {
-        return skippedByTargets;
+        return this.skippedByTargets;
     }
 
     public Duration getPredictedTime() {
-        return predictedTime;
+        return this.predictedTime;
     }
 
     public RuntimeStatus getRuntimeStatus() {
-        return runtimeStatus;
+        return this.runtimeStatus;
     }
 
     public Duration getTime() {
-        return actualTime;
+        return this.actualTime;
     }
 
     public ResultStatus getResultStatus() {
-        return resultStatus;
+        return this.resultStatus;
     }
 
     public synchronized boolean isSkipped() {
@@ -83,16 +87,14 @@ public class TargetSummary implements Serializable
     }
 
     public Set<String> getOpenedTargets() {
-        return openedTargets;
+        return this.openedTargets;
     }
 
     public Boolean getRoot() {
         return this.isRoot;
     }
 
-    public Duration getWaitingTime() { return waitingTime; }
-
-    public Duration getProcessingTime() { return processingTime; }
+    public Duration getProcessingTime() { return this.processingTime; }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setRunning(boolean running) {
@@ -108,13 +110,13 @@ public class TargetSummary implements Serializable
     }
 
     public synchronized void setSkipped(boolean skipped) {
-        isSkipped = skipped;
+        this.isSkipped = skipped;
     }
 
     public void setResultStatus(ResultStatus resultStatus) { this.resultStatus = resultStatus; }
 
     public void setRoot(Boolean root) {
-        isRoot = root;
+        this.isRoot = root;
     }
 
     public void setOpenedTargetsToZero()
@@ -122,38 +124,27 @@ public class TargetSummary implements Serializable
         this.openedTargets.clear();
     }
 
-    public void setWaitingTime(Duration waitingTime) { this.waitingTime = waitingTime; }
-
     public void setProcessingTime(Duration processingTime) { this.processingTime = processingTime; }
 
 
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void startTheClock()
     {
-        timeStarted = Instant.now();
+        this.timeStarted = Instant.now();
     }
 
     public void stopTheClock()
     {
         Instant timeEnded = Instant.now();
-        actualTime = Duration.between(timeStarted, timeEnded);
+        this.actualTime = Duration.between(this.timeStarted, timeEnded);
     }
-
-//    public Boolean checkIfFailedBefore()
-//    {
-//        if(skippedTargets != null)
-//            return true;
-//
-//        skippedTargets = new HashSet<>();
-//        return false;
-//    }
 
     public void addNewSkippedByTarget(String skippedByTargetName)
     {
-        if(skippedByTargets == null)
-            skippedByTargets = new HashSet<String>();
+        if(this.skippedByTargets == null)
+            this.skippedByTargets = new HashSet<>();
 
-        skippedByTargets.add(skippedByTargetName);
+        this.skippedByTargets.add(skippedByTargetName);
     }
 
     public void checkForOpenTargets(Target executedTarget, GraphSummary graphSummary)
@@ -178,7 +169,7 @@ public class TargetSummary implements Serializable
             if(skip)
                 continue;
 
-            openedTargets.add(requiredForTarget.getTargetName());
+            this.openedTargets.add(requiredForTarget.getTargetName());
         }
     }
 
@@ -193,29 +184,51 @@ public class TargetSummary implements Serializable
 
     public void startWaitingTime()
     {
-        waitingTimeStarted = Instant.now();
+        this.totalPausingTime = Duration.ZERO;
+        this.waitingTimeStarted = Instant.now();
     }
 
     public Duration currentWaitingTime()
     {
         Instant timeNow = Instant.now();
-        return Duration.between(waitingTimeStarted, timeNow);
+
+        if(this.pausingTime != null)
+            return Duration.between(this.waitingTimeStarted, this.pausingTime);
+        else
+            return Duration.between(this.waitingTimeStarted ,timeNow);
+    }
+
+    public void pausingWaitingTime()
+    {
+        this.pausingTime = Instant.now();
+    }
+
+    public void continuingWaitingTime()
+    {
+        Instant resumeTime = Instant.now();
+
+        this.totalPausingTime = Duration.between(this.pausingTime, resumeTime).plus(this.totalPausingTime);
+        this.pausingTime = null;
+    }
+
+    public Duration getTotalPausingTime() {
+        return totalPausingTime;
     }
 
     public void startProcessingTime()
     {
         //stopping waiting time , the target is in processing time
         Instant waitingTimeEnded = Instant.now();
-        waitingTime = Duration.between(waitingTimeStarted, waitingTimeEnded);
+        this.waitingTime = Duration.between(this.waitingTimeStarted, waitingTimeEnded);
 
         //starting processing time
-        ProcessingTimeStarted = Instant.now();
+        this.processingTimeStarted = Instant.now();
     }
 
     public Duration currentProcessingTime()
     {
         Instant timeNow = Instant.now();
-        return Duration.between(ProcessingTimeStarted, timeNow);
+        return Duration.between(this.processingTimeStarted, timeNow);
     }
 
     public void startFinishingTime()
@@ -229,11 +242,11 @@ public class TargetSummary implements Serializable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TargetSummary that = (TargetSummary) o;
-        return Objects.equals(targetName, that.targetName);
+        return Objects.equals(this.targetName, that.targetName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(targetName);
+        return Objects.hash(this.targetName);
     }
 }

@@ -119,6 +119,12 @@ public class GraphSummary implements Serializable {
     public void pauseTheClock()
     {
         timePaused = Instant.now();
+
+        for(TargetSummary curr : targetsSummaryMap.values())
+        {
+            if(curr.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Waiting))
+                curr.pausingWaitingTime();
+        }
     }
 
     public void continueTheClock()
@@ -127,6 +133,12 @@ public class GraphSummary implements Serializable {
 
         this.totalPausedTime = Duration.between(this.timePaused, timeEnded).plus(totalPausedTime);
         timePaused = null;
+
+        for(TargetSummary curr : targetsSummaryMap.values())
+        {
+            if(curr.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Waiting))
+                curr.continuingWaitingTime();
+        }
     }
 
     public void calculateResults()
