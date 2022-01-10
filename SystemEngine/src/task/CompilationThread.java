@@ -2,80 +2,83 @@ package task;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
-import myExceptions.FileNotFound;
-import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Target;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class CompilationThread implements Runnable
 {
-
     private final GraphSummary graphSummary;
     private final TextArea log;
     private final Target target;
     private final String targetName;
+    private final CompilationParameters compilationParameters;
+    private String[] toExecute;
 
-    public CompilationThread(Target target, GraphSummary graphSummary, TextArea log) throws FileNotFound, IOException, OpeningFileCrash {
+    public CompilationThread(Target target, GraphSummary graphSummary, TextArea log, CompilationParameters compilationParameters) {
 
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
         this.log = log;
-//        this.taskOutput = taskOutput;
-//        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
-        UpdateWorkingTime();
+        this.compilationParameters = compilationParameters;
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(targetName + " Thread");
         TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
-//        long sleepingTime = targetParameters.getProcessingTime().toMillis();
         TargetSummary.ResultStatus resultStatus;
+        File sourceCodeDirectory = compilationParameters.getSourceCodeDirectory();
+        String outputDirectoryPath = compilationParameters.getOutputDirectory().getAbsolutePath();
+        String userGive = sourceCodeDirectory + "/" + target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName())
+                + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
+        String[] c = {"javac", "-d", outputDirectoryPath, "-cp", outputDirectoryPath, userGive};
+        String failureCause = "";
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, log);
-        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
+        outputStartingTaskOnTarget(targetSummary, log, c);
+        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
-        //Going to sleep
-//        try {
-//            Thread.sleep(sleepingTime);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        double result = Math.random();
-//        if(Math.random() <= targetParameters.getSuccessRate())
-//            resultStatus = result <= targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
-//        else
-//            resultStatus = TargetSummary.ResultStatus.Failure;
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(c);
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            try {
+                process = Runtime.getRuntime().exec(c);
+                process.waitFor();
+            } catch (IOException | InterruptedException ex) {
+            }
+        }
+
+        if(Objects.requireNonNull(process).exitValue() != 0) //Failure
+        {
+            resultStatus = TargetSummary.ResultStatus.Failure;
+            try {
+                failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else //Success
+            resultStatus = TargetSummary.ResultStatus.Success;
 
         targetSummary.stopTheClock();
-        //graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
-        outputEndingTaskOnTarget(targetSummary);
+        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
+        outputEndingTaskOnTarget(targetSummary, failureCause);
     }
 
-    private void UpdateWorkingTime() {
-        long timeLong;
-        Duration timeDuration;
-        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
-
-//        if(targetParameters.isRandom())
-//        {
-//            timeDuration = targetParameters.getProcessingTime();
-//            timeLong = (long)(Math.random() * (timeDuration.toMillis())) + 1;
-//            timeDuration = Duration.of(timeLong, ChronoUnit.MILLIS);
-//            targetSummary.setPredictedTime(timeDuration);
-//        }
-    }
-
-    public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log)
+    public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
     {
         //Duration time = targetParameters.getProcessingTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
@@ -83,25 +86,26 @@ public class CompilationThread implements Runnable
         if(targetSummary.getExtraInformation() != null)
             outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
 
-//        outputString += String.format("The system is going to sleep for %02d:%02d:%02d\n",
-               // time.toHours(), time.toMinutes(), time.getSeconds());
+        outputString+= "Task is going to execute : " + Arrays.toString(c) +"\n";
 
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
         Platform.runLater(() -> log.appendText(finalOutputString));
-
     }
 
-    public void outputEndingTaskOnTarget(TargetSummary targetSummary)
+    public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
     {
         Duration time = targetSummary.getTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
 
         outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-        outputString += String.format("The system went to sleep for %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
+
+        if(!Objects.equals(failureCause, ""))
+            outputString += "Failure cause: " + failureCause;
+
+        outputString += "Compilation time: " + time.toMillis() + "m/s\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;

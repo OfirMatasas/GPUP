@@ -2,18 +2,18 @@ package task;
 
 import java.time.Duration;
 
-public class TaskParameters {
+public class SimulationParameters {
     private Duration processingTime;
     private Boolean isRandom;
     private Double successRate, successWithWarnings;
 
-    public TaskParameters() {
+    public SimulationParameters() {
         processingTime = null;
         this.isRandom = false;
         this.successRate = this.successWithWarnings = 0.0;
     }
 
-    public TaskParameters(Duration processingTime, Boolean isRandom, Double successRate, Double successWithWarnings) {
+    public SimulationParameters(Duration processingTime, Boolean isRandom, Double successRate, Double successWithWarnings) {
         this.processingTime = processingTime;
         this.isRandom = isRandom;
         this.successRate = successRate;

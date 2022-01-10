@@ -23,17 +23,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
-import task.TaskParameters;
+import task.CompilationParameters;
+import task.SimulationParameters;
 import task.TaskThread;
-
 import java.io.*;
 import java.net.URL;
 import java.time.Duration;
@@ -43,9 +40,9 @@ import java.util.*;
 
 public class TaskController implements Initializable {
     private Graph graph;
-    private Map<String, TaskParameters> taskParametersMap = new HashMap<>();
+    private Map<String, SimulationParameters> taskParametersMap = new HashMap<>();
     private int maxParallelThreads;
-    private TaskParameters taskParameters;
+    private SimulationParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
     private ObservableList<String> currentSelectedTargets = FXCollections.observableArrayList();
     private final String NONE = "none";
@@ -62,8 +59,9 @@ public class TaskController implements Initializable {
     private int finishedTargets;
     private Task<Void> task;
     private int numOfThreads;
-    private File sourceCodeDirectory;
-    private File outputDirectory;
+    private File sourceCodeDirectory = null;
+    private File outputDirectory = null;
+    private TaskThread.TaskType taskType;
 
     public class TaskThreadWatcher extends Thread
     {
@@ -220,35 +218,18 @@ public class TaskController implements Initializable {
         sourceCodeDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
         if(sourceCodeDirectory!=null)
             this.sourceCodePathLabel.setText("Source Code Path : " +sourceCodeDirectory.getAbsolutePath());
+
+        runButton.setDisable(sourceCodeDirectory == null || outputDirectory == null || taskTargetDetailsTableView.getItems().isEmpty());
     }
     @FXML
-    void chooseOutputDirectory(ActionEvent event) throws IOException, InterruptedException {
+    void chooseOutputDirectory(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         outputDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
         if(outputDirectory!=null)
             this.outputPathLabel.setText("Output Path : " +outputDirectory.getAbsolutePath());
 
-//    for(Target currentTarget : graph.getGraphTargets().values())
-//        executeCompilationTaskFromCMD(currentTarget.getTargetName());
-        executeCompilationTaskFromCMD(graph.getTarget("BOO"));
-        executeCompilationTaskFromCMD(graph.getTarget("MOO"));
-        executeCompilationTaskFromCMD(graph.getTarget("FOO"));
-
-
-
+        runButton.setDisable(sourceCodeDirectory == null || outputDirectory == null || taskTargetDetailsTableView.getItems().isEmpty());
     }
-
-    public void executeCompilationTaskFromCMD(Target currentTarget) throws InterruptedException, IOException
-    {
-        String userGive = currentTarget.getFQN().substring(currentTarget.getFQN().indexOf(sourceCodeDirectory.getName()) + sourceCodeDirectory.getName().length() +1);
-        userGive = userGive.replace('.','\\').concat(".java");
-
-        String toExecute = "javac -d " + outputDirectory.getAbsolutePath() + " -cp " + outputDirectory.getAbsolutePath() + " " + userGive;
-        Process process = Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd \\ && cd " + sourceCodeDirectory + "&& " + toExecute +" && exit");
-        process.waitFor();
-
-    }
-
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
@@ -265,6 +246,9 @@ public class TaskController implements Initializable {
 
         updateTargetTaskDetailsInTextArea();
         turnOnIncrementalButton();
+
+        if(size - 1 == 0)
+            runButton.setDisable(true);
     }
 
     private void updateTargetTaskDetailsInTextArea() {
@@ -281,12 +265,24 @@ public class TaskController implements Initializable {
     {
         taskTargetDetailsTableView.getItems().clear();
         enableTargetInfoTextArea(false);
+        runButton.setDisable(true);
     }
 
     @FXML void addSelectedTargetsToTable(ActionEvent event)
     {
         setTaskTargetDetailsTable();
         incrementalRadioButton.setDisable(!incrementalIsOptional());
+
+        if(taskType.equals(TaskThread.TaskType.Compilation))
+        {
+            if(outputDirectory != null && sourceCodeDirectory != null)
+            runButton.setDisable(false);
+        }
+        else
+        {
+            if(taskParameters != null)
+                runButton.setDisable(false);
+        }
     }
 
     private void enableTargetInfoTextArea(boolean flag) {
@@ -384,26 +380,34 @@ public class TaskController implements Initializable {
         if(!checkForValidRun())
             return;
 
-        updateThread = new Thread(this::updateTableRuntimeStatuses);
+        CompilationParameters compilationParameters = null;
+        this.updateThread = new Thread(this::updateTableRuntimeStatuses);
         this.taskThreadWatcher = new TaskThreadWatcher();
         Set<String> currentRunTargets = setCurrentRunTargets();
         turnOnProgressBar();
 
-        applyTaskParametersForAllTargets(taskParameters);
+        if(this.taskType.equals(TaskThread.TaskType.Simulation))
+            applyTaskParametersForAllTargets(this.taskParameters);
+        else //Compilation
+        {
+            compilationParameters = new CompilationParameters(this.sourceCodeDirectory, this.outputDirectory);
+            this.numOfThreads = threadsSpinner.getValue();
+        }
+
         this.taskDetailsOnTargetTextArea.setDisable(false);
         this.progressBar.setDisable(false);
         this.progressBarLabel.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
 
-        taskThread = new TaskThread(graph, TaskThread.TaskType.Simulation, taskParametersMap, graphSummary,
-                currentRunTargets, numOfThreads, logTextArea, incrementalRadioButton.isSelected());
+        taskThread = new TaskThread(this.graph, this.taskType, this.taskParametersMap, compilationParameters, this.graphSummary,
+                currentRunTargets, this.numOfThreads, this.logTextArea, this.incrementalRadioButton.isSelected());
 
-        taskThreadWatcher.setDaemon(true);
+        this.taskThreadWatcher.setDaemon(true);
 
-        taskThread.start();
+        this.taskThread.start();
         createNewProgressBar();
-        taskThreadWatcher.start();
-        updateThread.start();
+        this.taskThreadWatcher.start();
+        this.updateThread.start();
     }
 
     private void turnOnProgressBar() {
@@ -450,11 +454,20 @@ public class TaskController implements Initializable {
     {
         String errorMessage = "";
 
-        if(taskParameters == null)
-            errorMessage = "You have to apply the parameters for the task first!";
+        if(this.taskType.equals(TaskThread.TaskType.Simulation))
+        {
+            if(taskParameters == null)
+                errorMessage = "You have to apply the parameters for the task first!";
+
+        }
+        else //Compilation task
+        {
+            if(sourceCodeDirectory == null || outputDirectory == null)
+                errorMessage = "Please choose directories for compilation task!";
+        }
 
         if(incrementalRadioButton.isSelected() && incrementalRadioButton.isDisabled())
-            errorMessage = "Incremental is not optional!\nChoose \"From scratch\" or select other targets";
+            errorMessage = "Incremental is not optional!\nChoose \"From Scratch\" or select other targets";
 
         if(!errorMessage.equals(""))
         {
@@ -495,6 +508,8 @@ public class TaskController implements Initializable {
             threadsSpinner.setDisable(false);
             numberOfThreadToExecuteLabel.setDisable(false);
         }
+
+        this.taskType = taskSelection.getValue().equals("Simulation") ? TaskThread.TaskType.Simulation : TaskThread.TaskType.Compilation;
     }
 
     private void setForSimulationTask(boolean flag) {
@@ -620,9 +635,9 @@ public class TaskController implements Initializable {
         setTaskTargetDetailsTable();
     }
 
-    private void applyTaskParametersForAllTargets(TaskParameters taskParameters) {
+    private void applyTaskParametersForAllTargets(SimulationParameters taskParameters) {
         taskParametersMap = new HashMap<>();
-        TaskParameters currTaskParameters;
+        SimulationParameters currTaskParameters;
         Duration processingTime;
         long randomTime;
         double successRate = taskParameters.getSuccessRate(), successRateWithWarnings = taskParameters.getSuccessWithWarnings();
@@ -644,7 +659,7 @@ public class TaskController implements Initializable {
             randomTime = (long)(Math.random() * (processingTime.toMillis())) + 1;
             processingTime = (Duration.of(randomTime, ChronoUnit.MILLIS));
 
-            currTaskParameters = new TaskParameters(processingTime, isRandom, successRate, successRateWithWarnings);
+            currTaskParameters = new SimulationParameters(processingTime, isRandom, successRate, successRateWithWarnings);
             taskParametersMap.put(target.getTargetName(), currTaskParameters);
         }
     }
@@ -757,8 +772,8 @@ public class TaskController implements Initializable {
         });
     }
 
-    public TaskParameters getSimulationTaskParametersFromUser() {
-        TaskParameters taskParameters = new TaskParameters();
+    public SimulationParameters getSimulationTaskParametersFromUser() {
+        SimulationParameters taskParameters = new SimulationParameters();
         Duration processingTime;
         long timeInMS;
         Boolean isRandom;

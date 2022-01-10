@@ -13,23 +13,19 @@ import java.time.temporal.ChronoUnit;
 
 public class SimulationThread implements Runnable
 {
-    private final TaskParameters targetParameters;
+    private final SimulationParameters targetParameters;
     private final GraphSummary graphSummary;
     private final TextArea log;
-//    private final TaskOutput taskOutput;
-//    private Path filePath;
     private final Target target;
     private final String targetName;
 
-    public SimulationThread(TaskParameters targetParameters, Target target, GraphSummary graphSummary,
+    public SimulationThread(SimulationParameters targetParameters, Target target, GraphSummary graphSummary,
                             TextArea log) throws FileNotFound, IOException, OpeningFileCrash {
         this.targetParameters = targetParameters;
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
         this.log = log;
-//        this.taskOutput = taskOutput;
-//        this.filePath = Paths.get(taskOutput.getDirectoryPath() + "/" + targetName + ".log");
         UpdateWorkingTime();
     }
 

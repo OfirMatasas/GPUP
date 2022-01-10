@@ -27,7 +27,8 @@ public class TaskThread extends Thread {
     //Getting from UI
     private final Graph graph;
     private final TaskType taskType;
-    private final Map<String, TaskParameters> taskParametersMap;
+    private final Map<String, SimulationParameters> taskParametersMap;
+    private final CompilationParameters compilationParameters;
     private final GraphSummary graphSummary;
     private final Set<String> targetsSet;
     private ExecutorService executor;
@@ -44,11 +45,12 @@ public class TaskThread extends Thread {
     private Boolean statusChanged;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
-    public TaskThread(Graph graph, TaskType taskType, Map<String, TaskParameters> taskParametersMap,
+    public TaskThread(Graph graph, TaskType taskType, Map<String, SimulationParameters> taskParametersMap, CompilationParameters compilationParameters,
                       GraphSummary graphSummary, Set<String> targetsSet, int numOfThreads, TextArea log, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
+        this.compilationParameters = compilationParameters;
         this.graphSummary = graphSummary;
         this.targetsSet = targetsSet;
         this.numOfThreads = numOfThreads;
@@ -84,61 +86,58 @@ public class TaskThread extends Thread {
 
         graphSummary.startTheClock();
 
-        if(taskType.equals(TaskType.Simulation))
+        //Continuing polling targets while there are some left, and the "Stop" button didn't hit
+        while(!getStopped() && (currentlyPaused || ((currTargetName = targetsList.poll()) != null)))
         {
-            //Continuing polling targets while there are some left, and the "Stop" button didn't hit
-            while(!getStopped() && (currentlyPaused || ((currTargetName = targetsList.poll()) != null)))
+            //If the task is on "pause"
+            if(currentlyPaused)
             {
-                //If the task is on "pause"
-                if(currentlyPaused)
+                //Pausing the clock if the "Pause" button just hit
+                if(!pausedBefore)
                 {
-                    //Pausing the clock if the "Pause" button just hit
-                    if(!pausedBefore)
-                    {
-                        executor.shutdown();
-                        while(!executor.isTerminated()) {}
+                    executor.shutdown();
+                    while(!executor.isTerminated()) {}
 
-                        pausedBefore = true;
-                        graphSummary.pauseTheClock();
-                    }
-
-                    currentlyPaused = getPaused();
-                    continue;
+                    pausedBefore = true;
+                    graphSummary.pauseTheClock();
                 }
 
-                currTarget = graph.getTarget(currTargetName);
-
-                try {
-                    //Continuing the clock if the "Resume" button just hit
-                    if(pausedBefore)
-                    {
-                        this.executor = Executors.newFixedThreadPool(numOfThreads);
-
-                        pausedBefore = false;
-                        graphSummary.continueTheClock();
-                    }
-
-                    if(graphSummary.isSkipped(currTargetName))
-                        continue;
-                    else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet) && graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
-                    { //The target is ready to run!
-                        graphSummary.addClosedSerialSets(currTarget);
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log));
-                    }
-                    else //The target is not ready to run yet, but not skipped either
-                        targetsList.addLast(currTargetName);
-
-                    currentlyPaused = getPaused();
-
-                } catch (FileNotFound | IOException | OpeningFileCrash e) {
-                    String finalCurrTarget = currTargetName;
-                    Platform.runLater(() -> ShowPopUp(e.getMessage(), "Error with " + finalCurrTarget + " file.", Alert.AlertType.ERROR));
-                }
+                currentlyPaused = getPaused();
+                continue;
             }
-        }
-        else if(taskType.equals(TaskType.Compilation))
-        {
-            System.out.println("Compilation task");
+
+            currTarget = graph.getTarget(currTargetName);
+
+            try {
+                //Continuing the clock if the "Resume" button just hit
+                if(pausedBefore)
+                {
+                    this.executor = Executors.newFixedThreadPool(numOfThreads);
+
+                    pausedBefore = false;
+                    graphSummary.continueTheClock();
+                }
+
+                if(graphSummary.isSkipped(currTargetName))
+                    continue;
+                else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet) && graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
+                { //The target is ready to run!
+                    graphSummary.addClosedSerialSets(currTarget);
+
+                    if(taskType.equals(TaskType.Simulation))
+                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log));
+                    else
+                        executor.execute(new CompilationThread(currTarget, graphSummary, log, compilationParameters));
+                }
+                else //The target is not ready to run yet, but not skipped either
+                    targetsList.addLast(currTargetName);
+
+                currentlyPaused = getPaused();
+
+            } catch (FileNotFound | IOException | OpeningFileCrash e) {
+                String finalCurrTarget = currTargetName;
+                Platform.runLater(() -> ShowPopUp(e.getMessage(), "Error with " + finalCurrTarget + " file.", Alert.AlertType.ERROR));
+            }
         }
 
         executor.shutdown();
@@ -205,7 +204,8 @@ public class TaskThread extends Thread {
             outputString += targetSummary.getResultStatus() + "\n";
 
         if(!targetSummary.isSkipped())
-            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
+            outputString += "Target's running time: " + time.toMillis() + "m/s\n";
+//            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
 
         return outputString;
     }
@@ -268,8 +268,6 @@ public class TaskThread extends Thread {
                 targetsList.addFirst(currentTargetName);
                 graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
             }
-
-//            currentTargetSummary.setOpenedTargetsToZero();
         }
         //Finished initializing graph summary
 
