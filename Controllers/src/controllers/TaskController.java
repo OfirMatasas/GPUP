@@ -216,7 +216,7 @@ public class TaskController implements Initializable {
     {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         sourceCodeDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
-        if(sourceCodeDirectory!=null)
+        if(sourceCodeDirectory != null)
             this.sourceCodePathLabel.setText("Source Code Path : " +sourceCodeDirectory.getAbsolutePath());
 
         runButton.setDisable(sourceCodeDirectory == null || outputDirectory == null || taskTargetDetailsTableView.getItems().isEmpty());
@@ -225,7 +225,7 @@ public class TaskController implements Initializable {
     void chooseOutputDirectory(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         outputDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
-        if(outputDirectory!=null)
+        if(outputDirectory != null)
             this.outputPathLabel.setText("Output Path : " +outputDirectory.getAbsolutePath());
 
         runButton.setDisable(sourceCodeDirectory == null || outputDirectory == null || taskTargetDetailsTableView.getItems().isEmpty());

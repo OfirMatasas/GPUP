@@ -80,8 +80,21 @@ public class CompilationThread implements Runnable
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
     {
-        //Duration time = targetParameters.getProcessingTime();
-        String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
+//        String userGive = target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName()) + sourceCodeDirectory.getName().length() +1);
+//        userGive = userGive.replace('.','\\').concat(".java");
+//        String toExecute = "javac -d " + outputDirectory.getAbsolutePath() + " -cp " + outputDirectory.getAbsolutePath() + " " + userGive;
+//        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
+//
+//        if(targetSummary.getExtraInformation() != null)
+//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
+//
+//        outputString+= "Task is going to execute : " + toExecute +"\n";
+//
+//        outputString += "------------------------------------------\n";
+//
+//        String finalOutputString = outputString;
+//        Platform.runLater(() -> System.out.println(finalOutputString));
+//        Platform.runLater(() -> log.appendText(finalOutputString));
 
         if(targetSummary.getExtraInformation() != null)
             outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
