@@ -33,10 +33,8 @@ import target.Graph;
 import target.Target;
 import task.TaskParameters;
 import task.TaskThread;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -224,18 +222,32 @@ public class TaskController implements Initializable {
             this.sourceCodePathLabel.setText("Source Code Path : " +sourceCodeDirectory.getAbsolutePath());
     }
     @FXML
-    void chooseOutputDirectory(ActionEvent event)
-    {
+    void chooseOutputDirectory(ActionEvent event) throws IOException, InterruptedException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         outputDirectory = directoryChooser.showDialog(taskBorderPane.getParent().getScene().getWindow());
         if(outputDirectory!=null)
             this.outputPathLabel.setText("Output Path : " +outputDirectory.getAbsolutePath());
-        else
-        {
 
-        }
+//    for(Target currentTarget : graph.getGraphTargets().values())
+//        executeCompilationTaskFromCMD(currentTarget.getTargetName());
+        executeCompilationTaskFromCMD(graph.getTarget("BOO"));
+        executeCompilationTaskFromCMD(graph.getTarget("MOO"));
+        executeCompilationTaskFromCMD(graph.getTarget("FOO"));
+
+
+
     }
 
+    public void executeCompilationTaskFromCMD(Target currentTarget) throws InterruptedException, IOException
+    {
+        String userGive = currentTarget.getFQN().substring(currentTarget.getFQN().indexOf(sourceCodeDirectory.getName()) + sourceCodeDirectory.getName().length() +1);
+        userGive = userGive.replace('.','\\').concat(".java");
+
+        String toExecute = "javac -d " + outputDirectory.getAbsolutePath() + " -cp " + outputDirectory.getAbsolutePath() + " " + userGive;
+        Process process = Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd \\ && cd " + sourceCodeDirectory + "&& " + toExecute +" && exit");
+        process.waitFor();
+
+    }
 
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)

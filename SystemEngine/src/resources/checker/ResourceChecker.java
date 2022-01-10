@@ -80,6 +80,7 @@ public class ResourceChecker
         {
             currentTargetName = currentgpupTarget.getName();
             currentTarget = graph.getTarget(currentTargetName);
+            currentTarget.setFQN(currentgpupTarget.getGPUPUserData());
 
             if(currentgpupTarget.getGPUPTargetDependencies() == null)
                 continue;
@@ -96,9 +97,8 @@ public class ResourceChecker
 
                 if(!checkValidConnectionBetweenTwoTargets(currentTarget, secondTarget, dep.getType()))
                     throw new InvalidConnectionBetweenTargets(currentTargetName, secondTargetName);
-
-                currentTarget.setFQN(currentgpupTarget.getGPUPUserData());
             }
+
         }
 
         //Get all serial sets names and fill them up with targets' names
