@@ -11,7 +11,8 @@ public class TargetDetails {
     private int serialSets;
     private String extraInformation;
 
-    public TargetDetails(int num, String targetName, String position, int directDependsOn, int allDependsOn, int directRequiredFor, int allRequiredFor, int serialSets,String extraInformation) {
+    public TargetDetails(int num, String targetName, String position, int directDependsOn, int allDependsOn,
+                         int directRequiredFor, int allRequiredFor, int serialSets,String extraInformation) {
         this.num = num;
         this.targetName = targetName;
         this.position = position;
@@ -21,76 +22,73 @@ public class TargetDetails {
         this.allRequiredFor = allRequiredFor;
         this.serialSets = serialSets;
         this.extraInformation = extraInformation;
-
     }
 
     public int getNum() {
-        return num;
+        return this.num;
     }
 
     public void setNum(int num) {
-        this.num=num;
+        this.num = num;
     }
 
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     public void setTargetName(String targetName) {
-        this.targetName=targetName;
+        this.targetName = targetName;
     }
 
     public String getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(String position) {
-        this.position=position;
+        this.position = position;
     }
 
     public int getDirectDependsOn() {
-        return directDependsOn;
+        return this.directDependsOn;
     }
 
     public void setDirectDependsOn(int directDependsOn) {
-        this.directDependsOn=directDependsOn;
+        this.directDependsOn = directDependsOn;
     }
 
     public int getAllDependsOn() {
-        return allDependsOn;
+        return this.allDependsOn;
     }
 
     public void setAllDependsOn(int allDependsOn) {
-        this.allDependsOn=allDependsOn;
+        this.allDependsOn = allDependsOn;
     }
 
     public int getDirectRequiredFor() {
-        return directRequiredFor;
+        return this.directRequiredFor;
     }
 
     public void setDirectRequiredFor(int directRequiredFor) {
-        this.directRequiredFor=directRequiredFor;
+        this.directRequiredFor = directRequiredFor;
     }
 
     public int getAllRequiredFor() {
-        return allRequiredFor;
+        return this.allRequiredFor;
     }
 
     public void setAllRequiredFor(int allRequiredFor) {
-        this.allRequiredFor=allRequiredFor;
+        this.allRequiredFor = allRequiredFor;
     }
 
     public int getSerialSets() {
-        return serialSets;
+        return this.serialSets;
     }
 
     public void setSerialSets(int serialSets) {
-        this.serialSets=serialSets;
+        this.serialSets = serialSets;
     }
 
-    public String getExtraInformation() {return extraInformation;}
+    public String getExtraInformation() {return this.extraInformation;}
 
     public void setExtraInformation(String extraInformation) {this.extraInformation = extraInformation;}
-
-
 }

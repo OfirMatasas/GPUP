@@ -9,7 +9,6 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
@@ -18,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class TaskThread extends Thread {
     //--------------------------------------------------Enums-------------------------------------------------------//
@@ -37,7 +37,6 @@ public class TaskThread extends Thread {
     private int numOfThreads;
 
     //Local use
-    private final TaskOutput taskOutput;
     private final LinkedList<String> targetsList;
     private Boolean paused;
     private Boolean stopped;
@@ -55,7 +54,6 @@ public class TaskThread extends Thread {
         this.targetsSet = targetsSet;
         this.numOfThreads = numOfThreads;
         this.executor = Executors.newFixedThreadPool(numOfThreads);
-        this.taskOutput = new TaskOutput(taskType.toString(), graphSummary);
         this.targetsList = new LinkedList<>();
         this.log = log;
         this.paused = false;
@@ -73,64 +71,73 @@ public class TaskThread extends Thread {
         Target currTarget;
         taskPreparations();
         Boolean currentlyPaused = false;
+        LinkedList<Future<?>> futures = new LinkedList<>();
+        LinkedList<String> submitted = new LinkedList<>();
 
-        if(targetsList.isEmpty())
+        if(this.targetsList.isEmpty())
         {
             Platform.runLater(() -> ShowPopUp("There are no targets available for the current task!", "Lack of available targets", Alert.AlertType.ERROR));
             return;
         }
 
         //Starting task on graph
-        printStartOfTaskOnGraph(graph.getGraphName());
-//        taskOutput.printStartOfTaskOnGraph(graph.getGraphName());
-
-        graphSummary.startTheClock();
+        printStartOfTaskOnGraph(this.graph.getGraphName());
+        this.graphSummary.startTheClock();
 
         //Continuing polling targets while there are some left, and the "Stop" button didn't hit
-        while(!getStopped() && (currentlyPaused || ((currTargetName = targetsList.poll()) != null)))
+        while(!getStopped() && (currentlyPaused || ((currTargetName = this.targetsList.poll()) != null)))
         {
             //If the task is on "pause"
             if(currentlyPaused)
             {
                 //Pausing the clock if the "Pause" button just hit
-                if(!pausedBefore)
+                if(!this.pausedBefore)
                 {
-                    executor.shutdown();
-                    while(!executor.isTerminated()) {}
+                    this.executor.shutdownNow();
+                    while(!this.executor.isTerminated()) {}
 
-                    pausedBefore = true;
-                    graphSummary.pauseTheClock();
+                    for(int i = 0 ; i < submitted.size() ; ++i)
+                    {
+                        if(!futures.get(i).isDone())
+                            this.targetsList.addFirst(submitted.get(i));
+                    }
+                    futures.clear();
+                    submitted.clear();
+
+                    this.pausedBefore = true;
+                    this.graphSummary.pauseTheClock();
                 }
 
                 currentlyPaused = getPaused();
                 continue;
             }
 
-            currTarget = graph.getTarget(currTargetName);
+            currTarget = this.graph.getTarget(currTargetName);
 
             try {
                 //Continuing the clock if the "Resume" button just hit
-                if(pausedBefore)
+                if(this.pausedBefore)
                 {
-                    this.executor = Executors.newFixedThreadPool(numOfThreads);
+                    this.executor = Executors.newFixedThreadPool(this.numOfThreads);
 
-                    pausedBefore = false;
-                    graphSummary.continueTheClock();
+                    this.pausedBefore = false;
+                    this.graphSummary.continueTheClock();
                 }
 
-                if(graphSummary.isSkipped(currTargetName))
+                if(this.graphSummary.isSkipped(currTargetName))
                     continue;
-                else if(graphSummary.isTargetReadyToRun(currTarget, targetsSet) && graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
+                else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet) && this.graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
                 { //The target is ready to run!
-                    graphSummary.addClosedSerialSets(currTarget);
+                    this.graphSummary.addClosedSerialSets(currTarget);
 
-                    if(taskType.equals(TaskType.Simulation))
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log));
+                    if(this.taskType.equals(TaskType.Simulation))
+                        futures.add(this.executor.submit(new SimulationThread(this.taskParametersMap.get(currTargetName), currTarget, this.graphSummary, this.log)));
                     else
-                        executor.execute(new CompilationThread(currTarget, graphSummary, log, compilationParameters));
+                        futures.add(this.executor.submit(new CompilationThread(currTarget, this.graphSummary, this.log, this.compilationParameters)));
+                    submitted.add(currTargetName);
                 }
                 else //The target is not ready to run yet, but not skipped either
-                    targetsList.addLast(currTargetName);
+                    this.targetsList.addLast(currTargetName);
 
                 currentlyPaused = getPaused();
 
@@ -140,19 +147,19 @@ public class TaskThread extends Thread {
             }
         }
 
-        executor.shutdown();
-        while (!executor.isTerminated()) { }
+        this.executor.shutdown();
+        while (!this.executor.isTerminated()) { }
 
-        graphSummary.stopTheClock();
-        outputGraphSummary(graphSummary);
+        this.graphSummary.stopTheClock();
+        outputGraphSummary(this.graphSummary);
         Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
 //        taskOutput.outputGraphSummary();
     }
 
     public void printStartOfTaskOnGraph(String graphName) {
-        String startingAnnouncement = taskType.toString().substring(0, 1).toUpperCase() + taskType.toString().substring(1) + " task started on graph " + graphName + "!\n\n";
+        String startingAnnouncement = this.taskType.toString().substring(0, 1).toUpperCase() + this.taskType.toString().substring(1) + " task started on graph " + graphName + "!\n\n";
         Platform.runLater(() -> System.out.print(startingAnnouncement));
-        Platform.runLater(() -> log.appendText(startingAnnouncement));
+        Platform.runLater(() -> this.log.appendText(startingAnnouncement));
     }
 
     private void ShowPopUp(String message, String title, Alert.AlertType alertType)
@@ -188,7 +195,7 @@ public class TaskThread extends Thread {
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.print(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 
     public String outputTargetTaskSummary(TargetSummary targetSummary)
@@ -203,9 +210,8 @@ public class TaskThread extends Thread {
         else
             outputString += targetSummary.getResultStatus() + "\n";
 
-        if(!targetSummary.isSkipped())
+        if(!targetSummary.isSkipped() && !targetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Undefined))
             outputString += "Target's running time: " + time.toMillis() + "m/s\n";
-//            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
 
         return outputString;
     }
@@ -218,28 +224,28 @@ public class TaskThread extends Thread {
         TargetSummary.ResultStatus resultStatus;
 
         //Preparing the graph summary
-        for(Target target : graph.getGraphTargets().values())
+        for(Target target : this.graph.getGraphTargets().values())
         {
-            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(target.getTargetName());
+            currentTargetSummary = this.graphSummary.getTargetsSummaryMap().get(target.getTargetName());
             resultStatus = currentTargetSummary.getResultStatus();
-            currentTargetSummary.setRunning(targetsSet.contains(target.getTargetName())
-                    && (!incremental || resultStatus.equals(TargetSummary.ResultStatus.Failure)));
+            currentTargetSummary.setRunning(this.targetsSet.contains(target.getTargetName())
+                    && (!this.incremental || resultStatus.equals(TargetSummary.ResultStatus.Failure)));
             currentTargetSummary.setSkipped(false);
         }
-        graphSummary.MakeNewClosedSerialSets();
-        graphSummary.setSkippedTargetsToZero();
+        this.graphSummary.MakeNewClosedSerialSets();
+        this.graphSummary.setSkippedTargetsToZero();
         //Finished preparing the graph summary
 
         //Initializing graph summary for current run
-        for(String currentTargetName : targetsSet)
+        for(String currentTargetName : this.targetsSet)
         {
             targetFrozen = false;
-            currentTarget = graph.getTarget(currentTargetName);
-            currentTargetSummary = graphSummary.getTargetsSummaryMap().get(currentTargetName);
+            currentTarget = this.graph.getTarget(currentTargetName);
+            currentTargetSummary = this.graphSummary.getTargetsSummaryMap().get(currentTargetName);
             resultStatus = currentTargetSummary.getResultStatus();
 
             //Skipping the targets who finished successfully on the last run
-            if(incremental && !resultStatus.equals(TargetSummary.ResultStatus.Failure) && !currentTargetSummary.isSkipped())
+            if(this.incremental && !resultStatus.equals(TargetSummary.ResultStatus.Failure) && !currentTargetSummary.isSkipped())
                 continue;
 
             currentTargetSummary.setResultStatus(TargetSummary.ResultStatus.Undefined);
@@ -247,33 +253,33 @@ public class TaskThread extends Thread {
             for(String dependedTarget : currentTarget.getAllDependsOnTargets())
             {
                 //Check if the current target has depends-on-targets in the current run (frozen)
-                if(targetsSet.contains(dependedTarget))
+                if(this.targetsSet.contains(dependedTarget))
                 {
                     //Checking if the depended target will run in the current task (when incrementing)
-                    resultStatus = graphSummary.getTargetsSummaryMap().get(dependedTarget).getResultStatus();
-                    if(incremental && (resultStatus.equals(TargetSummary.ResultStatus.Success)
+                    resultStatus = this.graphSummary.getTargetsSummaryMap().get(dependedTarget).getResultStatus();
+                    if(this.incremental && (resultStatus.equals(TargetSummary.ResultStatus.Success)
                             || resultStatus.equals(TargetSummary.ResultStatus.Warning)))
                     {
                         continue;
                     }
                     targetFrozen = true;
-                    targetsList.addLast(currentTargetName);
-                    graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen, true);
+                    this.targetsList.addLast(currentTargetName);
+                    this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen, true);
 
                     break;
                 }
             }
             if(!targetFrozen)
             {
-                targetsList.addFirst(currentTargetName);
-                graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
+                this.targetsList.addFirst(currentTargetName);
+                this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
             }
         }
         //Finished initializing graph summary
 
         //Clearing the log text area
-        log.clear();
-        log.setDisable(false);
+        this.log.clear();
+        this.log.setDisable(false);
     }
 
     public void setNumOfThreads(int numOfThreads) { this.numOfThreads = numOfThreads; }
@@ -285,13 +291,13 @@ public class TaskThread extends Thread {
     public Boolean getStatusChanged() { return this.statusChanged; }
 
     public ExecutorService getExecutor() {
-        return executor;
+        return this.executor;
     }
 
     public void stopTheTask()
     {
         this.stopped = this.statusChanged = true;
-        this.executor.shutdown();
+        this.executor.shutdownNow();
     }
 
     public void pauseTheTask() { this.paused = this.statusChanged = true; }

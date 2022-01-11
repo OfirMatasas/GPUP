@@ -25,32 +25,6 @@ public class Main extends Application
         primaryController.setPrimaryStage(primaryStage);
         //show the stage
         primaryStage.show();
-
-//        Parent load = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("PrimaryScene.fxml")));
-//        Scene scene = new Scene(load, 1000, 600);
-//        scene.getStylesheets().addAll(getClass().getResource("Stylesheets/DarkMode.css").toExternalForm());
-//        primaryStage.setScene(scene);
-
-
-//        PrimaryController newProjectController = new FXMLLoader(getClass().getResource("NewProject.fxml")).getController();
-//        newProjectController.setStage(stage);
-//
-//        primaryStage.show();
-
-//        primaryStage.setOnCloseRequest(event -> {
-//            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-//            alert.setTitle("Exit dialog");
-//            alert.setHeaderText(null);
-//            alert.setContentText("Are you sure you want to exit?");
-//            ButtonType yesButton = new ButtonType("Yes");
-//            ButtonType noButton = new ButtonType("No");
-//
-//            alert.getButtonTypes().setAll(yesButton, noButton);
-//            Optional<ButtonType> result = alert.showAndWait();
-//            if (result.get() != yesButton){
-//                event.consume();
-//            }
-//        });
     }
 
     public static void main(String[] args)

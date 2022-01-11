@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class CompilationThread implements Runnable
@@ -21,7 +20,6 @@ public class CompilationThread implements Runnable
     private final Target target;
     private final String targetName;
     private final CompilationParameters compilationParameters;
-    private String[] toExecute;
 
     public CompilationThread(Target target, GraphSummary graphSummary, TextArea log, CompilationParameters compilationParameters) {
 
@@ -34,20 +32,27 @@ public class CompilationThread implements Runnable
 
     @Override
     public void run() {
-        Thread.currentThread().setName(targetName + " Thread");
-        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
+        Thread.currentThread().setName(this.targetName + " Thread");
+        TargetSummary targetSummary = this.graphSummary.getTargetsSummaryMap().get(this.targetName);
         TargetSummary.ResultStatus resultStatus;
-        File sourceCodeDirectory = compilationParameters.getSourceCodeDirectory();
-        String outputDirectoryPath = compilationParameters.getOutputDirectory().getAbsolutePath();
-        String userGive = sourceCodeDirectory + "/" + target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName())
-                + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
+        File sourceCodeDirectory = this.compilationParameters.getSourceCodeDirectory();
+        String outputDirectoryPath = this.compilationParameters.getOutputDirectory().getAbsolutePath();
+        String FQN = this.target.getFQN();
+        String userGive;
+
+        if(FQN.contains(sourceCodeDirectory.getName()))
+            userGive = sourceCodeDirectory + "/" + FQN.substring(FQN.indexOf(sourceCodeDirectory.getName())
+                    + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
+        else
+            userGive = (sourceCodeDirectory + "/" + FQN).replace('.','/').concat(".java");
+
         String[] c = {"javac", "-d", outputDirectoryPath, "-cp", outputDirectoryPath, userGive};
         String failureCause = "";
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, log, c);
-        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
+        outputStartingTaskOnTarget(targetSummary, this.log, c);
+        this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
         Process process = null;
         try {
@@ -57,55 +62,47 @@ public class CompilationThread implements Runnable
             try {
                 process = Runtime.getRuntime().exec(c);
                 process.waitFor();
-            } catch (IOException | InterruptedException ex) {
+            } catch (IOException | InterruptedException ignored) {
             }
         }
-
-        if(Objects.requireNonNull(process).exitValue() != 0) //Failure
-        {
-            resultStatus = TargetSummary.ResultStatus.Failure;
-            try {
-                failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
-            } catch (IOException e) {
-                e.printStackTrace();
+        finally {
+            if(Objects.requireNonNull(process).exitValue() != 0) //Failure
+            {
+                resultStatus = TargetSummary.ResultStatus.Failure;
+                try {
+                    failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-        else //Success
-            resultStatus = TargetSummary.ResultStatus.Success;
+            else //Success
+                resultStatus = TargetSummary.ResultStatus.Success;
 
-        targetSummary.stopTheClock();
-        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
-        outputEndingTaskOnTarget(targetSummary, failureCause);
+            targetSummary.stopTheClock();
+            this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
+            outputEndingTaskOnTarget(targetSummary, failureCause);
+        }
     }
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
     {
-//        String userGive = target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName()) + sourceCodeDirectory.getName().length() +1);
-//        userGive = userGive.replace('.','\\').concat(".java");
-//        String toExecute = "javac -d " + outputDirectory.getAbsolutePath() + " -cp " + outputDirectory.getAbsolutePath() + " " + userGive;
-//        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
-//
-//        if(targetSummary.getExtraInformation() != null)
-//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-//
-//        outputString+= "Task is going to execute : " + toExecute +"\n";
-//
-//        outputString += "------------------------------------------\n";
-//
-//        String finalOutputString = outputString;
-//        Platform.runLater(() -> System.out.println(finalOutputString));
-//        Platform.runLater(() -> log.appendText(finalOutputString));
+        String userGive = this.target.getFQN().substring(target.getFQN().indexOf(this.compilationParameters.getSourceCodeDirectory().getName()) +
+                this.compilationParameters.getSourceCodeDirectory().getName().length() +1);
+        userGive = userGive.replace('.','\\').concat(".java");
+        String toExecute = "javac -d " + this.compilationParameters.getOutputDirectory().getAbsolutePath() + " -cp " +
+                this.compilationParameters.getOutputDirectory().getAbsolutePath() + " " + userGive;
+        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
 
-//        if(targetSummary.getExtraInformation() != null)
-//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-//
-//        outputString+= "Task is going to execute : " + Arrays.toString(c) +"\n";
-//
-//        outputString += "------------------------------------------\n";
-//
-//        String finalOutputString = outputString;
-//        Platform.runLater(() -> System.out.println(finalOutputString));
-//        Platform.runLater(() -> log.appendText(finalOutputString));
+        if(targetSummary.getExtraInformation() != null)
+            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
+
+        outputString+= "Task is going to execute : " + toExecute +"\n";
+
+        outputString += "------------------------------------------\n";
+
+        String finalOutputString = outputString;
+        Platform.runLater(() -> System.out.println(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
@@ -123,6 +120,6 @@ public class CompilationThread implements Runnable
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 }

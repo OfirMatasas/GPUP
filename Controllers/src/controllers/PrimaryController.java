@@ -1,7 +1,10 @@
 package controllers;
 
 import bodyComponentsPaths.BodyComponentsPaths;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ScaleTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -19,14 +22,12 @@ import javafx.util.Duration;
 import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
-import target.Target;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,11 +43,6 @@ public class PrimaryController {
     private ScrollPane taskPane = null;
     private int maxParallelThreads;
     private GraphSummary graphSummary;
-    private final ArrayList<String> rootColors = new ArrayList<>();
-    private final ArrayList<String> middleColors = new ArrayList<>();
-    private final ArrayList<String>leafColors = new ArrayList<>();
-    private final ArrayList<String>independentColors = new ArrayList<>();
-    private File selectedFile;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
 
@@ -77,62 +73,53 @@ public class PrimaryController {
     private FileWriter dotFile;
 
     //--------------------------------------------------Toolbar-----------------------------------------------------//
-    @FXML
-    void aboutPressed(ActionEvent event)
-    {
+    @FXML void aboutPressed(ActionEvent event) {}
 
+    @FXML void enableAnimationsPressed(ActionEvent event) {
+        if (!this.enableAnimations.isSelected()) {
+            this.fadeTransition.stop();
+            this.scaleTransition.stop();
+            this.fireWorksImageView.setVisible(false);
+
+            this.fadeTransition.setDuration(Duration.millis(0));
+            this.fadeTransition.setCycleCount(1);
+            this.fadeTransition.setAutoReverse(false);
+            this.fadeTransition.setInterpolator(Interpolator.LINEAR);
+
+            this.fadeTransition.play();
+            this.scaleTransition.play();
+
+            return;
+        }
+
+        this.fadeTransition = new FadeTransition();
+        this.scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
+
+        this.fadeTransition.setNode(this.PrimaryLogo);
+        this.fadeTransition.setDuration(Duration.millis(2000));
+        this.fadeTransition.setCycleCount(Animation.INDEFINITE);
+        this.fadeTransition.setAutoReverse(true);
+        this.fadeTransition.setInterpolator(Interpolator.LINEAR);
+        this.fadeTransition.setFromValue(0);
+        this.fadeTransition.setToValue(1);
+
+        this.fireWorksImageView.setVisible(true);
+        this.scaleTransition.setCycleCount(100);
+        this.scaleTransition.setToX(-1);
+        this.scaleTransition.setToY(-1);
+
+        this.fadeTransition.play();
+        this.scaleTransition.play();
     }
 
-   @FXML
-   void enableAnimationsPressed(ActionEvent event)
-   {
-       if(!this.enableAnimations.isSelected())
-       {
-           this.fadeTransition.stop();
-           this.scaleTransition.stop();
-           this.fireWorksImageView.setVisible(false);
-
-           this.fadeTransition.setDuration(Duration.millis(0));
-           this.fadeTransition.setCycleCount(1);
-           this.fadeTransition.setAutoReverse(false);
-           this.fadeTransition.setInterpolator(Interpolator.LINEAR);
-
-           this.fadeTransition.play();
-           this.scaleTransition.play();
-
-           return;
-       }
-
-       this.fadeTransition = new FadeTransition();
-       this.scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
-
-       this.fadeTransition.setNode(this.PrimaryLogo);
-       this.fadeTransition.setDuration(Duration.millis(2000));
-       this.fadeTransition.setCycleCount(Animation.INDEFINITE);
-       this.fadeTransition.setAutoReverse(true);
-       this.fadeTransition.setInterpolator(Interpolator.LINEAR);
-       this.fadeTransition.setFromValue(0);
-       this.fadeTransition.setToValue(1);
-
-       this.fireWorksImageView.setVisible(true);
-       this.scaleTransition.setCycleCount(100);
-       this.scaleTransition.setToX(-1);
-       this.scaleTransition.setToY(-1);
-
-       this.fadeTransition.play();
-       this.scaleTransition.play();
-   }
-
-    @FXML
-    void loadXMLButtonPressed(ActionEvent event)
+    @FXML void loadXMLButtonPressed(ActionEvent event)
     {
         ResourceChecker rc = new ResourceChecker();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
-        selectedFile = fileChooser.showOpenDialog(primaryStage);
-        String selectedFileComposedName;
-        String directoryPath;
+        File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
+
         if(selectedFile == null)
             return;
 
@@ -141,13 +128,13 @@ public class PrimaryController {
 
         try{
             //Loading the graph from the xml file
-            graph = rc.extractFromXMLToGraph(selectedFile.toPath());
-            maxParallelThreads = rc.getParallelThreads();
+            this.graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            this.maxParallelThreads = rc.getParallelThreads();
 
             //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
 
-            graphSummary = new GraphSummary(graph, rc.getWorkingDirectoryPath());
+            this.graphSummary = new GraphSummary(this.graph, rc.getWorkingDirectoryPath());
             setGraphOnControllers();
             //Setting Graphviz and display its outcome
 
@@ -158,122 +145,88 @@ public class PrimaryController {
         }
         catch(Exception ex)
         {
-            ErrorPopup(ex, "Error loading file");
+            ErrorPopup(ex);
         }
     }
 
     private void setGraphOnControllers() throws FileNotFoundException {
         this.graphDetailsController.setGraph(this.graph,this.graphSummary);
         this.connectionsController.setGraph(this.graph);
-        this.taskController.setGraph(this.graph);
+        this.taskController.setGraph(this.graph, this.graphSummary);
     }
-
-//    public void setColorsForNodes()
-//    {
-//        rootColors.add("aqua");
-//        rootColors.add("aquamarine");
-//        rootColors.add("blueviolet");
-//        rootColors.add("brown1");
-//        rootColors.add("teal");
-//        middleColors.add("crimson");
-//        middleColors.add("darkorchid");
-//        middleColors.add("deeppink");
-//        middleColors.add("forestgreen");
-//        middleColors.add("olive");
-//        leafColors.add("goldenrod1");
-//        leafColors.add("gray46");
-//        leafColors.add("greenyellow");
-//        leafColors.add("hotpink");
-//        leafColors.add("lightcoral");
-//        independentColors.add("orangered");
-//        independentColors.add("seagreen1");
-//        independentColors.add("steelblue1");
-//        independentColors.add("royalblue2");
-//    }
-
-
-
 
     private void RefreshCurrentCenterPane() {
         graphDetailsButtonPressed(new ActionEvent());
     }
 
-    @FXML
-    void saveProgressPressed(ActionEvent event) {
+    @FXML void saveProgressPressed(ActionEvent event) { }
 
-    }
     //--------------------------------------------------Themes-----------------------------------------------------//
-    @FXML
-    void defaultThemePressed(ActionEvent event) {
-        Scene scene = primaryStage.getScene();
+    @FXML void defaultThemePressed(ActionEvent event) {
+        Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
 
-        if(graph != null)
+        if(this.graph != null)
         {
-            graphDetailsPane.getStylesheets().clear();
-            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-            connectionsPane.getStylesheets().clear();
-            connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-            taskPane.getStylesheets().clear();
-            taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            this.graphDetailsPane.getStylesheets().clear();
+            this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            this.connectionsPane.getStylesheets().clear();
+            this.connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            this.taskPane.getStylesheets().clear();
+            this.taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
         }
     }
 
-    @FXML
-    void darkModeThemePressed(ActionEvent event) {
-        Scene scene = primaryStage.getScene();
+    @FXML void darkModeThemePressed(ActionEvent event) {
+        Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
 
-        if(graph != null)
+        if(this.graph != null)
         {
-            graphDetailsPane.getStylesheets().clear();
-            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-            connectionsPane.getStylesheets().clear();
-            connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-            taskPane.getStylesheets().clear();
-            taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            this.graphDetailsPane.getStylesheets().clear();
+            this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            this.connectionsPane.getStylesheets().clear();
+            this.connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            this.taskPane.getStylesheets().clear();
+            this.taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
         }
     }
 
-    @FXML
-    void rainbowThemePressed(ActionEvent event) {
-        Scene scene = primaryStage.getScene();
+    @FXML void rainbowThemePressed(ActionEvent event) {
+        Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
 
-        if(graph != null)
+        if(this.graph != null)
         {
-            graphDetailsPane.getStylesheets().clear();
-            graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-            connectionsPane.getStylesheets().clear();
-            connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-            taskPane.getStylesheets().clear();
-            taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            this.graphDetailsPane.getStylesheets().clear();
+            this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            this.connectionsPane.getStylesheets().clear();
+            this.connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            this.taskPane.getStylesheets().clear();
+            this.taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
         }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     private void UpdateButtons() {
-        graphDetailsButton.setDisable(false);
-        connectionsButton.setDisable(false);
-        taskButton.setDisable(false);
+        this.graphDetailsButton.setDisable(false);
+        this.connectionsButton.setDisable(false);
+        this.taskButton.setDisable(false);
     }
 
-    @FXML
-    void connectionsButtonPressed(ActionEvent event) {
-        mainBorderPane.setCenter(connectionsPane);
+    @FXML void connectionsButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.connectionsPane);
     }
 
-    @FXML
-    void graphDetailsButtonPressed(ActionEvent event)
+    @FXML void graphDetailsButtonPressed(ActionEvent event)
     {
-        mainBorderPane.setCenter(graphDetailsPane);
+        this.mainBorderPane.setCenter(this.graphDetailsPane);
     }
 
-    @FXML
-    void taskButtonPressed(ActionEvent event) {
-        mainBorderPane.setCenter(taskPane);
+    @FXML void taskButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.taskPane);
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
@@ -283,13 +236,13 @@ public class PrimaryController {
 
     private Boolean OverrideGraph()
     {
-        if(graph == null)
+        if(this.graph == null)
             return true;
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Override existed graph");
         alert.setHeaderText(null);
-        alert.setContentText("Are you sure you want to override the graph " + graph.getGraphName() + "?");
+        alert.setContentText("Are you sure you want to override the graph " + this.graph.getGraphName() + "?");
         ButtonType yesButton = new ButtonType("Yes");
         ButtonType noButton = new ButtonType("No");
         alert.getButtonTypes().setAll(yesButton, noButton );
@@ -303,16 +256,14 @@ public class PrimaryController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("File loaded Successfully");
         alert.setHeaderText(null);
-        alert.setContentText("The graph " + graph.getGraphName() + " loaded successfully!");
+        alert.setContentText("The graph " + this.graph.getGraphName() + " loaded successfully!");
         alert.showAndWait();
-
-
     }
 
-    private void ErrorPopup(Exception ex, String title)
+    private void ErrorPopup(Exception ex)
     {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+        alert.setTitle("Error loading file");
         alert.setHeaderText(null);
         alert.setContentText(ex.getMessage());
         alert.showAndWait();
@@ -332,8 +283,8 @@ public class PrimaryController {
         URL url = getClass().getResource(BodyComponentsPaths.CONNECTIONS);
         loader.setLocation(url);
         try {
-            connectionsPane = loader.load(url.openStream());
-            connectionsController = loader.getController();
+            this.connectionsPane = loader.load(url.openStream());
+            this.connectionsController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -345,8 +296,8 @@ public class PrimaryController {
         URL url = getClass().getResource(BodyComponentsPaths.GRAPH_DETAILS);
         loader.setLocation(url);
         try {
-            graphDetailsPane = loader.load(url.openStream());
-            graphDetailsController = loader.getController();
+            this.graphDetailsPane = loader.load(url.openStream());
+            this.graphDetailsController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -358,9 +309,9 @@ public class PrimaryController {
         URL url = getClass().getResource(BodyComponentsPaths.TASK);
         loader.setLocation(url);
         try {
-            taskPane = loader.load(url.openStream());
-            taskController = loader.getController();
-            taskController.setMaxParallelThreads(maxParallelThreads);
+            this.taskPane = loader.load(url.openStream());
+            this.taskController = loader.getController();
+            this.taskController.setMaxParallelThreads(this.maxParallelThreads);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -368,9 +319,9 @@ public class PrimaryController {
 
     private void UpdatePanesStyles()
     {
-        if(defaultTheme.isSelected())
+        if(this.defaultTheme.isSelected())
             defaultThemePressed(new ActionEvent());
-        else if(darkModeTheme.isSelected())
+        else if(this.darkModeTheme.isSelected())
             darkModeThemePressed(new ActionEvent());
         else
             rainbowThemePressed(new ActionEvent());

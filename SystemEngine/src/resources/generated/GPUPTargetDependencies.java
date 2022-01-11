@@ -8,15 +8,9 @@
 
 package resources.generated;
 
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
 
 
 /**
@@ -86,8 +80,8 @@ public class GPUPTargetDependencies {
      * 
      */
     public List<GPUPTargetDependencies.GPUGDependency> getGPUGDependency() {
-        if (gpugDependency == null) {
-            gpugDependency = new ArrayList<GPUPTargetDependencies.GPUGDependency>();
+        if (this.gpugDependency == null) {
+            this.gpugDependency = new ArrayList<GPUPTargetDependencies.GPUGDependency>();
         }
         return this.gpugDependency;
     }
@@ -137,7 +131,7 @@ public class GPUPTargetDependencies {
          *     
          */
         public String getValue() {
-            return value;
+            return this.value;
         }
 
         /**
@@ -161,7 +155,7 @@ public class GPUPTargetDependencies {
          *     
          */
         public String getType() {
-            return type;
+            return this.type;
         }
 
         /**

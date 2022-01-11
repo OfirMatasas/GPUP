@@ -9,6 +9,7 @@ import summaries.TargetSummary;
 import target.Target;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 public class SimulationThread implements Runnable
@@ -31,42 +32,46 @@ public class SimulationThread implements Runnable
 
     @Override
     public void run() {
-        Thread.currentThread().setName(targetName + " Thread");
-        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
-        long sleepingTime = targetParameters.getProcessingTime().toMillis();
+        Thread.currentThread().setName(this.targetName + " Thread");
+        TargetSummary targetSummary = this.graphSummary.getTargetsSummaryMap().get(this.targetName);
+        long sleepingTime = this.targetParameters.getProcessingTime().toMillis();
         TargetSummary.ResultStatus resultStatus;
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, log);
-        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
+        outputStartingTaskOnTarget(targetSummary, this.log);
+        this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
         //Going to sleep
         try {
             Thread.sleep(sleepingTime);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                Thread.sleep(sleepingTime - Duration.between(targetSummary.getTimeStarted(), Instant.now()).toMillis());
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
 
         double result = Math.random();
-        if(Math.random() <= targetParameters.getSuccessRate())
-            resultStatus = result <= targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
+        if(Math.random() <= this.targetParameters.getSuccessRate())
+            resultStatus = result <= this.targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
         else
             resultStatus = TargetSummary.ResultStatus.Failure;
 
         targetSummary.stopTheClock();
-        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
+        this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
         outputEndingTaskOnTarget(targetSummary);
     }
 
     private void UpdateWorkingTime() {
         long timeLong;
         Duration timeDuration;
-        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
+        TargetSummary targetSummary = this.graphSummary.getTargetsSummaryMap().get(this.targetName);
 
-        if(targetParameters.isRandom())
+        if(this.targetParameters.isRandom())
         {
-            timeDuration = targetParameters.getProcessingTime();
+            timeDuration = this.targetParameters.getProcessingTime();
             timeLong = (long)(Math.random() * (timeDuration.toMillis())) + 1;
             timeDuration = Duration.of(timeLong, ChronoUnit.MILLIS);
             targetSummary.setPredictedTime(timeDuration);
@@ -75,21 +80,18 @@ public class SimulationThread implements Runnable
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log)
     {
-        Duration time = targetParameters.getProcessingTime();
+        Duration time = this.targetParameters.getProcessingTime();
         String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
 
         if(targetSummary.getExtraInformation() != null)
             outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
 
-        outputString += String.format("The system is going to sleep for %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
-
+        outputString += "The system is going to sleep for " + time.toMillis() + "\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
-
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary)
@@ -98,12 +100,11 @@ public class SimulationThread implements Runnable
         String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
 
         outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-        outputString += String.format("The system went to sleep for %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
+        outputString += "The system went to sleep for " + time.toMillis() + "\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 }

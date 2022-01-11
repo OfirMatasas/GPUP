@@ -7,30 +7,30 @@ import java.util.Set;
 public class CircleFinder {
     private Boolean circled;
     private String circlePath;
-    Set<Target> visited;
+    private Set<Target> visited;
 
     public Boolean getCircled() {
-        return circled;
+        return this.circled;
     }
 
     public String getCirclePath() {
-        return circlePath;
+        return this.circlePath;
     }
 
     public void checkIfCircled(Target target)
     {
-        circlePath = null;
-        circled = false;
-        visited = new HashSet<>();
+        this.circlePath = null;
+        this.circled = false;
+        this.visited = new HashSet<>();
 
         for(Target current : target.getDependsOnTargets())
         {
             checkIfCircledRec(target, current);
 
-            if(circled)
+            if(this.circled)
             {
-                circlePath = current.getTargetName() + " ↓ " + circlePath;
-                circlePath = target.getTargetName() + " ↓ " + circlePath;
+                this.circlePath = current.getTargetName() + " ↓ " + this.circlePath;
+                this.circlePath = target.getTargetName() + " ↓ " + this.circlePath;
                 break;
             }
         }
@@ -40,23 +40,23 @@ public class CircleFinder {
     {
         if(current.equals(origin))
         {
-            circled = true;
-            circlePath = current.getTargetName();
+            this.circled = true;
+            this.circlePath = current.getTargetName();
             return;
         }
 
-        if(visited.contains(current))
+        if(this.visited.contains(current))
             return;
         else
-            visited.add(current);
+            this.visited.add(current);
 
         for(Target nextTarget : current.getDependsOnTargets())
         {
             checkIfCircledRec(origin, nextTarget);
-            if(circled)
+            if(this.circled)
             {
                 if(!nextTarget.equals(origin))
-                    circlePath =  nextTarget.getTargetName() +  " ↓ " + circlePath;
+                    this.circlePath =  nextTarget.getTargetName() +  " ↓ " + this.circlePath;
 
                 break;
             }

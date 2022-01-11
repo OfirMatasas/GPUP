@@ -26,26 +26,26 @@ public class Graph implements Serializable {
 
     //--------------------------------------------------Getters-----------------------------------------------------//
     public String getGraphName() {
-        return graphName;
+        return this.graphName;
     }
 
     public Map<String, Target> getGraphTargets() {
-        return graphTargets;
+        return this.graphTargets;
     }
 
     public Target getTarget(String targetName)
     {
-        return graphTargets.get(targetName.toLowerCase());
+        return this.graphTargets.get(targetName.toLowerCase());
     }
 
     public Set<String> getSerialSetsNames() {
-        return serialSetsNames;
+        return this.serialSetsNames;
     }
 
     public Map<String, Set<String>> getSerialSetsMap() {
-        return serialSetsMap;
+        return this.serialSetsMap;
     }
-    public int getMaxParallelism() {return MaxParallelism;}
+    public int getMaxParallelism() {return this.MaxParallelism;}
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
@@ -60,21 +60,22 @@ public class Graph implements Serializable {
         this.serialSetsNames = serialSetsNames;
     }
 
-    public void setMaxParallelism(int maxParallelism) {MaxParallelism = maxParallelism;}
+    public void setMaxParallelism(int maxParallelism) {
+        this.MaxParallelism = maxParallelism;}
     //--------------------------------------------------Methods-----------------------------------------------------//
     public int numberOfTargetsByProperty(Target.TargetPosition position)
     {
-        return targetsByPositions.get(position).size();
+        return this.targetsByPositions.get(position).size();
     }
 
     public Boolean isEmpty()
     {
-        return graphTargets.size() == 0;
+        return this.graphTargets.size() == 0;
     }
 
     public void addNewTargetToTheGraph(Target... newTargets) {
         for(Target currentTarget : newTargets)
-            graphTargets.put(currentTarget.getTargetName().toLowerCase(), currentTarget);
+            this.graphTargets.put(currentTarget.getTargetName().toLowerCase(), currentTarget);
 
         calculatePositions();
     }
@@ -85,7 +86,7 @@ public class Graph implements Serializable {
         Integer valCount = 0;
         Target.TargetPosition currentTargetProperty;
 
-        for(Target currentTarget : graphTargets.values())
+        for(Target currentTarget : this.graphTargets.values())
         {
             if(currentTarget.getDependsOnTargets().size() == 0
                     && currentTarget.getRequiredForTargets().size() == 0)
@@ -104,28 +105,28 @@ public class Graph implements Serializable {
             {//Middle
                 currentTargetProperty = Target.TargetPosition.MIDDLE;
             }
-            targetsByPositions.get(currentTargetProperty).add(currentTarget);
+            this.targetsByPositions.get(currentTargetProperty).add(currentTarget);
             currentTarget.setTargetPosition(currentTargetProperty);
         }
     }
 
     public void calculateAllDependsOn()
     {
-        for(Target currentTarget : graphTargets.values())
+        for(Target currentTarget : this.graphTargets.values())
             currentTarget.calculateAllDependsOnTargets(currentTarget);
     }
 
     public void calculateAllRequiredFor()
     {
-        for(Target currentTarget : graphTargets.values())
+        for(Target currentTarget : this.graphTargets.values())
             currentTarget.calculateAllRequiredForTargets(currentTarget);
     }
 
     private void clearTargetsByProperties()
     {
-        targetsByPositions.get(Target.TargetPosition.ROOT).clear();
-        targetsByPositions.get(Target.TargetPosition.MIDDLE).clear();
-        targetsByPositions.get(Target.TargetPosition.LEAF).clear();
-        targetsByPositions.get(Target.TargetPosition.INDEPENDENT).clear();
+        this.targetsByPositions.get(Target.TargetPosition.ROOT).clear();
+        this.targetsByPositions.get(Target.TargetPosition.MIDDLE).clear();
+        this.targetsByPositions.get(Target.TargetPosition.LEAF).clear();
+        this.targetsByPositions.get(Target.TargetPosition.INDEPENDENT).clear();
     }
 }
