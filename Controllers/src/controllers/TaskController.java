@@ -28,6 +28,7 @@ import target.Graph;
 import target.Target;
 import task.CompilationParameters;
 import task.SimulationParameters;
+import task.TaskOutput;
 import task.TaskThread;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -374,6 +375,7 @@ public class TaskController implements Initializable {
         Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
         TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
         Set<String> currentRunTargets = setCurrentRunTargets();
+        TaskOutput taskOutput = new TaskOutput(this.logTextArea, this.graphSummary, this.graph);
         turnOnProgressBar();
 
         if(this.taskType.equals(TaskThread.TaskType.Simulation))
@@ -390,7 +392,7 @@ public class TaskController implements Initializable {
         this.targetsFinishedLabel.setDisable(false);
 
         this.taskThread = new TaskThread(this.graph, this.taskType, this.taskParametersMap, compilationParameters, this.graphSummary,
-                currentRunTargets, this.numOfThreads, this.logTextArea, this.incrementalRadioButton.isSelected());
+                currentRunTargets, this.numOfThreads, taskOutput, this.incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 

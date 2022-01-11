@@ -1,7 +1,5 @@
 package task;
 
-import javafx.application.Platform;
-import javafx.scene.control.TextArea;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Target;
@@ -10,24 +8,23 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.Duration;
 import java.util.Objects;
 
 public class CompilationThread implements Runnable
 {
     private final GraphSummary graphSummary;
-    private final TextArea log;
     private final Target target;
     private final String targetName;
     private final CompilationParameters compilationParameters;
+    private final TaskOutput taskOutput;
 
-    public CompilationThread(Target target, GraphSummary graphSummary, TextArea log, CompilationParameters compilationParameters) {
+    public CompilationThread(Target target, GraphSummary graphSummary, CompilationParameters compilationParameters, TaskOutput taskOutput) {
 
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
-        this.log = log;
         this.compilationParameters = compilationParameters;
+        this.taskOutput = taskOutput;
     }
 
     @Override
@@ -51,7 +48,7 @@ public class CompilationThread implements Runnable
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, this.log, c);
+        this.taskOutput.outputStartingCompilationTaskOnTarget(this.targetName, this.compilationParameters);
         this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
         Process process = null;
@@ -80,46 +77,7 @@ public class CompilationThread implements Runnable
 
             targetSummary.stopTheClock();
             this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
-            outputEndingTaskOnTarget(targetSummary, failureCause);
+            this.taskOutput.outputEndingCompilationTaskOnTarget(this.targetName, failureCause);
         }
-    }
-
-    public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
-    {
-        String userGive = this.target.getFQN().substring(target.getFQN().indexOf(this.compilationParameters.getSourceCodeDirectory().getName()) +
-                this.compilationParameters.getSourceCodeDirectory().getName().length() +1);
-        userGive = userGive.replace('.','\\').concat(".java");
-        String toExecute = "javac -d " + this.compilationParameters.getOutputDirectory().getAbsolutePath() + " -cp " +
-                this.compilationParameters.getOutputDirectory().getAbsolutePath() + " " + userGive;
-        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
-
-        if(targetSummary.getExtraInformation() != null)
-            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-
-        outputString+= "Task is going to execute : " + toExecute +"\n";
-
-        outputString += "------------------------------------------\n";
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> this.log.appendText(finalOutputString));
-    }
-
-    public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
-    {
-        Duration time = targetSummary.getTime();
-        String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
-
-        outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-
-        if(!Objects.equals(failureCause, ""))
-            outputString += "Failure cause: " + failureCause;
-
-        outputString += "Compilation time: " + time.toMillis() + "m/s\n";
-        outputString += "------------------------------------------\n";
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 }
