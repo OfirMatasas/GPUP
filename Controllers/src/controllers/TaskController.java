@@ -17,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -135,7 +136,7 @@ public class TaskController implements Initializable {
             TaskController.this.taskThread.resetStatusChanged();
         }
     }
-
+    @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
     @FXML private ToolBar toolBar;
     @FXML private ComboBox<String> TaskTargetSelection;
@@ -167,6 +168,7 @@ public class TaskController implements Initializable {
     @FXML private Tab graphViewTabPane;
     @FXML private Tab graphViewTabPane1;
     @FXML private Pane footerPane;
+    @FXML private AnchorPane AnchorPane;
     @FXML private RadioButton fromScratchRadioButton;
     @FXML private ToggleGroup scratchOrIncremental;
     @FXML private RadioButton incrementalRadioButton;
@@ -228,22 +230,33 @@ public class TaskController implements Initializable {
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
-        TaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
-        int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
-
-        this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
-
-        while(size - 1 > index)
+        if(this.taskTargetDetailsTableView.getItems().size()>0)
         {
-            chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
-            chosenTarget.setNumber(++index);
+            TaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            if(chosenTarget!=null) {
+                int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
+
+                this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
+
+                while (size - 1 > index) {
+                    chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
+                    chosenTarget.setNumber(++index);
+                }
+
+                updateTargetTaskDetailsInTextArea();
+                turnOnIncrementalButton();
+
+                if (size - 1 == 0) {
+                    this.runButton.setDisable(true);
+                    this.clearTableButton.setDisable(false);
+                }
+            }
         }
-
-        updateTargetTaskDetailsInTextArea();
-        turnOnIncrementalButton();
-
-        if(size - 1 == 0)
-            this.runButton.setDisable(true);
+        if(this.taskTargetDetailsTableView.getItems().isEmpty())
+        {
+            this.removeSelectedButton.setDisable(true);
+            this.clearTableButton.setDisable(true);
+        }
     }
 
     private void updateTargetTaskDetailsInTextArea() {
@@ -261,6 +274,8 @@ public class TaskController implements Initializable {
         this.taskTargetDetailsTableView.getItems().clear();
         enableTargetInfoTextArea(false);
         this.runButton.setDisable(true);
+        this.clearTableButton.setDisable(true);
+        this.removeSelectedButton.setDisable(true);
     }
 
     @FXML void addSelectedTargetsToTable(ActionEvent event)
@@ -278,6 +293,7 @@ public class TaskController implements Initializable {
             if(this.taskParameters != null)
                 this.runButton.setDisable(false);
         }
+        this.clearTableButton.setDisable(false);
     }
 
     private void enableTargetInfoTextArea(boolean flag) {
@@ -432,6 +448,7 @@ public class TaskController implements Initializable {
                 return null;
             }
         };
+        this.progressBar.setStyle("-fx-accent: #00FF00;");
         this.progressBar.progressProperty().bind(task.progressProperty());
         this.progressBarLabel.textProperty().bind
                 (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
@@ -585,6 +602,7 @@ public class TaskController implements Initializable {
 
         this.fromScratchRadioButton.setDisable(flag);
         this.selectAllButton.setDisable(flag);
+
     }
 
     private void disableTaskOptions(Boolean flag)
@@ -746,6 +764,7 @@ public class TaskController implements Initializable {
             @Override
             public void onChanged(Change<? extends TaskTargetInformation> c) {
                 TaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
+               // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
 
                 TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
             }

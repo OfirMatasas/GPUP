@@ -56,7 +56,6 @@
                   <Menu fx:id="file" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="File">
                      <items>
                         <MenuItem fx:id="loadXMLButton" mnemonicParsing="false" onAction="#loadXMLButtonPressed" text="Load XML" />
-                        <MenuItem fx:id="saveProgressButton" mnemonicParsing="false" onAction="#saveProgressPressed" text="Save progress" />
                      </items>
                   </Menu>
                   <Menu fx:id="animations" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="Animations">
@@ -76,11 +75,6 @@
                            </toggleGroup></RadioMenuItem>
                         <RadioMenuItem fx:id="darkModeTheme" mnemonicParsing="false" onAction="#darkModeThemePressed" styleClass="PrimaryToolbarItemOption" text="Dark mode" toggleGroup="$templates" />
                         <RadioMenuItem fx:id="rainbowTheme" mnemonicParsing="false" onAction="#rainbowThemePressed" styleClass="PrimaryToolbarItemOption" text="Rainbow mode" toggleGroup="$templates" />
-                     </items>
-                  </Menu>
-                  <Menu fx:id="Help" mnemonicParsing="false" styleClass="PrimaryToolbarItem" text="Help">
-                     <items>
-                        <MenuItem fx:id="about" mnemonicParsing="false" onAction="#aboutPressed" styleClass="PrimaryToolbarItemOption" text="About" />
                      </items>
                   </Menu>
               </menus>

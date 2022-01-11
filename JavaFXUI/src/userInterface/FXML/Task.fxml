@@ -10,154 +10,155 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="722.0" minWidth="956.0" prefHeight="722.0" prefWidth="956.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TaskController">
+
+<ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TaskController">
    <content>
-      <BorderPane fx:id="taskBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1000.0">
-         <top>
-            <ToolBar fx:id="toolBar">
-               <items>
-                  <HBox fx:id="toolBarHBox">
-                     <children>
-                      <Button fx:id="runButton" disable="true" mnemonicParsing="false" onAction="#runPressed" text="Run">
-                           <HBox.margin>
-                              <Insets left="5.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button fx:id="PauseButton" disable="true" mnemonicParsing="false" onAction="#pausePressed" text="Pause">
-                           <HBox.margin>
-                              <Insets left="5.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopPressed" text="Stop">
-                           <HBox.margin>
-                              <Insets left="5.0" />
-                           </HBox.margin>
-                        </Button>
-                     </children>
-                  </HBox>
-               </items>
-            </ToolBar>
-         </top>
-         <left>
-             <Pane fx:id="leftPane" prefHeight="1661.0" prefWidth="300.0">
-                 <ComboBox fx:id="taskSelection" layoutX="30.0" layoutY="14.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
-                 <ComboBox fx:id="targetSelection" disable="true" layoutX="30.0" layoutY="61.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
-                 <ComboBox fx:id="affectedTargets" disable="true" layoutX="30.0" layoutY="104.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
-                 <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="20.0" layoutY="166.0" prefHeight="156.0" prefWidth="190.0" />
-                 <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="50.0" layoutY="142.0" text="Current Selected Targets" />
-                 <Label fx:id="processingTimeLabel" disable="true" layoutX="10.0" layoutY="374.0" text="Processing Time (m/s) : " />
-                 <Label fx:id="limitedPermanentLabel" disable="true" layoutX="11.0" layoutY="412.0" text="Limited/Permanent : " />
-                 <Label fx:id="successRateLabel" disable="true" layoutX="12.0" layoutY="436.0" text="Success Rate :" />
-                 <Label fx:id="successRateWithWarnings" disable="true" layoutX="11.0" layoutY="465.0" text="Success Rate&#10;With Warnings : " />
-                 <HBox layoutX="123.0" layoutY="412.0">
-                     <fx:define>
-                         <ToggleGroup fx:id="limitedOrPermanent" />
-                     </fx:define>
-                     <children>
-                         <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" selected="true" text="Limited">
-                        <toggleGroup>
-                           <ToggleGroup fx:id="limitedOrPermanent" />
-                        </toggleGroup>
-                     </RadioButton>
-                         <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
-                     </children>
-                 </HBox>
-                  <Slider fx:id="successRateSlider" disable="true" layoutX="97.0" layoutY="438.0" max="1.0" showTickLabels="true" showTickMarks="true" />
-                 <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="97.0" layoutY="485.0" max="1.0" showTickLabels="true" showTickMarks="true" />
-                 <TextField fx:id="processingTimeTextField" disable="true" layoutX="141.0" layoutY="370.0" promptText="Time In M/S" />
-               <TextField fx:id="successWithWarningRateText" disable="true" layoutX="237.0" layoutY="480.0" prefHeight="25.0" prefWidth="45.0" />
-               <TextField fx:id="successRateText" disable="true" layoutX="237.0" layoutY="432.0" prefHeight="25.0" prefWidth="45.0" />
-               <Button fx:id="ApplyParametersButton" disable="true" layoutX="69.0" layoutY="586.0" mnemonicParsing="false" onAction="#ApplyParametersToTask" text="Apply Parameters" />
-               <HBox alignment="CENTER" layoutX="20.0" layoutY="330.0" prefHeight="40.0" prefWidth="207.0">
-                  <children>
-                     <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" onAction="#fromScratchOptionPressed" selected="true" text="From Scratch">
-                        <toggleGroup>
-                           <ToggleGroup fx:id="scratchOrIncremental" />
-                        </toggleGroup>
-                     </RadioButton>
-                     <RadioButton fx:id="incrementalRadioButton" disable="true" mnemonicParsing="false" onAction="#incrementalOptionPressed" text="Incremental" toggleGroup="$scratchOrIncremental">
-                        <HBox.margin>
-                           <Insets left="15.0" />
-                        </HBox.margin>
-                     </RadioButton>
-                  </children>
-               </HBox>
-               <Button fx:id="selectAllButton" disable="true" layoutX="214.0" layoutY="201.0" mnemonicParsing="false" onAction="#selectAllPressed" text="Select All" />
-               <Button fx:id="deselectAllButton" disable="true" layoutX="214.0" layoutY="231.0" mnemonicParsing="false" onAction="#deselectAllPressed" text="Deselect All" />
-               <Button fx:id="addSelectedButton" disable="true" layoutX="214.0" layoutY="269.0" mnemonicParsing="false" onAction="#addSelectedTargetsToTable" prefHeight="53.0" prefWidth="79.0" text="Add &#10;Selected" textAlignment="CENTER" />
-               <Spinner fx:id="threadsSpinner" disable="true" layoutX="120.0" layoutY="537.0" prefHeight="25.0" prefWidth="95.0" />
-               <Label fx:id="numberOfThreadToExecuteLabel" disable="true" layoutX="9.0" layoutY="532.0" text="Number Of Thread&#10; To Execute :&#10;" />
-               <Button fx:id="updateThreadButton" disable="true" layoutX="225.0" layoutY="529.0" mnemonicParsing="false" onAction="#updateThreadsInPause" text="Update&#10;Threads" visible="false" />
-               <Label fx:id="compilationSourceCodeLabel" layoutX="12.0" layoutY="357.0" text="Please Choose The Directory&#10;Of The Source Code To Compile" visible="false" />
-               <Label fx:id="compilationOutputLabel" layoutX="9.0" layoutY="450.0" text="Please Choose The Output Directory&#10;Of The Compiled Code" visible="false" />
-               <Button fx:id="toCompileButton" layoutX="215.0" layoutY="362.0" mnemonicParsing="false" onAction="#chooseSourceCodeDirectoryToCompile" text="Browse..." visible="false" />
-               <Button fx:id="compiledOutputButton" layoutX="215.0" layoutY="454.0" mnemonicParsing="false" onAction="#chooseOutputDirectory" text="Browse..." visible="false" />
-               <Label fx:id="sourceCodePathLabel" layoutX="10.0" layoutY="412.0" text="Path :" visible="false" />
-               <Label fx:id="outputPathLabel" layoutX="9.0" layoutY="505.0" text="Path :" visible="false" />
-             </Pane>
-         </left>
-         <center>
-            <TabPane fx:id="tabPane" BorderPane.alignment="CENTER">
-               <tabs>
-                  <Tab fx:id="tableViewTabPane" closable="false" onSelectionChanged="#tableViewTabPressed" text="Table View">
-                     <content>
-                        <Pane prefHeight="656.0" prefWidth="669.0">
+      <AnchorPane>
+         <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true">
+               <content>
+                  <BorderPane fx:id="taskBorderPane">
+                     <top>
+                        <ToolBar fx:id="toolBar">
+                           <items>
+                              <HBox fx:id="toolBarHBox">
+                                 <children>
+                                  <Button fx:id="runButton" disable="true" mnemonicParsing="false" onAction="#runPressed" text="Run">
+                                       <HBox.margin>
+                                          <Insets left="5.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                    <Button fx:id="PauseButton" disable="true" mnemonicParsing="false" onAction="#pausePressed" text="Pause">
+                                       <HBox.margin>
+                                          <Insets left="5.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                    <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopPressed" text="Stop">
+                                       <HBox.margin>
+                                          <Insets left="5.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                           </items>
+                        </ToolBar>
+                     </top>
+                     <left>
+                         <Pane fx:id="leftPane">
+                             <ComboBox fx:id="taskSelection" layoutX="30.0" layoutY="14.0" onAction="#taskSelectionPressed" prefWidth="150.0" promptText="-Task Selection-" />
+                             <ComboBox fx:id="targetSelection" disable="true" layoutX="30.0" layoutY="61.0" onAction="#targetSelectionPressed" prefWidth="150.0" promptText="-Target-" />
+                             <ComboBox fx:id="affectedTargets" disable="true" layoutX="30.0" layoutY="104.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
+                             <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="20.0" layoutY="166.0" prefHeight="156.0" prefWidth="190.0" />
+                             <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="50.0" layoutY="142.0" text="Current Selected Targets" />
+                             <Label fx:id="processingTimeLabel" disable="true" layoutX="10.0" layoutY="374.0" text="Processing Time (m/s) : " />
+                             <Label fx:id="limitedPermanentLabel" disable="true" layoutX="11.0" layoutY="412.0" text="Limited/Permanent : " />
+                             <Label fx:id="successRateLabel" disable="true" layoutX="12.0" layoutY="436.0" text="Success Rate :" />
+                             <Label fx:id="successRateWithWarnings" disable="true" layoutX="11.0" layoutY="465.0" text="Success Rate&#10;With Warnings : " />
+                             <HBox layoutX="123.0" layoutY="412.0">
+                                 <fx:define>
+                                     <ToggleGroup fx:id="limitedOrPermanent" />
+                                 </fx:define>
+                                 <children>
+                                     <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" onAction="#limitedOptionPressed" prefWidth="87.0" selected="true" text="Limited">
+                                    <toggleGroup>
+                                       <ToggleGroup fx:id="limitedOrPermanent" />
+                                    </toggleGroup>
+                                 </RadioButton>
+                                     <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" onAction="#permanentOptionPressed" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
+                                 </children>
+                             </HBox>
+                              <Slider fx:id="successRateSlider" disable="true" layoutX="97.0" layoutY="438.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                             <Slider fx:id="successRateWithWarningsSlider" disable="true" layoutX="97.0" layoutY="485.0" max="1.0" showTickLabels="true" showTickMarks="true" />
+                             <TextField fx:id="processingTimeTextField" disable="true" layoutX="141.0" layoutY="370.0" promptText="Time In M/S" />
+                           <TextField fx:id="successWithWarningRateText" disable="true" layoutX="237.0" layoutY="480.0" prefHeight="25.0" prefWidth="45.0" />
+                           <TextField fx:id="successRateText" disable="true" layoutX="237.0" layoutY="432.0" prefHeight="25.0" prefWidth="45.0" />
+                           <Button fx:id="ApplyParametersButton" disable="true" layoutX="69.0" layoutY="588.0" mnemonicParsing="false" onAction="#ApplyParametersToTask" text="Apply Parameters" />
+                           <HBox alignment="CENTER" layoutX="20.0" layoutY="330.0" prefHeight="40.0" prefWidth="207.0">
+                              <children>
+                                 <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" onAction="#fromScratchOptionPressed" selected="true" text="From Scratch">
+                                    <toggleGroup>
+                                       <ToggleGroup fx:id="scratchOrIncremental" />
+                                    </toggleGroup>
+                                 </RadioButton>
+                                 <RadioButton fx:id="incrementalRadioButton" disable="true" mnemonicParsing="false" onAction="#incrementalOptionPressed" text="Incremental" toggleGroup="$scratchOrIncremental">
+                                    <HBox.margin>
+                                       <Insets left="15.0" />
+                                    </HBox.margin>
+                                 </RadioButton>
+                              </children>
+                           </HBox>
+                           <Button fx:id="selectAllButton" disable="true" layoutX="214.0" layoutY="201.0" mnemonicParsing="false" onAction="#selectAllPressed" text="Select All" />
+                           <Button fx:id="deselectAllButton" disable="true" layoutX="214.0" layoutY="231.0" mnemonicParsing="false" onAction="#deselectAllPressed" text="Deselect All" />
+                           <Button fx:id="addSelectedButton" disable="true" layoutX="214.0" layoutY="269.0" mnemonicParsing="false" onAction="#addSelectedTargetsToTable" prefHeight="53.0" prefWidth="79.0" text="Add &#10;Selected" textAlignment="CENTER" />
+                           <Spinner fx:id="threadsSpinner" disable="true" layoutX="120.0" layoutY="537.0" prefHeight="25.0" prefWidth="95.0" />
+                           <Label fx:id="numberOfThreadToExecuteLabel" disable="true" layoutX="9.0" layoutY="532.0" text="Number Of Thread&#10; To Execute :&#10;" />
+                           <Button fx:id="updateThreadButton" disable="true" layoutX="225.0" layoutY="529.0" mnemonicParsing="false" onAction="#updateThreadsInPause" text="Update&#10;Threads" visible="false" />
+                           <Label fx:id="compilationSourceCodeLabel" layoutX="12.0" layoutY="357.0" text="Please Choose The Directory&#10;Of The Source Code To Compile" visible="false" />
+                           <Label fx:id="compilationOutputLabel" layoutX="9.0" layoutY="450.0" text="Please Choose The Output Directory&#10;Of The Compiled Code" visible="false" />
+                           <Button fx:id="toCompileButton" layoutX="215.0" layoutY="362.0" mnemonicParsing="false" onAction="#chooseSourceCodeDirectoryToCompile" text="Browse..." visible="false" />
+                           <Button fx:id="compiledOutputButton" layoutX="215.0" layoutY="454.0" mnemonicParsing="false" onAction="#chooseOutputDirectory" text="Browse..." visible="false" />
+                           <Label fx:id="sourceCodePathLabel" layoutX="10.0" layoutY="412.0" text="Path :" visible="false" />
+                           <Label fx:id="outputPathLabel" layoutX="9.0" layoutY="505.0" text="Path :" visible="false" />
+                         </Pane>
+                     </left>
+                     <center>
+                        <Pane>
                            <children>
-                              <TableView fx:id="taskTargetDetailsTableView" layoutX="43.0" layoutY="47.0" onMouseClicked="#getSelectedRow" prefHeight="220.0" prefWidth="470.0">
+                              <TableView fx:id="taskTargetDetailsTableView" layoutX="43.0" layoutY="47.0" onMouseClicked="#getSelectedRow" prefHeight="220.0" prefWidth="428.0">
                                 <columns>
-                                  <TableColumn fx:id="numberColumn" prefWidth="22.0" text="#" />
-                                  <TableColumn fx:id="targetNameColumn" prefWidth="85.0" text="Target Name" />
-                                    <TableColumn fx:id="positionColumn" prefWidth="63.5" text="Position" />
-                                    <TableColumn fx:id="currentRuntimeStatusColumn" prefWidth="118.0" text="Current Runtime Status" />
-                                    <TableColumn fx:id="resultStatusColumn" prefWidth="118.0" text="Result Status" />
+                                  <TableColumn fx:id="numberColumn" maxWidth="27.0" minWidth="27.0" prefWidth="27.0" text="#" />
+                                  <TableColumn fx:id="targetNameColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Target Name" />
+                                    <TableColumn fx:id="positionColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Position" />
+                                    <TableColumn fx:id="currentRuntimeStatusColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Runtime Status" />
+                                    <TableColumn fx:id="resultStatusColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Result Status" />
                                 </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                               </TableView>
-                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="43.0" layoutY="291.0" prefHeight="141.0" prefWidth="471.0" style="-fx-background-color: black;" visible="false" />
-                              <Button fx:id="removeSelectedButton" disable="true" layoutX="522.0" layoutY="132.0" mnemonicParsing="false" onAction="#removeSelectedRowFromTable" text="Remove Selected" />
-                              <Button fx:id="clearTableButton" layoutX="522.0" layoutY="242.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
-                              <ProgressBar fx:id="progressBar" disable="true" layoutX="43.0" layoutY="496.0" prefHeight="18.0" prefWidth="474.0" progress="0.0" />
-                              <Label fx:id="targetsFinishedLabel" disable="true" layoutX="208.0" layoutY="459.0" prefHeight="26.0" prefWidth="140.0" text="Targets Finished">
+                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="15.0" layoutY="442.0" prefHeight="153.0" prefWidth="474.0" style="-fx-background-color: black;" visible="false" />
+                              <Button fx:id="removeSelectedButton" disable="true" layoutX="322.0" layoutY="279.0" mnemonicParsing="false" onAction="#removeSelectedRowFromTable" text="Remove Selected" />
+                              <Button fx:id="clearTableButton" disable="true" layoutX="95.0" layoutY="279.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
+                              <ProgressBar fx:id="progressBar" disable="true" layoutX="40.0" layoutY="355.0" prefHeight="25.0" prefWidth="434.0" progress="0.0" />
+                              <Label fx:id="targetsFinishedLabel" disable="true" layoutX="187.0" layoutY="314.0" prefHeight="26.0" prefWidth="140.0" text="Targets Finished">
                                  <font>
                                     <Font size="17.0" />
                                  </font>
                               </Label>
-                              <Label fx:id="progressBarLabel" disable="true" layoutX="531.0" layoutY="497.0" text="0" />
+                              <Label fx:id="progressBarLabel" disable="true" layoutX="477.0" layoutY="359.0" prefHeight="17.0" prefWidth="40.0" text="0" />
                            </children>
                         </Pane>
-                     </content>
-                  </Tab>
-                  <Tab fx:id="logPane" closable="false" onSelectionChanged="#logViewTabPressed" text="Log">
-                     <content>
-                        <Pane fx:id="zeroSuccessRate" prefHeight="200.0" prefWidth="200.0">
+                     </center>
+                     <right>
+                        <Pane fx:id="zeroSuccessRate" prefHeight="613.0" prefWidth="535.0" BorderPane.alignment="CENTER">
                            <children>
-                              <ScrollPane layoutX="14.0" layoutY="14.0">
+                              <ScrollPane layoutX="-1.0" layoutY="14.0">
                                  <content>
-                                    <TextArea fx:id="logTextArea" disable="true" editable="false" prefHeight="456.0" prefWidth="535.0" />
+                                    <TextArea fx:id="logTextArea" disable="true" editable="false" prefHeight="570.0" prefWidth="436.0" />
                                  </content>
                               </ScrollPane>
                            </children>
                         </Pane>
-                     </content>
-                  </Tab>
-               </tabs>
-            </TabPane>
-         </center>
-      </BorderPane>
+                     </right>
+                     <bottom>
+                        <AnchorPane prefHeight="102.0" prefWidth="1346.0" BorderPane.alignment="CENTER" />
+                     </bottom>
+                  </BorderPane>
+               </content>
+            </ScrollPane>
+         </children>
+      </AnchorPane>
    </content>
 </ScrollPane>

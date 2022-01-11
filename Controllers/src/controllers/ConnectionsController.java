@@ -56,6 +56,11 @@ public class ConnectionsController {
     @FXML private ToggleGroup What_If_Value;
     @FXML private RadioButton RequiredForRadioButton;
 
+    @FXML private AnchorPane connectionsAnchorPane;
+
+    @FXML private AnchorPane AnchorPane;
+
+
     //--------------------------------------------------Settings-----------------------------------------------------//
     public void setGraph(Graph graph)
     {
