@@ -229,23 +229,32 @@ public class TaskController implements Initializable {
 
     @FXML void removeSelectedRowFromTable(ActionEvent event)
     {
-        TaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
-        int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
-
-        this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
-
-        while(size - 1 > index)
+        if(this.taskTargetDetailsTableView.getItems().size()>0)
         {
-            chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
-            chosenTarget.setNumber(++index);
+            TaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            if(chosenTarget!=null) {
+                int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
+
+                this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
+
+                while (size - 1 > index) {
+                    chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
+                    chosenTarget.setNumber(++index);
+                }
+
+                updateTargetTaskDetailsInTextArea();
+                turnOnIncrementalButton();
+
+                if (size - 1 == 0) {
+                    this.runButton.setDisable(true);
+                    this.clearTableButton.setDisable(false);
+                }
+            }
         }
-
-        updateTargetTaskDetailsInTextArea();
-        turnOnIncrementalButton();
-
-        if(size - 1 == 0) {
-            this.runButton.setDisable(true);
-            this.clearTableButton.setDisable(false);
+        if(this.taskTargetDetailsTableView.getItems().isEmpty())
+        {
+            this.removeSelectedButton.setDisable(true);
+            this.clearTableButton.setDisable(true);
         }
     }
 
@@ -265,6 +274,7 @@ public class TaskController implements Initializable {
         enableTargetInfoTextArea(false);
         this.runButton.setDisable(true);
         this.clearTableButton.setDisable(true);
+        this.removeSelectedButton.setDisable(true);
     }
 
     @FXML void addSelectedTargetsToTable(ActionEvent event)
@@ -752,6 +762,7 @@ public class TaskController implements Initializable {
             @Override
             public void onChanged(Change<? extends TaskTargetInformation> c) {
                 TaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
+               // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
 
                 TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
             }
