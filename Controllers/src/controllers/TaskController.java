@@ -77,7 +77,6 @@ public class TaskController implements Initializable {
             disableTaskOptions(false);
             TaskController.this.PauseButton.setDisable(true);
             TaskController.this.stopButton.setDisable(true);
-            TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
 
             Platform.runLater(() -> TaskController.this.PauseButton.setText("Pause"));
         }
@@ -898,6 +897,7 @@ public class TaskController implements Initializable {
             updateTable(itemsList, startTime, currTime);
         }
         updateTable(itemsList, startTime, currTime);
+        TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)
