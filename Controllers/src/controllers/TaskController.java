@@ -77,6 +77,7 @@ public class TaskController implements Initializable {
             disableTaskOptions(false);
             TaskController.this.PauseButton.setDisable(true);
             TaskController.this.stopButton.setDisable(true);
+
             Platform.runLater(() -> TaskController.this.PauseButton.setText("Pause"));
         }
 
@@ -527,6 +528,7 @@ public class TaskController implements Initializable {
             this.threadsSpinner.setVisible(true);
             this.numberOfThreadToExecuteLabel.setVisible(true);
             this.threadsSpinner.setDisable(false);
+            this.fromScratchRadioButton.setDisable(false);
             this.numberOfThreadToExecuteLabel.setDisable(false);
         }
 
@@ -613,9 +615,7 @@ public class TaskController implements Initializable {
         this.currentSelectedTargetLabel.setDisable(flag);
         this.currentSelectedTargetListView.setDisable(flag);
 
-        this.fromScratchRadioButton.setDisable(flag);
         this.selectAllButton.setDisable(flag);
-
     }
 
     private void disableTaskOptions(Boolean flag)
@@ -631,9 +631,6 @@ public class TaskController implements Initializable {
         this.selectAllButton.setDisable(flag);
         this.deselectAllButton.setDisable(flag);
         this.addSelectedButton.setDisable(flag);
-
-        this.fromScratchRadioButton.setDisable(flag);
-        this.incrementalRadioButton.setDisable(flag);
 
         this.threadsSpinner.setDisable(flag);
         this.numberOfThreadToExecuteLabel.setDisable(flag);
@@ -737,8 +734,6 @@ public class TaskController implements Initializable {
         this.successWithWarningRateText.setVisible(!flag);
         this.successRateText.setVisible(!flag);
         this.ApplyParametersButton.setVisible(!flag);
-        this.fromScratchRadioButton.setVisible(!flag);
-        this.incrementalRadioButton.setVisible(!flag);
         this.successRateLabel.setVisible(!flag);
         this.successRateWithWarnings.setVisible(!flag);
     }
@@ -902,6 +897,7 @@ public class TaskController implements Initializable {
             updateTable(itemsList, startTime, currTime);
         }
         updateTable(itemsList, startTime, currTime);
+        TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)
