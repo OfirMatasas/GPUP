@@ -9,7 +9,6 @@ import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Map;
@@ -44,7 +43,7 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(Graph graph, TaskType taskType, Map<String, SimulationParameters> taskParametersMap, CompilationParameters compilationParameters,
-                      GraphSummary graphSummary, Set<String> targetsSet, int numOfThreads, TaskOutput taskOutput, Boolean incremental) throws FileNotFoundException, OpeningFileCrash {
+                      GraphSummary graphSummary, Set<String> targetsSet, int numOfThreads, TaskOutput taskOutput, Boolean incremental) {
         this.graph = graph;
         this.taskType = taskType;
         this.taskParametersMap = taskParametersMap;
@@ -61,7 +60,11 @@ public class TaskThread extends Thread {
         this.pausedBefore = false;
         this.taskOutput = taskOutput;
 
-        this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
+        try {
+            this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
+        } catch (OpeningFileCrash e) {
+            e.printStackTrace();
+        }
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
@@ -100,10 +103,11 @@ public class TaskThread extends Thread {
                     for(int i = 0 ; i < submitted.size() ; ++i)
                     {
                         if(!futures.get(i).isDone())
-                            this.targetsList.addFirst(submitted.get(i));
+                            this.targetsList.addLast(submitted.get(i));
                     }
                     futures.clear();
                     submitted.clear();
+                    this.graphSummary.resetSerialSets();
 
                     this.pausedBefore = true;
                     this.graphSummary.pauseTheClock();

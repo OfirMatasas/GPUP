@@ -51,7 +51,14 @@ public class SimulationThread implements Runnable
                 ex.printStackTrace();
             }
         }
+        finally
+        {
+            checkForSuccess(targetSummary);
+        }
+    }
 
+    private void checkForSuccess(TargetSummary targetSummary) {
+        TargetSummary.ResultStatus resultStatus;
         double result = Math.random();
         if(Math.random() <= this.targetParameters.getSuccessRate())
             resultStatus = result <= this.targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
@@ -62,6 +69,7 @@ public class SimulationThread implements Runnable
         this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
         this.taskOutput.outputEndingSimulationTaskOnTarget(this.targetName);
     }
+
 
     private void UpdateWorkingTime() {
         long timeLong;

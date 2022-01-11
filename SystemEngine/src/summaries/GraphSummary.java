@@ -204,7 +204,6 @@ public class GraphSummary implements Serializable {
 
     public synchronized Boolean isTargetReadyToRun(Target target, Set<String> runningTargets)
     {
-//        Platform.runLater(() -> System.out.println("Checking if " + targetName + " is ready to run"));
         if(this.targetsSummaryMap.get(target.getTargetName()).getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Waiting))
             return true;
 
@@ -220,36 +219,36 @@ public class GraphSummary implements Serializable {
             {
                 if(dependedTargetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Failure))
                 {
-//                    Platform.runLater(() -> System.out.println(targetName + " can't run, because one of his depends on targets (" + dependedTarget.getTargetName() + ") failed."));
                     return false;
                 }
                 //The target finished with success / with warnings
                 continue;
             }
             //The target is not finished its run
-//            Platform.runLater(() -> System.out.println(targetName + " can't run, because one of his depends on targets (" + dependedTarget.getTargetName() + ") is still running."));
             return false;
         }
 
         //Runnable
         UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, false);
-//        Platform.runLater(() -> System.out.println(targetName + " is ready to run!"));
         return true;
     }
     public synchronized void addClosedSerialSets(Target target)
     {
-//        System.out.println("closing serial sets: " + target.getSerialSets() + ".");
         this.closedSerialSets.addAll(target.getSerialSets());
     }
 
     public synchronized void removeClosedSerialSets(Target target)
     {
-//        System.out.println("opening serial sets: " + target.getSerialSets() + ".");
         this.closedSerialSets.removeAll(target.getSerialSets());
     }
 
     public synchronized Boolean checkIfSerialSetsAreOpen(Set<String> otherSerialSet)
     {
         return Collections.disjoint(this.closedSerialSets, otherSerialSet);
+    }
+
+    public synchronized void resetSerialSets()
+    {
+        this.closedSerialSets.clear();
     }
 }
