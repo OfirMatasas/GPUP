@@ -105,7 +105,7 @@ public class GraphDetailsController {
                 System.out.println(ex.getMessage());
             }
             this.directoryPath = file.getParent();
-            convertXMLToDot();
+            convertXMLToDot(false);
         }
     }
 
@@ -117,7 +117,7 @@ public class GraphDetailsController {
         setGraphPositionsTable();
         setTargetSerialSetChoiceBox();
         initializePie();
-        convertXMLToDot();
+        convertXMLToDot(true);
         setGraphImage(this.directoryPath + "\\" + "GeneratedGraph.png");
     }
 
@@ -191,7 +191,7 @@ public class GraphDetailsController {
                 });
     }
 
-    public void convertXMLToDot() {
+    public void convertXMLToDot(boolean waitForProcess) {
 
         String currentColor;
         Target.TargetPosition targetPosition;
@@ -242,7 +242,8 @@ public class GraphDetailsController {
             dotFile.close();
 
             Process process = Runtime.getRuntime().exec("cmd /c cmd.exe /K \"cd \\ && cd " + this.directoryPath + " && " + createPNGFromDOT + " && exit");
-            process.waitFor();
+            if(waitForProcess)
+                process.waitFor();
         } catch(IOException | InterruptedException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
