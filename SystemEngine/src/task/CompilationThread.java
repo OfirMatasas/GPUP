@@ -20,7 +20,6 @@ public class CompilationThread implements Runnable
     private final Target target;
     private final String targetName;
     private final CompilationParameters compilationParameters;
-    private String[] toExecute;
 
     public CompilationThread(Target target, GraphSummary graphSummary, TextArea log, CompilationParameters compilationParameters) {
 
@@ -33,12 +32,12 @@ public class CompilationThread implements Runnable
 
     @Override
     public void run() {
-        Thread.currentThread().setName(targetName + " Thread");
-        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
+        Thread.currentThread().setName(this.targetName + " Thread");
+        TargetSummary targetSummary = this.graphSummary.getTargetsSummaryMap().get(this.targetName);
         TargetSummary.ResultStatus resultStatus;
-        File sourceCodeDirectory = compilationParameters.getSourceCodeDirectory();
-        String outputDirectoryPath = compilationParameters.getOutputDirectory().getAbsolutePath();
-        String FQN = target.getFQN();
+        File sourceCodeDirectory = this.compilationParameters.getSourceCodeDirectory();
+        String outputDirectoryPath = this.compilationParameters.getOutputDirectory().getAbsolutePath();
+        String FQN = this.target.getFQN();
         String userGive;
 
         if(FQN.contains(sourceCodeDirectory.getName()))
@@ -52,8 +51,8 @@ public class CompilationThread implements Runnable
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, log, c);
-        graphSummary.UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
+        outputStartingTaskOnTarget(targetSummary, this.log, c);
+        this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
         Process process = null;
         try {
@@ -80,16 +79,18 @@ public class CompilationThread implements Runnable
                 resultStatus = TargetSummary.ResultStatus.Success;
 
             targetSummary.stopTheClock();
-            graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
+            this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
             outputEndingTaskOnTarget(targetSummary, failureCause);
         }
     }
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
     {
-        String userGive = target.getFQN().substring(target.getFQN().indexOf(compilationParameters.getSourceCodeDirectory().getName()) + compilationParameters.getSourceCodeDirectory().getName().length() +1);
+        String userGive = this.target.getFQN().substring(target.getFQN().indexOf(this.compilationParameters.getSourceCodeDirectory().getName()) +
+                this.compilationParameters.getSourceCodeDirectory().getName().length() +1);
         userGive = userGive.replace('.','\\').concat(".java");
-        String toExecute = "javac -d " + compilationParameters.getOutputDirectory().getAbsolutePath() + " -cp " + compilationParameters.getOutputDirectory().getAbsolutePath() + " " + userGive;
+        String toExecute = "javac -d " + this.compilationParameters.getOutputDirectory().getAbsolutePath() + " -cp " +
+                this.compilationParameters.getOutputDirectory().getAbsolutePath() + " " + userGive;
         String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
 
         if(targetSummary.getExtraInformation() != null)
@@ -101,7 +102,7 @@ public class CompilationThread implements Runnable
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
@@ -119,6 +120,6 @@ public class CompilationThread implements Runnable
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> log.appendText(finalOutputString));
+        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 }

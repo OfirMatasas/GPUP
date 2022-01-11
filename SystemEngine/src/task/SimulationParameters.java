@@ -8,7 +8,7 @@ public class SimulationParameters {
     private Double successRate, successWithWarnings;
 
     public SimulationParameters() {
-        processingTime = null;
+        this.processingTime = null;
         this.isRandom = false;
         this.successRate = this.successWithWarnings = 0.0;
     }
@@ -21,19 +21,19 @@ public class SimulationParameters {
     }
 
     public Duration getProcessingTime() {
-        return processingTime;
+        return this.processingTime;
     }
 
     public Boolean isRandom() {
-        return isRandom;
+        return this.isRandom;
     }
 
     public void setRandom(Boolean random) {
-        isRandom = random;
+        this.isRandom = random;
     }
 
     public Double getSuccessRate() {
-        return successRate;
+        return this.successRate;
     }
 
     public void setSuccessRate(Double successRate) {
@@ -41,7 +41,7 @@ public class SimulationParameters {
     }
 
     public Double getSuccessWithWarnings() {
-        return successWithWarnings;
+        return this.successWithWarnings;
     }
 
     public void setSuccessWithWarnings(Double successWithWarnings) {

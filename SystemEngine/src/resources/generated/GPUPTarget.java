@@ -60,7 +60,7 @@ public class GPUPTarget {
      *     
      */
     public String getGPUPUserData() {
-        return gpupUserData;
+        return this.gpupUserData;
     }
 
     /**
@@ -84,7 +84,7 @@ public class GPUPTarget {
      *     
      */
     public GPUPTargetDependencies getGPUPTargetDependencies() {
-        return gpupTargetDependencies;
+        return this.gpupTargetDependencies;
     }
 
     /**
@@ -108,7 +108,7 @@ public class GPUPTarget {
      *     
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**

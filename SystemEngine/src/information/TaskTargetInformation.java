@@ -23,11 +23,11 @@ public class TaskTargetInformation {
         }
 
         public int getNumber() {
-            return number.intValue();
+            return this.number.intValue();
         }
 
         public IntegerProperty numberProperty() {
-            return number;
+            return this.number;
         }
 
         public void setNumber(int number) {
@@ -35,11 +35,11 @@ public class TaskTargetInformation {
         }
 
         public String getTargetName() {
-            return targetName.get();
+            return this.targetName.get();
         }
 
         public StringProperty targetNameProperty() {
-            return targetName;
+            return this.targetName;
         }
 
         public void setTargetName(String targetName) {
@@ -47,11 +47,11 @@ public class TaskTargetInformation {
         }
 
         public String getPosition() {
-            return position.get();
+            return this.position.get();
         }
 
         public StringProperty positionProperty() {
-            return position;
+            return this.position;
         }
 
         public void setPosition(String position) {
@@ -59,11 +59,11 @@ public class TaskTargetInformation {
         }
 
         public String getCurrentRuntimeStatus() {
-            return currentRuntimeStatus.get();
+            return this.currentRuntimeStatus.get();
         }
 
         public StringProperty currentRuntimeStatusProperty() {
-            return currentRuntimeStatus;
+            return this.currentRuntimeStatus;
         }
 
         public void setCurrentRuntimeStatus(String currentRuntimeStatus) {
@@ -72,9 +72,9 @@ public class TaskTargetInformation {
             else
                 this.currentRuntimeStatus.set(currentRuntimeStatus);
         }
-        public String getResultStatus() {return resultStatus.get();}
+        public String getResultStatus() {return this.resultStatus.get();}
 
-        public SimpleStringProperty resultStatusProperty() {return resultStatus;}
+        public SimpleStringProperty resultStatusProperty() {return this.resultStatus;}
 
         public void setResultStatus(String resultStatus) {this.resultStatus.set(resultStatus);}
 

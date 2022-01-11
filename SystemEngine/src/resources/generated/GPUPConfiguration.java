@@ -59,7 +59,7 @@ public class GPUPConfiguration {
      *     
      */
     public String getGPUPGraphName() {
-        return gpupGraphName;
+        return this.gpupGraphName;
     }
 
     /**
@@ -83,7 +83,7 @@ public class GPUPConfiguration {
      *     
      */
     public String getGPUPWorkingDirectory() {
-        return gpupWorkingDirectory;
+        return this.gpupWorkingDirectory;
     }
 
     /**
@@ -103,7 +103,7 @@ public class GPUPConfiguration {
      * 
      */
     public int getGPUPMaxParallelism() {
-        return gpupMaxParallelism;
+        return this.gpupMaxParallelism;
     }
 
     /**

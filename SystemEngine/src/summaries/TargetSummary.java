@@ -1,7 +1,5 @@
 package summaries;
 
-import target.Target;
-
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,7 +9,6 @@ import java.util.Set;
 
 public class TargetSummary implements Serializable
 {
-    private Boolean isRoot;
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum RuntimeStatus { Frozen, Skipped, Waiting, InProcess, Finished , Undefined }
     public enum ResultStatus { Success, Warning, Failure, Undefined }
@@ -25,13 +22,11 @@ public class TargetSummary implements Serializable
     private boolean isSkipped, running;
     private Instant timeStarted;
     private Set<String> skippedByTargets;
-    private final Set<String> openedTargets;
     private Instant waitingTimeStarted;
     private Instant processingTimeStarted;
-    private Duration waitingTime;
-    private Duration processingTime;
     private Instant pausingTime;
     private Duration totalPausingTime;
+    private Duration waitingTime;
 
     //------------------------------------------------Constructors--------------------------------------------------//
     public TargetSummary(String targetName) {
@@ -42,10 +37,6 @@ public class TargetSummary implements Serializable
         this.resultStatus = ResultStatus.Undefined;
         this.runtimeStatus = RuntimeStatus.Undefined;
         this.isSkipped = false;
-        this.openedTargets = new HashSet<>();
-        this.isRoot = false;
-        this.waitingTime = Duration.ZERO;
-        this.processingTime = Duration.ZERO;
         this.totalPausingTime = Duration.ZERO;
     }
 
@@ -60,14 +51,6 @@ public class TargetSummary implements Serializable
 
     public boolean isRunning() {
         return this.running;
-    }
-
-    public Set<String> getSkippedByTargets() {
-        return this.skippedByTargets;
-    }
-
-    public Duration getPredictedTime() {
-        return this.predictedTime;
     }
 
     public RuntimeStatus getRuntimeStatus() {
@@ -85,16 +68,6 @@ public class TargetSummary implements Serializable
     public synchronized boolean isSkipped() {
         return this.isSkipped;
     }
-
-    public Set<String> getOpenedTargets() {
-        return this.openedTargets;
-    }
-
-    public Boolean getRoot() {
-        return this.isRoot;
-    }
-
-    public Duration getProcessingTime() { return this.processingTime; }
 
     public Instant getTimeStarted() {
         return this.timeStarted;
@@ -119,18 +92,6 @@ public class TargetSummary implements Serializable
 
     public void setResultStatus(ResultStatus resultStatus) { this.resultStatus = resultStatus; }
 
-    public void setRoot(Boolean root) {
-        this.isRoot = root;
-    }
-
-    public void setOpenedTargetsToZero()
-    {
-        this.openedTargets.clear();
-    }
-
-    public void setProcessingTime(Duration processingTime) { this.processingTime = processingTime; }
-
-
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void startTheClock()
     {
@@ -149,41 +110,6 @@ public class TargetSummary implements Serializable
             this.skippedByTargets = new HashSet<>();
 
         this.skippedByTargets.add(skippedByTargetName);
-    }
-
-    public void checkForOpenTargets(Target executedTarget, GraphSummary graphSummary)
-    {
-        TargetSummary dependsOnTargetSummary;
-        Boolean skip;
-
-        for(Target requiredForTarget : executedTarget.getRequiredForTargets())
-        {
-            skip = false;
-            for(Target dependsOnTarget : requiredForTarget.getDependsOnTargets())
-            {
-                dependsOnTargetSummary = graphSummary.getTargetsSummaryMap().get(dependsOnTarget.getTargetName());
-
-                if(!dependsOnTargetSummary.getRuntimeStatus().equals(RuntimeStatus.Finished))
-                {
-                    skip = true;
-                    break;
-                }
-            }
-
-            if(skip)
-                continue;
-
-            this.openedTargets.add(requiredForTarget.getTargetName());
-        }
-    }
-
-    public void setAllRequiredForTargetsRuntimeStatus(Target target, GraphSummary graphSummary, RuntimeStatus runtimeStatus)
-    {
-        for(Target requiredForTarget : target.getRequiredForTargets())
-        {
-            graphSummary.getTargetsSummaryMap().get(requiredForTarget.getTargetName()).setRuntimeStatus(runtimeStatus);
-            setAllRequiredForTargetsRuntimeStatus(requiredForTarget, graphSummary, runtimeStatus);
-        }
     }
 
     public void startWaitingTime()
@@ -216,7 +142,7 @@ public class TargetSummary implements Serializable
     }
 
     public Duration getTotalPausingTime() {
-        return totalPausingTime;
+        return this.totalPausingTime;
     }
 
     public void startProcessingTime()
@@ -233,12 +159,6 @@ public class TargetSummary implements Serializable
     {
         Instant timeNow = Instant.now();
         return Duration.between(this.processingTimeStarted, timeNow);
-    }
-
-    public void startFinishingTime()
-    {
-        //Instant processingTimeEnded = Instant.now();
-        //processingTime = Duration.between(ProcessingTimeStarted,processingTimeEnded);
     }
 
     @Override

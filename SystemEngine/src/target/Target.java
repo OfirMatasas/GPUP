@@ -33,37 +33,37 @@ public class Target implements Serializable
 
     //--------------------------------------------------Getters-----------------------------------------------------//
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     public Set<Target> getDependsOnTargets() {
-        return dependsOnTargets;
+        return this.dependsOnTargets;
     }
 
     public Set<String> getSerialSets() {
-        return serialSets;
+        return this.serialSets;
     }
 
     public Set<Target> getRequiredForTargets() {
-        return requiredForTargets;
+        return this.requiredForTargets;
     }
 
     public TargetPosition getTargetPosition() {
-        return targetPosition;
+        return this.targetPosition;
     }
 
     public Set<String> getAllDependsOnTargets() {
-        return allDependsOnTargets;
+        return this.allDependsOnTargets;
     }
 
     public Set<String> getAllRequiredForTargets() {
-        return allRequiredForTargets;
+        return this.allRequiredForTargets;
     }
 
-    public String getExtraInformation() {return extraInformation;}
+    public String getExtraInformation() {return this.extraInformation;}
 
     public String getFQN() {
-        return FQN;
+        return this.FQN;
     }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
@@ -79,25 +79,28 @@ public class Target implements Serializable
         this.targetPosition = targetPosition;
     }
 
-    public void addSerialSet(String newSerialSet) { serialSets.add(newSerialSet); }
+    public void addSerialSet(String newSerialSet) {
+        this.serialSets.add(newSerialSet); }
 
     public void setFQN(String FQN) {
         this.FQN = FQN;
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
-    public void addToDependsOn(Target dependsOn) { dependsOnTargets.add(dependsOn); }
+    public void addToDependsOn(Target dependsOn) {
+        this.dependsOnTargets.add(dependsOn); }
 
-    public void addToRequiredFor(Target requiredFor) { requiredForTargets.add(requiredFor); }
+    public void addToRequiredFor(Target requiredFor) {
+        this.requiredForTargets.add(requiredFor); }
 
     public void calculateAllDependsOnTargets(Target target)
     {
         for(Target currentTarget : target.getDependsOnTargets())
         {
-            if(allDependsOnTargets.contains(currentTarget.getTargetName()))
+            if(this.allDependsOnTargets.contains(currentTarget.getTargetName()))
                 continue;
 
-            allDependsOnTargets.add(currentTarget.getTargetName());
+            this.allDependsOnTargets.add(currentTarget.getTargetName());
             calculateAllDependsOnTargets(currentTarget);
         }
     }
@@ -106,10 +109,10 @@ public class Target implements Serializable
     {
         for(Target currentTarget : target.getRequiredForTargets())
         {
-            if(allRequiredForTargets.contains(currentTarget.getTargetName()))
+            if(this.allRequiredForTargets.contains(currentTarget.getTargetName()))
                 continue;
 
-            allRequiredForTargets.add(currentTarget.getTargetName());
+            this.allRequiredForTargets.add(currentTarget.getTargetName());
             calculateAllRequiredForTargets(currentTarget);
         }
     }
@@ -119,11 +122,11 @@ public class Target implements Serializable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Target target = (Target) o;
-        return Objects.equals(targetName, target.targetName);
+        return Objects.equals(this.targetName, target.targetName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(targetName);
+        return Objects.hash(this.targetName);
     }
 }

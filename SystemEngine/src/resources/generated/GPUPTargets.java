@@ -8,13 +8,9 @@
 
 package resources.generated;
 
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -69,8 +65,8 @@ public class GPUPTargets {
      * 
      */
     public List<GPUPTarget> getGPUPTarget() {
-        if (gpupTarget == null) {
-            gpupTarget = new ArrayList<GPUPTarget>();
+        if (this.gpupTarget == null) {
+            this.gpupTarget = new ArrayList<GPUPTarget>();
         }
         return this.gpupTarget;
     }

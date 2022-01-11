@@ -12,10 +12,10 @@ public class CompilationParameters {
     }
 
     public File getSourceCodeDirectory() {
-        return sourceCodeDirectory;
+        return this.sourceCodeDirectory;
     }
 
     public File getOutputDirectory() {
-        return outputDirectory;
+        return this.outputDirectory;
     }
 }

@@ -14,18 +14,18 @@ public class GraphPositionsInformation {
     }
 
     public int getRoots() {
-        return roots;
+        return this.roots;
     }
 
     public int getMiddles() {
-        return middles;
+        return this.middles;
     }
 
     public int getLeaves() {
-        return leaves;
+        return this.leaves;
     }
 
     public int getIndependents() {
-        return independents;
+        return this.independents;
     }
 }

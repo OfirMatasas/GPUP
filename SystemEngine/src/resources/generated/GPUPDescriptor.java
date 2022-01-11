@@ -8,14 +8,9 @@
 
 package resources.generated;
 
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -81,7 +76,7 @@ public class GPUPDescriptor {
      *     
      */
     public GPUPConfiguration getGPUPConfiguration() {
-        return gpupConfiguration;
+        return this.gpupConfiguration;
     }
 
     /**
@@ -105,7 +100,7 @@ public class GPUPDescriptor {
      *     
      */
     public GPUPTargets getGPUPTargets() {
-        return gpupTargets;
+        return this.gpupTargets;
     }
 
     /**
@@ -129,7 +124,7 @@ public class GPUPDescriptor {
      *     
      */
     public GPUPDescriptor.GPUPSerialSets getGPUPSerialSets() {
-        return gpupSerialSets;
+        return this.gpupSerialSets;
     }
 
     /**
@@ -205,8 +200,8 @@ public class GPUPDescriptor {
          * 
          */
         public List<GPUPDescriptor.GPUPSerialSets.GPUPSerialSet> getGPUPSerialSet() {
-            if (gpupSerialSet == null) {
-                gpupSerialSet = new ArrayList<GPUPDescriptor.GPUPSerialSets.GPUPSerialSet>();
+            if (this.gpupSerialSet == null) {
+                this.gpupSerialSet = new ArrayList<GPUPDescriptor.GPUPSerialSets.GPUPSerialSet>();
             }
             return this.gpupSerialSet;
         }
@@ -248,7 +243,7 @@ public class GPUPDescriptor {
              *     
              */
             public String getTargets() {
-                return targets;
+                return this.targets;
             }
 
             /**
@@ -272,7 +267,7 @@ public class GPUPDescriptor {
              *     
              */
             public String getName() {
-                return name;
+                return this.name;
             }
 
             /**
