@@ -243,8 +243,10 @@ public class TaskController implements Initializable {
         updateTargetTaskDetailsInTextArea();
         turnOnIncrementalButton();
 
-        if(size - 1 == 0)
+        if(size - 1 == 0) {
             this.runButton.setDisable(true);
+            this.clearTableButton.setDisable(false);
+        }
     }
 
     private void updateTargetTaskDetailsInTextArea() {
@@ -262,6 +264,7 @@ public class TaskController implements Initializable {
         this.taskTargetDetailsTableView.getItems().clear();
         enableTargetInfoTextArea(false);
         this.runButton.setDisable(true);
+        this.clearTableButton.setDisable(true);
     }
 
     @FXML void addSelectedTargetsToTable(ActionEvent event)
@@ -279,6 +282,7 @@ public class TaskController implements Initializable {
             if(this.taskParameters != null)
                 this.runButton.setDisable(false);
         }
+        this.clearTableButton.setDisable(false);
     }
 
     private void enableTargetInfoTextArea(boolean flag) {
@@ -585,6 +589,7 @@ public class TaskController implements Initializable {
 
         this.fromScratchRadioButton.setDisable(flag);
         this.selectAllButton.setDisable(flag);
+
     }
 
     private void disableTaskOptions(Boolean flag)

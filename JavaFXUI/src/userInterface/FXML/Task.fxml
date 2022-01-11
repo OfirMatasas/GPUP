@@ -130,7 +130,7 @@
                               </TableView>
                               <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="15.0" layoutY="442.0" prefHeight="153.0" prefWidth="474.0" style="-fx-background-color: black;" visible="false" />
                               <Button fx:id="removeSelectedButton" disable="true" layoutX="322.0" layoutY="279.0" mnemonicParsing="false" onAction="#removeSelectedRowFromTable" text="Remove Selected" />
-                              <Button fx:id="clearTableButton" layoutX="95.0" layoutY="279.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
+                              <Button fx:id="clearTableButton" disable="true" layoutX="95.0" layoutY="279.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
                               <ProgressBar fx:id="progressBar" disable="true" layoutX="40.0" layoutY="355.0" prefHeight="25.0" prefWidth="434.0" progress="0.0" />
                               <Label fx:id="targetsFinishedLabel" disable="true" layoutX="187.0" layoutY="314.0" prefHeight="26.0" prefWidth="140.0" text="Targets Finished">
                                  <font>
