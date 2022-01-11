@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class TaskThread extends Thread {
     //--------------------------------------------------Enums-------------------------------------------------------//
@@ -73,6 +74,8 @@ public class TaskThread extends Thread {
         Target currTarget;
         taskPreparations();
         Boolean currentlyPaused = false;
+        LinkedList<Future<?>> futures = new LinkedList<>();
+        LinkedList<String> submitted = new LinkedList<>();
 
         if(targetsList.isEmpty())
         {
@@ -82,8 +85,6 @@ public class TaskThread extends Thread {
 
         //Starting task on graph
         printStartOfTaskOnGraph(graph.getGraphName());
-//        taskOutput.printStartOfTaskOnGraph(graph.getGraphName());
-
         graphSummary.startTheClock();
 
         //Continuing polling targets while there are some left, and the "Stop" button didn't hit
@@ -95,8 +96,16 @@ public class TaskThread extends Thread {
                 //Pausing the clock if the "Pause" button just hit
                 if(!pausedBefore)
                 {
-                    executor.shutdown();
+                    executor.shutdownNow();
                     while(!executor.isTerminated()) {}
+
+                    for(int i = 0 ; i < submitted.size() ; ++i)
+                    {
+                        if(!futures.get(i).isDone())
+                            targetsList.addFirst(submitted.get(i));
+                    }
+                    futures.clear();
+                    submitted.clear();
 
                     pausedBefore = true;
                     graphSummary.pauseTheClock();
@@ -125,9 +134,10 @@ public class TaskThread extends Thread {
                     graphSummary.addClosedSerialSets(currTarget);
 
                     if(taskType.equals(TaskType.Simulation))
-                        executor.execute(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log));
+                        futures.add(executor.submit(new SimulationThread(taskParametersMap.get(currTargetName), currTarget, graphSummary, log)));
                     else
-                        executor.execute(new CompilationThread(currTarget, graphSummary, log, compilationParameters));
+                        futures.add(executor.submit(new CompilationThread(currTarget, graphSummary, log, compilationParameters)));
+                    submitted.add(currTargetName);
                 }
                 else //The target is not ready to run yet, but not skipped either
                     targetsList.addLast(currTargetName);
@@ -203,9 +213,8 @@ public class TaskThread extends Thread {
         else
             outputString += targetSummary.getResultStatus() + "\n";
 
-        if(!targetSummary.isSkipped())
+        if(!targetSummary.isSkipped() && !targetSummary.getResultStatus().equals(TargetSummary.ResultStatus.Undefined))
             outputString += "Target's running time: " + time.toMillis() + "m/s\n";
-//            outputString += String.format("Target's running time: %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
 
         return outputString;
     }
@@ -291,7 +300,7 @@ public class TaskThread extends Thread {
     public void stopTheTask()
     {
         this.stopped = this.statusChanged = true;
-        this.executor.shutdown();
+        this.executor.shutdownNow();
     }
 
     public void pauseTheTask() { this.paused = this.statusChanged = true; }

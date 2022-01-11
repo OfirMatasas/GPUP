@@ -63,25 +63,26 @@ public class CompilationThread implements Runnable
             try {
                 process = Runtime.getRuntime().exec(c);
                 process.waitFor();
-            } catch (IOException | InterruptedException ex) {
+            } catch (IOException | InterruptedException ignored) {
             }
         }
-
-        if(Objects.requireNonNull(process).exitValue() != 0) //Failure
-        {
-            resultStatus = TargetSummary.ResultStatus.Failure;
-            try {
-                failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
-            } catch (IOException e) {
-                e.printStackTrace();
+        finally {
+            if(Objects.requireNonNull(process).exitValue() != 0) //Failure
+            {
+                resultStatus = TargetSummary.ResultStatus.Failure;
+                try {
+                    failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-        else //Success
-            resultStatus = TargetSummary.ResultStatus.Success;
+            else //Success
+                resultStatus = TargetSummary.ResultStatus.Success;
 
-        targetSummary.stopTheClock();
-        graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
-        outputEndingTaskOnTarget(targetSummary, failureCause);
+            targetSummary.stopTheClock();
+            graphSummary.UpdateTargetSummary(target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
+            outputEndingTaskOnTarget(targetSummary, failureCause);
+        }
     }
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)

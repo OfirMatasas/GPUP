@@ -9,6 +9,7 @@ import summaries.TargetSummary;
 import target.Target;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 public class SimulationThread implements Runnable
@@ -45,7 +46,11 @@ public class SimulationThread implements Runnable
         try {
             Thread.sleep(sleepingTime);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                Thread.sleep(sleepingTime - Duration.between(targetSummary.getTimeStarted(), Instant.now()).toMillis());
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
 
         double result = Math.random();
@@ -81,15 +86,12 @@ public class SimulationThread implements Runnable
         if(targetSummary.getExtraInformation() != null)
             outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
 
-        outputString += String.format("The system is going to sleep for %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
-
+        outputString += "The system is going to sleep for " + time.toMillis() + "\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;
         Platform.runLater(() -> System.out.println(finalOutputString));
         Platform.runLater(() -> log.appendText(finalOutputString));
-
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary)
@@ -98,8 +100,7 @@ public class SimulationThread implements Runnable
         String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
 
         outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-        outputString += String.format("The system went to sleep for %02d:%02d:%02d\n",
-                time.toHours(), time.toMinutes(), time.getSeconds());
+        outputString += "The system went to sleep for " + time.toMillis() + "\n";
         outputString += "------------------------------------------\n";
 
         String finalOutputString = outputString;

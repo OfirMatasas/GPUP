@@ -96,6 +96,10 @@ public class TargetSummary implements Serializable
 
     public Duration getProcessingTime() { return this.processingTime; }
 
+    public Instant getTimeStarted() {
+        return this.timeStarted;
+    }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setRunning(boolean running) {
         this.running = running;
