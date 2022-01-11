@@ -1,12 +1,11 @@
 package task;
 
-import javafx.application.Platform;
-import javafx.scene.control.TextArea;
 import myExceptions.FileNotFound;
 import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Target;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,17 +15,17 @@ public class SimulationThread implements Runnable
 {
     private final SimulationParameters targetParameters;
     private final GraphSummary graphSummary;
-    private final TextArea log;
+    private final TaskOutput taskOutput;
     private final Target target;
     private final String targetName;
 
     public SimulationThread(SimulationParameters targetParameters, Target target, GraphSummary graphSummary,
-                            TextArea log) throws FileNotFound, IOException, OpeningFileCrash {
+                            TaskOutput taskOutput) throws FileNotFound, IOException, OpeningFileCrash {
         this.targetParameters = targetParameters;
         this.graphSummary = graphSummary;
         this.target = target;
         this.targetName = target.getTargetName();
-        this.log = log;
+        this.taskOutput = taskOutput;
         UpdateWorkingTime();
     }
 
@@ -39,7 +38,7 @@ public class SimulationThread implements Runnable
 
         //Starting the clock
         targetSummary.startTheClock();
-        outputStartingTaskOnTarget(targetSummary, this.log);
+        this.taskOutput.outputStartingSimulationTaskOnTarget(this.targetName, this.targetParameters);
         this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess, true);
 
         //Going to sleep
@@ -52,7 +51,14 @@ public class SimulationThread implements Runnable
                 ex.printStackTrace();
             }
         }
+        finally
+        {
+            checkForSuccess(targetSummary);
+        }
+    }
 
+    private void checkForSuccess(TargetSummary targetSummary) {
+        TargetSummary.ResultStatus resultStatus;
         double result = Math.random();
         if(Math.random() <= this.targetParameters.getSuccessRate())
             resultStatus = result <= this.targetParameters.getSuccessWithWarnings() ? TargetSummary.ResultStatus.Warning : TargetSummary.ResultStatus.Success;
@@ -61,8 +67,9 @@ public class SimulationThread implements Runnable
 
         targetSummary.stopTheClock();
         this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished, false);
-        outputEndingTaskOnTarget(targetSummary);
+        this.taskOutput.outputEndingSimulationTaskOnTarget(this.targetName);
     }
+
 
     private void UpdateWorkingTime() {
         long timeLong;
@@ -76,35 +83,5 @@ public class SimulationThread implements Runnable
             timeDuration = Duration.of(timeLong, ChronoUnit.MILLIS);
             targetSummary.setPredictedTime(timeDuration);
         }
-    }
-
-    public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log)
-    {
-        Duration time = this.targetParameters.getProcessingTime();
-        String outputString = "Task on target " + targetSummary.getTargetName() + " just started!\n";
-
-        if(targetSummary.getExtraInformation() != null)
-            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-
-        outputString += "The system is going to sleep for " + time.toMillis() + "\n";
-        outputString += "------------------------------------------\n";
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> this.log.appendText(finalOutputString));
-    }
-
-    public void outputEndingTaskOnTarget(TargetSummary targetSummary)
-    {
-        Duration time = targetSummary.getTime();
-        String outputString = "Task on target " + targetSummary.getTargetName() + " ended!\n";
-
-        outputString += "The result: " + targetSummary.getResultStatus().toString() + ".\n";
-        outputString += "The system went to sleep for " + time.toMillis() + "\n";
-        outputString += "------------------------------------------\n";
-
-        String finalOutputString = outputString;
-        Platform.runLater(() -> System.out.println(finalOutputString));
-        Platform.runLater(() -> this.log.appendText(finalOutputString));
     }
 }

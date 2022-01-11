@@ -8,7 +8,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
-
 <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
    <content>
       <AnchorPane fx:id="AnchorPane" prefHeight="746.0" prefWidth="1456.0">
@@ -16,9 +15,9 @@
             <Label fx:id="ShowConnectionLabel" layoutX="64.0" layoutY="62.0" prefHeight="17.0" prefWidth="200.0" text="Show Connection Between 2 targets" />
             <ChoiceBox fx:id="OriginTargetChoiceBox" layoutX="145.0" layoutY="116.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OriginTargetChosen" prefHeight="25.0" prefWidth="150.0" />
             <Label fx:id="OriginTargetLabel" layoutX="37.0" layoutY="120.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Origin target" />
-            <ChoiceBox fx:id="RelationChoiceBox" disable="true" layoutX="145.0" layoutY="166.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#RelationChosen" prefHeight="25.0" prefWidth="150.0" />
+            <ChoiceBox fx:id="RelationChoiceBox" layoutX="145.0" layoutY="166.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#RelationChosen" prefHeight="25.0" prefWidth="150.0" />
             <Label fx:id="RelationLabel" layoutX="37.0" layoutY="170.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="108.0" text="Relation" />
-            <ChoiceBox fx:id="DestinationTargetChoiceBox" disable="true" layoutX="145.0" layoutY="214.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#DestinationTargetChosen" prefHeight="25.0" prefWidth="150.0" />
+            <ChoiceBox fx:id="DestinationTargetChoiceBox" layoutX="145.0" layoutY="214.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#DestinationTargetChosen" prefHeight="25.0" prefWidth="150.0" />
             <Label fx:id="DestinationTargetLabel" layoutX="37.0" layoutY="218.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="108.0" text="Destination target" />
             <Label fx:id="CheckCirclesLabel" layoutX="536.0" layoutY="62.0" prefHeight="17.0" prefWidth="80.0" text="Check Circles" />
             <ChoiceBox fx:id="CircleTargetChoiceBox" layoutX="541.0" layoutY="116.0" maxWidth="150.0" minWidth="100.0" onAction="#CheckIfTargetCircled" prefHeight="25.0" prefWidth="200.0" />

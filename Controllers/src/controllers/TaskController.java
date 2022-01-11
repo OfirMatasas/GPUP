@@ -22,16 +22,16 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
-import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 import task.CompilationParameters;
 import task.SimulationParameters;
+import task.TaskOutput;
 import task.TaskThread;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -382,7 +382,7 @@ public class TaskController implements Initializable {
 
     @FXML void permanentOptionPressed(ActionEvent event) {}
 
-    @FXML void runPressed(ActionEvent event) throws FileNotFoundException, OpeningFileCrash {
+    @FXML void runPressed(ActionEvent event) {
         if(!checkForValidRun())
             return;
 
@@ -390,6 +390,7 @@ public class TaskController implements Initializable {
         Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
         TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
         Set<String> currentRunTargets = setCurrentRunTargets();
+        TaskOutput taskOutput = new TaskOutput(this.logTextArea, this.graphSummary, this.graph);
         turnOnProgressBar();
 
         if(this.taskType.equals(TaskThread.TaskType.Simulation))
@@ -406,7 +407,7 @@ public class TaskController implements Initializable {
         this.targetsFinishedLabel.setDisable(false);
 
         this.taskThread = new TaskThread(this.graph, this.taskType, this.taskParametersMap, compilationParameters, this.graphSummary,
-                currentRunTargets, this.numOfThreads, this.logTextArea, this.incrementalRadioButton.isSelected());
+                currentRunTargets, this.numOfThreads, taskOutput, this.incrementalRadioButton.isSelected());
 
         taskThreadWatcher.setDaemon(true);
 
@@ -459,12 +460,12 @@ public class TaskController implements Initializable {
     private Boolean checkForValidRun()
     {
         String errorMessage = "";
+        boolean validIncremental = false;
 
         if(this.taskType.equals(TaskThread.TaskType.Simulation))
         {
             if(this.taskParameters == null)
                 errorMessage = "You have to apply the parameters for the task first!";
-
         }
         else //Compilation task
         {
@@ -472,8 +473,22 @@ public class TaskController implements Initializable {
                 errorMessage = "Please choose directories for compilation task!";
         }
 
-        if(this.incrementalRadioButton.isSelected() && this.incrementalRadioButton.isDisabled())
-            errorMessage = "Incremental is not optional!\nChoose \"From Scratch\" or select other targets";
+        if(this.incrementalRadioButton.isSelected())
+        {
+            if(this.incrementalRadioButton.isDisabled())
+                errorMessage = "Incremental is not optional!\nChoose \"From Scratch\" or select other targets";
+            else
+            {
+                for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+                {
+                    if(curr.getResultStatus().equals("Undefined") || curr.getResultStatus().equals("Failure"))
+                        validIncremental = true; break;
+                }
+
+                if(!validIncremental)
+                    errorMessage = "There are no targets available for the current task!";
+            }
+        }
 
         if(!errorMessage.equals(""))
         {
@@ -959,12 +974,13 @@ public class TaskController implements Initializable {
                 }
                 case Waiting:
                 {
-                    detailMsg += "The target " + currentTargetName + " is waiting for : " + (currentTargetSummary.currentWaitingTime().toMillis() - currentTargetSummary.getTotalPausingTime().toMillis()) + " M\\S";
+                    detailMsg += "The target " + currentTargetName + " is waiting for : " +
+                            (currentTargetSummary.currentWaitingTime().toMillis() - currentTargetSummary.getTotalPausingTime().toMillis()) + " m/s";
                     break;
                 }
                 case InProcess:
                 {
-                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " M\\S";
+                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " m/s";
                     break;
                 }
                 case Finished:
@@ -978,10 +994,9 @@ public class TaskController implements Initializable {
                         detailMsg += currentTargetSummary.getResultStatus() + "\n";
 
                     if(!currentTargetSummary.isSkipped())
-                        detailMsg += String.format("Target's running time : %02d:%02d:%02d\n", time.toHours(), time.toMinutes(), time.getSeconds()) + "\n";
+                        detailMsg += "Target's running time: " + time.toMillis() + "m/s\n";
                     break;
                 }
-
             }
         }
 
