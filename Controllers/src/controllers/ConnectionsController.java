@@ -57,15 +57,9 @@ public class ConnectionsController {
     @FXML private AnchorPane connectionsAnchorPane;
     @FXML private AnchorPane AnchorPane;
 
-    @FXML
-    private Button calculatePathsButton;
-
 
     //--------------------------------------------------Settings-----------------------------------------------------//
-    @FXML
-    void calculatePathsPressed(ActionEvent event) {
 
-    }
 
     public void setGraph(Graph graph)
     {
