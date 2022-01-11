@@ -60,6 +60,8 @@ public class TaskThread extends Thread {
         this.incremental = incremental;
         this.pausedBefore = false;
         this.taskOutput = taskOutput;
+
+        this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
