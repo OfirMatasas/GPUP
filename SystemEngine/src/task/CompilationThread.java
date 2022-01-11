@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class CompilationThread implements Runnable
@@ -39,8 +38,15 @@ public class CompilationThread implements Runnable
         TargetSummary.ResultStatus resultStatus;
         File sourceCodeDirectory = compilationParameters.getSourceCodeDirectory();
         String outputDirectoryPath = compilationParameters.getOutputDirectory().getAbsolutePath();
-        String userGive = sourceCodeDirectory + "/" + target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName())
-                + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
+        String FQN = target.getFQN();
+        String userGive;
+
+        if(FQN.contains(sourceCodeDirectory.getName()))
+            userGive = sourceCodeDirectory + "/" + FQN.substring(FQN.indexOf(sourceCodeDirectory.getName())
+                    + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
+        else
+            userGive = (sourceCodeDirectory + "/" + FQN).replace('.','/').concat(".java");
+
         String[] c = {"javac", "-d", outputDirectoryPath, "-cp", outputDirectoryPath, userGive};
         String failureCause = "";
 
@@ -80,32 +86,21 @@ public class CompilationThread implements Runnable
 
     public void outputStartingTaskOnTarget(TargetSummary targetSummary, TextArea log, String[] c)
     {
-//        String userGive = target.getFQN().substring(target.getFQN().indexOf(sourceCodeDirectory.getName()) + sourceCodeDirectory.getName().length() +1);
-//        userGive = userGive.replace('.','\\').concat(".java");
-//        String toExecute = "javac -d " + outputDirectory.getAbsolutePath() + " -cp " + outputDirectory.getAbsolutePath() + " " + userGive;
-//        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
-//
-//        if(targetSummary.getExtraInformation() != null)
-//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-//
-//        outputString+= "Task is going to execute : " + toExecute +"\n";
-//
-//        outputString += "------------------------------------------\n";
-//
-//        String finalOutputString = outputString;
-//        Platform.runLater(() -> System.out.println(finalOutputString));
-//        Platform.runLater(() -> log.appendText(finalOutputString));
+        String userGive = target.getFQN().substring(target.getFQN().indexOf(compilationParameters.getSourceCodeDirectory().getName()) + compilationParameters.getSourceCodeDirectory().getName().length() +1);
+        userGive = userGive.replace('.','\\').concat(".java");
+        String toExecute = "javac -d " + compilationParameters.getOutputDirectory().getAbsolutePath() + " -cp " + compilationParameters.getOutputDirectory().getAbsolutePath() + " " + userGive;
+        String outputString = "Compilation task on target " + targetSummary.getTargetName() + " just started!\n";
 
-//        if(targetSummary.getExtraInformation() != null)
-//            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
-//
-//        outputString+= "Task is going to execute : " + Arrays.toString(c) +"\n";
-//
-//        outputString += "------------------------------------------\n";
-//
-//        String finalOutputString = outputString;
-//        Platform.runLater(() -> System.out.println(finalOutputString));
-//        Platform.runLater(() -> log.appendText(finalOutputString));
+        if(targetSummary.getExtraInformation() != null)
+            outputString += "Target's extra information: " + targetSummary.getExtraInformation() +"\n";
+
+        outputString+= "Task is going to execute : " + toExecute +"\n";
+
+        outputString += "------------------------------------------\n";
+
+        String finalOutputString = outputString;
+        Platform.runLater(() -> System.out.println(finalOutputString));
+        Platform.runLater(() -> log.appendText(finalOutputString));
     }
 
     public void outputEndingTaskOnTarget(TargetSummary targetSummary, String failureCause)
