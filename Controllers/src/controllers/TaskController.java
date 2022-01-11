@@ -436,6 +436,7 @@ public class TaskController implements Initializable {
                 return null;
             }
         };
+        this.progressBar.setStyle("-fx-accent: #00FF00;");
         this.progressBar.progressProperty().bind(task.progressProperty());
         this.progressBarLabel.textProperty().bind
                 (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
