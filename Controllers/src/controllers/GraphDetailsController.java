@@ -146,6 +146,7 @@ public class GraphDetailsController {
         fileChooser.setTitle("Save Image");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file (*.PNG)", "*.PNG"));
         fileChooser.setInitialFileName("GeneratedGraph".concat(".PNG"));
+
         File file = fileChooser.showSaveDialog(AnchorPane.getParent().getScene().getWindow());
         if (file != null) {
             try {

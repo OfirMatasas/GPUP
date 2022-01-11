@@ -35,8 +35,9 @@ public class ConnectionsController {
     @FXML
     private ScrollPane scrollPane;
 
-    @FXML
-    private Pane pane;
+    @FXML private AnchorPane connectionsAnchorPane;
+
+    @FXML private AnchorPane AnchorPane;
 
     @FXML
     private GridPane ConnectionsGridPane;

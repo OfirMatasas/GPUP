@@ -19,6 +19,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -139,7 +140,7 @@ public class TaskController implements Initializable {
             taskThread.resetStatusChanged();
         }
     }
-
+    @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
     @FXML private ToolBar toolBar;
     @FXML private ComboBox<String> TaskTargetSelection;
@@ -171,6 +172,7 @@ public class TaskController implements Initializable {
     @FXML private Tab graphViewTabPane;
     @FXML private Tab graphViewTabPane1;
     @FXML private Pane footerPane;
+    @FXML private AnchorPane AnchorPane;
     @FXML private RadioButton fromScratchRadioButton;
     @FXML private ToggleGroup scratchOrIncremental;
     @FXML private RadioButton incrementalRadioButton;

@@ -6,11 +6,11 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.AnchorPane?>
 
 <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionsController">
    <content>
-      <Pane fx:id="pane" prefHeight="1280.0" prefWidth="1093.0">
+      <AnchorPane fx:id="AnchorPane" prefHeight="746.0" prefWidth="1456.0">
          <children>
             <Label fx:id="ShowConnectionLabel" layoutX="64.0" layoutY="62.0" prefHeight="17.0" prefWidth="200.0" text="Show Connection Between 2 targets" />
             <ChoiceBox fx:id="OriginTargetChoiceBox" layoutX="145.0" layoutY="116.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OriginTargetChosen" prefHeight="25.0" prefWidth="150.0" />
@@ -35,6 +35,6 @@
             <ListView fx:id="showConnectionBetweenListView" layoutX="145.0" layoutY="268.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
             <ListView fx:id="CirclesListView" layoutX="541.0" layoutY="268.0" maxWidth="150.0" prefHeight="200.0" prefWidth="200.0" />
          </children>
-      </Pane>
+      </AnchorPane>
    </content>
 </ScrollPane>
