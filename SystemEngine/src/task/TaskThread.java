@@ -78,12 +78,6 @@ public class TaskThread extends Thread {
         LinkedList<Future<?>> futures = new LinkedList<>();
         LinkedList<String> submitted = new LinkedList<>();
 
-        if(this.targetsList.isEmpty())
-        {
-            Platform.runLater(() -> ShowPopUp("There are no targets available for the current task!", "Lack of available targets", Alert.AlertType.ERROR));
-            return;
-        }
-
         //Starting task on graph
         this.taskOutput.printStartOfTaskOnGraph(this.taskType);
         this.graphSummary.startTheClock();

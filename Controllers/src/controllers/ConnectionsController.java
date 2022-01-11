@@ -16,8 +16,6 @@ import target.Target;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
 
 public class ConnectionsController {
     //--------------------------------------------------Members-----------------------------------------------------//
@@ -55,11 +53,9 @@ public class ConnectionsController {
     @FXML private ListView<String> showConnectionBetweenListView;
     @FXML private ToggleGroup What_If_Value;
     @FXML private RadioButton RequiredForRadioButton;
-
+    @FXML private Button calculatePathsButton;
     @FXML private AnchorPane connectionsAnchorPane;
-
     @FXML private AnchorPane AnchorPane;
-
 
     //--------------------------------------------------Settings-----------------------------------------------------//
     public void setGraph(Graph graph)
@@ -69,6 +65,30 @@ public class ConnectionsController {
         setAllTargetsList();
         setRelationChoiceBox();
         SetTooltips();
+    }
+
+    @FXML void calculatePathsPressed(ActionEvent event) {
+        Target origin,destination;
+        ArrayList<String> paths;
+        ObservableList<String> pathsTargets = FXCollections.observableArrayList();
+        PathFinder pathFinder = new PathFinder();
+        String destinationTargetName = this.DestinationTargetChoiceBox.getValue();
+        String originTargetName = this.OriginTargetChoiceBox.getValue();
+
+        origin = this.graph.getTarget(this.OriginTargetChoiceBox.getValue());
+        destination = this.graph.getTarget(destinationTargetName);
+
+        if(this.RelationChoiceBox.getValue().equals("Depends on"))
+            paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.DEPENDS_ON);
+        else
+            paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.REQUIRED_FOR);
+
+        if(paths.isEmpty())
+            pathsTargets.addAll("No paths between " + originTargetName + " and " + destinationTargetName);
+        else
+            pathsTargets.addAll(paths);
+
+        this.showConnectionBetweenListView.setItems(pathsTargets);
     }
 
     private void setRelationChoiceBox()
@@ -88,6 +108,7 @@ public class ConnectionsController {
         final SortedList<String> sorted = this.allTargetsList.sorted();
 
         this.OriginTargetChoiceBox.setItems(sorted);
+        this.DestinationTargetChoiceBox.setItems(sorted);
         this.CircleTargetChoiceBox.setItems(sorted);
         this.WhatIfChoiceBox.setItems(sorted);
     }
@@ -105,58 +126,15 @@ public class ConnectionsController {
 
     //--------------------------------------------Targets Connection-----------------------------------------------//
     public void OriginTargetChosen(ActionEvent actionEvent) {
-        this.originTargetName = this.OriginTargetChoiceBox.getValue();
-        this.RelationChoiceBox.getSelectionModel().clearSelection();
-        this.RelationChoiceBox.setDisable(false);
-        this.DestinationTargetChoiceBox.setDisable(true);
-        this.destinationTargets.clear();
-        this.showConnectionBetweenListView.getItems().clear();
+        this.calculatePathsButton.setDisable(this.RelationChoiceBox.getValue() == null || this.DestinationTargetChoiceBox.getValue() == null);
     }
 
     public void RelationChosen(ActionEvent actionEvent) {
-        this.relation = this.RelationChoiceBox.getValue();
-        Set<String> destinationSet;
-        int i = 0;
-
-        if(Objects.equals(this.relation, this.RelationChoiceBox.getItems().get(0)))
-            destinationSet = this.graph.getTarget(this.originTargetName).getAllDependsOnTargets();
-        else
-            destinationSet = this.graph.getTarget(this.originTargetName).getAllRequiredForTargets();
-
-        if(destinationSet.isEmpty())
-        {
-            this.DestinationTargetChoiceBox.setDisable(true);
-            return;
-        }
-
-        if(!this.destinationTargets.isEmpty())
-            this.destinationTargets.clear();
-
-        for(String currentTargetName : destinationSet)
-            this.destinationTargets.add(i++, currentTargetName);
-
-        this.DestinationTargetChoiceBox.setItems(this.destinationTargets.sorted());
-        this.DestinationTargetChoiceBox.setDisable(false);
+        this.calculatePathsButton.setDisable(this.OriginTargetChoiceBox.getValue() == null || this.DestinationTargetChoiceBox.getValue() == null);
     }
 
     public void DestinationTargetChosen(ActionEvent actionEvent) {
-        Target origin,destination;
-        ArrayList<String> paths;
-        ObservableList<String> pathsTargets = FXCollections.observableArrayList();
-        PathFinder pathFinder = new PathFinder();
-        String destinationTargetName = this.DestinationTargetChoiceBox.getValue();
-
-        origin = this.graph.getTarget(this.originTargetName);
-        destination = this.graph.getTarget(destinationTargetName);
-
-       if(Objects.equals(this.relation, this.RelationChoiceBox.getItems().get(0)))
-           paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.DEPENDS_ON);
-       else
-           paths = pathFinder.getPathsFromTargets(origin,destination, Target.Connection.REQUIRED_FOR);
-
-        pathsTargets.addAll(paths);
-
-        this.showConnectionBetweenListView.setItems(pathsTargets);
+        this.calculatePathsButton.setDisable(this.OriginTargetChoiceBox.getValue() == null || this.RelationChoiceBox.getValue() == null);
     }
 
     //--------------------------------------------------Circle-----------------------------------------------------//

@@ -460,12 +460,12 @@ public class TaskController implements Initializable {
     private Boolean checkForValidRun()
     {
         String errorMessage = "";
+        boolean validIncremental = false;
 
         if(this.taskType.equals(TaskThread.TaskType.Simulation))
         {
             if(this.taskParameters == null)
                 errorMessage = "You have to apply the parameters for the task first!";
-
         }
         else //Compilation task
         {
@@ -473,8 +473,22 @@ public class TaskController implements Initializable {
                 errorMessage = "Please choose directories for compilation task!";
         }
 
-        if(this.incrementalRadioButton.isSelected() && this.incrementalRadioButton.isDisabled())
-            errorMessage = "Incremental is not optional!\nChoose \"From Scratch\" or select other targets";
+        if(this.incrementalRadioButton.isSelected())
+        {
+            if(this.incrementalRadioButton.isDisabled())
+                errorMessage = "Incremental is not optional!\nChoose \"From Scratch\" or select other targets";
+            else
+            {
+                for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+                {
+                    if(curr.getResultStatus().equals("Undefined") || curr.getResultStatus().equals("Failure"))
+                        validIncremental = true; break;
+                }
+
+                if(!validIncremental)
+                    errorMessage = "There are no targets available for the current task!";
+            }
+        }
 
         if(!errorMessage.equals(""))
         {
