@@ -199,7 +199,7 @@ public class GraphDetailsController {
         String fileNamePNG = "GeneratedGraph.png";
         String workingDirectory = this.graphSummary.getWorkingDirectory();
         String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
-        String properties = "digraph G {\n" + "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
+        String properties = "digraph G {\n" + "bgcolor=transparent \n" +  "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
                 "\n" +
                 "nodesep = 2;\n" +
                 "ranksep = 2;\n";
