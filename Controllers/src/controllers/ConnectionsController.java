@@ -57,7 +57,10 @@ public class ConnectionsController {
     @FXML private AnchorPane connectionsAnchorPane;
     @FXML private AnchorPane AnchorPane;
 
+
     //--------------------------------------------------Settings-----------------------------------------------------//
+
+
     public void setGraph(Graph graph)
     {
         this.graph = graph;
