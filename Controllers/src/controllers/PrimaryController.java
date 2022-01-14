@@ -38,7 +38,7 @@ public class PrimaryController {
     private GraphDetailsController graphDetailsController;
     private TaskController taskController;
     private ConnectionsController connectionsController;
-    private ScrollPane graphDetailsPane;
+    private TabPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
     private int maxParallelThreads;

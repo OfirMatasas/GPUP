@@ -32,7 +32,6 @@ public class GraphDetailsController {
     private final ObservableList<String> serialSetsInformationList = FXCollections.observableArrayList();
     private String directoryPath;
     private  GraphSummary graphSummary;
-    private TreeView<String> graphTreeView;
 
     @FXML public void initialize() {
         initializeGraphDetails();
@@ -67,7 +66,6 @@ public class GraphDetailsController {
         });
     }
 
-    @FXML private AnchorPane AnchorPane;
     @FXML private ChoiceBox<String> TargetSerialSetChoiceBox;
     @FXML private ListView<String> SerialSetsListsView;
     @FXML private TableView<TargetDetails> TargetsDetailsTable;
@@ -89,9 +87,9 @@ public class GraphDetailsController {
     @FXML private Label GraphPositions;
     @FXML private PieChart PositionsPie;
     @FXML private ImageView graphImage;
-    @FXML private ScrollPane graphImageScrollPane;
-
+    @FXML private TreeView<String> TargetTreeView;
     @FXML private Button saveGraphButton;
+    @FXML private TabPane graphDetailsTabPane;
 
     @FXML private void saveGraphButtonToUserSelection(ActionEvent event)
     {
@@ -99,7 +97,7 @@ public class GraphDetailsController {
         fileChooser.setTitle("Save Image");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file (*.PNG)", "*.PNG"));
         fileChooser.setInitialFileName("GeneratedGraph".concat(".PNG"));
-        File file = fileChooser.showSaveDialog(this.AnchorPane.getParent().getScene().getWindow());
+        File file = fileChooser.showSaveDialog(this.graphDetailsTabPane.getParent().getScene().getWindow());
         if (file != null) {
             try {
                 ImageIO.write(SwingFXUtils.fromFXImage(this.graphImage.getImage(),
@@ -142,7 +140,7 @@ public class GraphDetailsController {
             }
         }
 
-        this.graphTreeView = new TreeView<>(graphAsItem);
+        this.TargetTreeView.setRoot(graphAsItem);
     }
 
     private void createTreeViewOfGraphRec(TreeItem<String> currItem, Target currTarget, Set<String> targetsAddedSoFar) {
@@ -169,7 +167,6 @@ public class GraphDetailsController {
     public void setGraphImage(String fullFileName) throws FileNotFoundException {
         InputStream stream = new FileInputStream(fullFileName);
         Image image = new Image(stream);
-        this.graphImage.fitWidthProperty().bind(this.AnchorPane.widthProperty());
         this.graphImage.setImage(image);
     }
 
