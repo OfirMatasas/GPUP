@@ -1,5 +1,7 @@
 package servlets.graph;
 
+import com.google.gson.Gson;
+import dtos.DashboardGraphDetailsDTO;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,38 +10,70 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import resources.checker.ResourceChecker;
 import target.Graph;
+import target.GraphsManager;
 import utils.ServletUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 @WebServlet(name = "GraphsServlet", urlPatterns = "/graphs")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class GraphsServlet extends HttpServlet {
+    //---------------------------------------------------Members---------------------------------------//
 
+    public Gson gson = new Gson();
     public static Path WORKING_DIRECTORY_PATH = Paths.get("c:\\gpup-working-dir");
+    private final Map<String, DashboardGraphDetailsDTO> graphDetailsDTOMap = new HashMap<>();
+    //---------------------------------------------------Dummies---------------------------------------//
     private static final Object creatingDirectory = new Object();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         System.out.println("in graphs servlet - get");
-        String graphName = req.getParameter("graphname");
 
-        if(req.getParameterMap().containsKey(graphName))
+        if(req.getHeader("graph-details-DTO") != null)
         {
+            String graphName = req.getHeader("graph-details-DTO");
 
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
+            if(this.graphDetailsDTOMap.containsKey(graphName))
+            {
+                DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
+                String dtoAsString = this.gson.toJson(currDTO);
+                resp.getWriter().print(dtoAsString);
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+            {
+                resp.getWriter().println("Graph not exists!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
         }
-        else
+        else if (req.getHeader("graph") != null)
         {
-//            req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+            GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
+            String graphName = req.getHeader("graph");
 
-            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+            if(graphsManager.isGraphExists(graphName))
+            {
+                File graphFile = graphsManager.getGraphFile(graphName);
+
+                String fileAsString = this.gson.toJson(graphFile);
+                resp.getWriter().print(fileAsString);
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+            {
+                resp.getWriter().println("Graph not exists!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
         }
     }
 
@@ -81,8 +115,9 @@ public class GraphsServlet extends HttpServlet {
             {
                 graph.setUploader(req.getHeader("username"));
                 graphsManager.addGraph(graph.getGraphName(), filePath.toFile(), graph);
+                this.graphDetailsDTOMap.put(graph.getGraphName(), new DashboardGraphDetailsDTO(graph));
 
-                resp.addHeader("message", "The graph " + graph.getGraphName() +" loaded successfully by " + req.getHeader("username") + "!");
+                resp.addHeader("message", "The graph " + graph.getGraphName() +" loaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.addHeader("graphname", graph.getGraphName());
             }

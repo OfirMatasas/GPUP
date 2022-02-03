@@ -40,17 +40,18 @@ public class PrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
     private Graph graph = null;
+    private DashboardController dashboardController;
     private GraphDetailsController graphDetailsController;
     private TaskController taskController;
     private ConnectionsController connectionsController;
-    private ScrollPane graphDetailsPane;
+    private SplitPane DashboardPane = null;
+    private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
     private int maxParallelThreads;
     private GraphSummary graphSummary;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
-    private LoginController loginController;
     private String userName;
 
     @FXML private ToggleGroup templates;
@@ -59,6 +60,7 @@ public class PrimaryController {
     @FXML private HBox HboxForLogo;
     @FXML private ImageView PrimaryLogo;
     @FXML private ScrollPane statusBar;
+    @FXML private Button DashboardButton;
     @FXML private Button graphDetailsButton;
     @FXML private Button connectionsButton;
     @FXML private Button taskButton;
@@ -130,13 +132,12 @@ public class PrimaryController {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
         File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
 
-//        loadGraph(selectedFile);
         if(selectedFile != null)
             uploadFileToServer(Patterns.LOCAL_HOST + Patterns.GRAPHS, selectedFile);
+//        loadGraph(selectedFile);
     }
 
-    public void uploadFileToServer(String url, File file) throws IOException {
-//        OkHttpClient client = new OkHttpClient();
+    public void uploadFileToServer(String url, File file) {
 
         RequestBody body = new MultipartBody.Builder()
                 .addFormDataPart("fileToUpload", file.getName(),
@@ -148,29 +149,23 @@ public class PrimaryController {
                 .post(body).addHeader("username", this.userName)
                 .build();
 
-        System.out.println("making a graph request");
-
-//        Request request = new Request.Builder().url(url).post(formBody).build();
 
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 System.out.println("got graph response - failed");
-                Platform.runLater(()-> ErrorPopup(e.getMessage()));
+                Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in loading file!", null, e.getMessage()));
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 System.out.println("got graph response - success");
                 if(response.code() >= 200 && response.code() < 300)
-                    Platform.runLater(() -> ValidFilePopUp(response.header("message")));
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "File loaded successfully!", null, response.header("message")));
                 else
-                    Platform.runLater(() -> ErrorPopup(response.header("message")));
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Error in loading file!", null, response.header("message")));
             }
         });
-
-        System.out.println("sent async request");
-//        Response response = client.newCall(request).execute();
     }
 
     public void loadGraph(File file)
@@ -202,7 +197,7 @@ public class PrimaryController {
         }
         catch(Exception ex)
         {
-            ErrorPopup(ex.getMessage());
+            ShowPopUp(Alert.AlertType.ERROR, "Error", null, ex.getMessage());
         }
     }
 
@@ -273,6 +268,14 @@ public class PrimaryController {
         this.taskButton.setDisable(false);
     }
 
+    @FXML void DashboardButtonPressed(ActionEvent event) {
+
+        if(this.DashboardPane == null)
+            UpdateDashboardControllerAndPane();
+
+        this.mainBorderPane.setCenter(this.DashboardPane);
+    }
+
     @FXML void connectionsButtonPressed(ActionEvent event) {
         this.mainBorderPane.setCenter(this.connectionsPane);
     }
@@ -317,21 +320,12 @@ public class PrimaryController {
         alert.showAndWait();
     }
 
-    private void ValidFilePopUp(String graphName)
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
     {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("File loaded Successfully");
-        alert.setHeaderText(null);
-        alert.setContentText("The graph " + graphName + " loaded successfully on server!");
-        alert.showAndWait();
-    }
-
-    private void ErrorPopup(String errorMessage)
-    {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error loading file");
-        alert.setHeaderText(null);
-        alert.setContentText(errorMessage);
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
         alert.showAndWait();
     }
 
@@ -378,6 +372,19 @@ public class PrimaryController {
             this.taskPane = loader.load(url.openStream());
             this.taskController = loader.getController();
             this.taskController.setMaxParallelThreads(this.maxParallelThreads);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void UpdateDashboardControllerAndPane()
+    {
+        FXMLLoader loader = new FXMLLoader();
+        URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
+        loader.setLocation(url);
+        try {
+            this.DashboardPane = loader.load(url.openStream());
+            this.dashboardController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }

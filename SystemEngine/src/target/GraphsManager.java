@@ -1,6 +1,4 @@
-package servlets.graph;
-
-import target.Graph;
+package target;
 
 import java.io.File;
 import java.io.IOException;

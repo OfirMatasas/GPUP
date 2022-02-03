@@ -44,6 +44,7 @@
          <left>
             <VBox minHeight="50.0" prefHeight="200.0" prefWidth="100.0" styleClass="PrimarySidebar" BorderPane.alignment="CENTER">
                <children>
+                  <Button fx:id="DashboardButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#DashboardButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Dashboard" />
                   <Button fx:id="graphDetailsButton" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#graphDetailsButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Graph Details" />
                   <Button fx:id="connectionsButton" disable="true" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#connectionsButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Connections" />
                   <Button fx:id="taskButton" disable="true" layoutX="10.0" layoutY="35.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#taskButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Task" />

@@ -59,6 +59,10 @@ public class Graph implements Serializable {
         return this.tasksPricesMap;
     }
 
+    public Map<Target.TargetPosition, Set<Target>> getTargetsByPositions() {
+        return this.targetsByPositions;
+    }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
         this.graphName = graphName;

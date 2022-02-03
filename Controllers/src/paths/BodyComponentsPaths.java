@@ -5,6 +5,7 @@ public class BodyComponentsPaths
     //--------------------------------------------SCENES----------------------------------------------------
 
     public static String PRIMARY = "/userInterface/FXML/PrimaryScene.fxml";
+    public static String DASHBOARD = "/userInterface/FXML/Dashboard.fxml";
     public static String CONNECTIONS = "/userInterface/FXML/Connections.fxml";
     public static String GRAPH_DETAILS = "/userInterface/FXML/GraphDetails.fxml";
     public static String TASK = "/userInterface/FXML/Task.fxml";
@@ -20,6 +21,4 @@ public class BodyComponentsPaths
     public static String LOGIN_THEME = "/userInterface/Stylesheets/Login.css";
     //--------------------------------------------Images----------------------------------------------------
     public static String GPUP_LOGO = "resourcers/GPUP logo.png";
-
-
 }
