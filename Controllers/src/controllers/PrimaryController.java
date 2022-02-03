@@ -1,10 +1,11 @@
 package controllers;
 
-import bodyComponentsPaths.BodyComponentsPaths;
+import http.HttpClientUtil;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ScaleTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -19,6 +20,10 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import paths.BodyComponentsPaths;
+import paths.Patterns;
 import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
@@ -45,6 +50,8 @@ public class PrimaryController {
     private GraphSummary graphSummary;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
+    private LoginController loginController;
+    private String userName;
 
     @FXML private ToggleGroup templates;
     @FXML private BorderPane mainBorderPane;
@@ -71,6 +78,11 @@ public class PrimaryController {
     private SimpleStringProperty selectedFileProperty;
     private SimpleBooleanProperty isFileSelected;
     private FileWriter dotFile;
+
+    //--------------------------------------------------Settings-----------------------------------------------------//
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
     //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML void aboutPressed(ActionEvent event) {}
@@ -112,23 +124,68 @@ public class PrimaryController {
         this.scaleTransition.play();
     }
 
-    @FXML void loadXMLButtonPressed(ActionEvent event)
-    {
-        ResourceChecker rc = new ResourceChecker();
+    @FXML void loadXMLButtonPressed(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select a file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
         File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
 
-        if(selectedFile == null)
+//        loadGraph(selectedFile);
+        if(selectedFile != null)
+            uploadFileToServer(Patterns.LOCAL_HOST + Patterns.GRAPHS, selectedFile);
+    }
+
+    public void uploadFileToServer(String url, File file) throws IOException {
+//        OkHttpClient client = new OkHttpClient();
+
+        RequestBody body = new MultipartBody.Builder()
+                .addFormDataPart("fileToUpload", file.getName(),
+                        RequestBody.create(file, MediaType.parse("xml")))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(Patterns.LOCAL_HOST + Patterns.GRAPHS)
+                .post(body).addHeader("username", this.userName)
+                .build();
+
+        System.out.println("making a graph request");
+
+//        Request request = new Request.Builder().url(url).post(formBody).build();
+
+        HttpClientUtil.runAsyncWithRequest(request, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("got graph response - failed");
+                Platform.runLater(()-> ErrorPopup(e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                System.out.println("got graph response - success");
+                if(response.code() >= 200 && response.code() < 300)
+                    Platform.runLater(() -> ValidFilePopUp(response.header("message")));
+                else
+                    Platform.runLater(() -> ErrorPopup(response.header("message")));
+            }
+        });
+
+        System.out.println("sent async request");
+//        Response response = client.newCall(request).execute();
+    }
+
+    public void loadGraph(File file)
+    {
+        if(file == null)
             return;
 
         if(!OverrideGraph())
             return;
 
         try{
+            ResourceChecker rc = new ResourceChecker();
+
             //Loading the graph from the xml file
-            this.graph = rc.extractFromXMLToGraph(selectedFile.toPath());
+            this.graph = rc.extractFromXMLToGraph(file.toPath());
             this.maxParallelThreads = rc.getParallelThreads();
 
             //Updating the panes and controllers for the loaded graph
@@ -145,7 +202,7 @@ public class PrimaryController {
         }
         catch(Exception ex)
         {
-            ErrorPopup(ex);
+            ErrorPopup(ex.getMessage());
         }
     }
 
@@ -260,12 +317,21 @@ public class PrimaryController {
         alert.showAndWait();
     }
 
-    private void ErrorPopup(Exception ex)
+    private void ValidFilePopUp(String graphName)
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("File loaded Successfully");
+        alert.setHeaderText(null);
+        alert.setContentText("The graph " + graphName + " loaded successfully on server!");
+        alert.showAndWait();
+    }
+
+    private void ErrorPopup(String errorMessage)
     {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error loading file");
         alert.setHeaderText(null);
-        alert.setContentText(ex.getMessage());
+        alert.setContentText(errorMessage);
         alert.showAndWait();
     }
 

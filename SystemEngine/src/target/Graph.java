@@ -5,13 +5,16 @@ import java.util.*;
 
 public class Graph implements Serializable {
     //--------------------------------------------------Members-----------------------------------------------------//
+    public static enum TaskType { Simulation, Compilation }
+
     private String graphName;
     private final Map<String, Target> graphTargets;
     private final Map<Target.TargetPosition, Set<Target>> targetsByPositions;
     private Map<String, Set<String>> serialSetsMap;
     private Set<String> serialSetsNames;
     private int MaxParallelism;
-
+    private String uploader;
+    private Map<TaskType, Integer> tasksPricesMap;
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
         this.graphTargets = new HashMap<>();
@@ -22,6 +25,7 @@ public class Graph implements Serializable {
         this.targetsByPositions.put(Target.TargetPosition.MIDDLE, new HashSet<>());
         this.serialSetsNames = new HashSet<>();
         this.serialSetsMap = new HashMap<>();
+        this.tasksPricesMap = new HashMap<>();
     }
 
     //--------------------------------------------------Getters-----------------------------------------------------//
@@ -47,6 +51,14 @@ public class Graph implements Serializable {
     }
     public int getMaxParallelism() {return this.MaxParallelism;}
 
+    public String getUploader() {
+        return this.uploader;
+    }
+
+    public Map<TaskType, Integer> getTasksPricesMap() {
+        return this.tasksPricesMap;
+    }
+
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setGraphName(String graphName) {
         this.graphName = graphName;
@@ -62,6 +74,19 @@ public class Graph implements Serializable {
 
     public void setMaxParallelism(int maxParallelism) {
         this.MaxParallelism = maxParallelism;}
+
+    public void setUploader(String uploader) {
+        this.uploader = uploader;
+    }
+
+    public void addTaskAndPrice(TaskType taskType, Integer taskPrice)
+    {
+        if(this.tasksPricesMap.containsKey(taskType))
+            return;
+
+        this.tasksPricesMap.put(taskType, taskPrice);
+    }
+
     //--------------------------------------------------Methods-----------------------------------------------------//
     public int numberOfTargetsByProperty(Target.TargetPosition position)
     {

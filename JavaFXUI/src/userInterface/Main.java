@@ -1,28 +1,27 @@
 package userInterface;
 
-import bodyComponentsPaths.BodyComponentsPaths;
-import controllers.PrimaryController;
+import paths.BodyComponentsPaths;
+import controllers.LoginController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Main extends Application
 {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("G.P.U.P");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("PrimaryScene.fxml"));
+
+        primaryStage.setTitle("G.P.U.P Login");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(BodyComponentsPaths.LOGIN));
         Parent root = loader.load();
-        primaryStage.setScene(new Scene(root, 1000,700));
-        primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LIGHT_MAIN_THEME);
-        primaryStage.getIcons().add(new Image("/resourcers/GPUP logo.png"));
+        primaryStage.setScene(new Scene(root, 300,200));
+        primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LOGIN_THEME);
 
         //Set the Stage
-        PrimaryController primaryController = loader.getController();
-        primaryController.setPrimaryStage(primaryStage);
+        LoginController loginController = loader.getController();
+        loginController.initialize(primaryStage);
         //show the stage
         primaryStage.show();
     }

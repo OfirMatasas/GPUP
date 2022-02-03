@@ -21,8 +21,6 @@ import target.Target;
 
 import javax.imageio.ImageIO;
 import java.io.*;
-import java.util.HashSet;
-import java.util.Set;
 
 public class GraphDetailsController {
     private Graph graph = null;
@@ -32,7 +30,6 @@ public class GraphDetailsController {
     private final ObservableList<String> serialSetsInformationList = FXCollections.observableArrayList();
     private String directoryPath;
     private  GraphSummary graphSummary;
-    private TreeView<String> graphTreeView;
 
     @FXML public void initialize() {
         initializeGraphDetails();
@@ -122,48 +119,6 @@ public class GraphDetailsController {
         initializePie();
         convertXMLToDot(true);
         setGraphImage(this.directoryPath + "\\" + "GeneratedGraph.png");
-        createTreeViewOfGraph();
-    }
-
-    private void createTreeViewOfGraph() {
-        TreeItem<String> graphAsItem = new TreeItem<> (this.graph.getGraphName());
-        Set<String> targetsAddedSoFar;
-
-        for(Target currTarget : this.graph.getGraphTargets().values())
-        {
-            if(currTarget.getTargetPosition().equals(Target.TargetPosition.ROOT) || currTarget.getTargetPosition().equals(Target.TargetPosition.INDEPENDENT))
-            {
-                TreeItem<String> rootInGraph = new TreeItem<>(currTarget.getTargetName());
-                graphAsItem.getChildren().add(rootInGraph);
-
-                targetsAddedSoFar = new HashSet<>();
-                targetsAddedSoFar.add(currTarget.getTargetName());
-                createTreeViewOfGraphRec(rootInGraph, currTarget, targetsAddedSoFar);
-            }
-        }
-
-        this.graphTreeView = new TreeView<>(graphAsItem);
-    }
-
-    private void createTreeViewOfGraphRec(TreeItem<String> currItem, Target currTarget, Set<String> targetsAddedSoFar) {
-        if(currTarget.getDependsOnTargets().isEmpty())
-            return;
-
-        TreeItem<String> dependedItem;
-        Set<String> newAddedTargets;
-
-        for(Target dependedTarget : currTarget.getDependsOnTargets())
-        {
-            dependedItem = new TreeItem<>(currTarget.getTargetName());
-            currItem.getChildren().add(dependedItem);
-
-            if(!targetsAddedSoFar.contains(dependedTarget.getTargetName()))
-            {
-                newAddedTargets = new HashSet<>(targetsAddedSoFar);
-                newAddedTargets.add(dependedTarget.getTargetName());
-                createTreeViewOfGraphRec(dependedItem, dependedTarget, newAddedTargets);
-            }
-        }
     }
 
     public void setGraphImage(String fullFileName) throws FileNotFoundException {
