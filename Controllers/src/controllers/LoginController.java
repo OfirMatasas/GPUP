@@ -89,10 +89,8 @@ public class LoginController {
                             Scene scene = new Scene(mainMenuComponent,1280, 800);
                             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
                             LoginController.this.primaryStage.setTitle("G.P.U.P");
+                            LoginController.this.primaryController.initialize(LoginController.this.primaryStage, response.header("username"));
                             LoginController.this.primaryStage.setScene(scene);
-
-                            LoginController.this.primaryController.setPrimaryStage(LoginController.this.primaryStage);
-                            LoginController.this.primaryController.setUserName(response.header("username"));
                         }
                         catch(Exception ignore) {}
                     });

@@ -39,7 +39,7 @@ public class GraphsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         System.out.println("in graphs servlet - get");
 
-        if(req.getHeader("graph-details-DTO") != null)
+        if(req.getParameter("graph-details-DTO") != null)
         {
             String graphName = req.getHeader("graph-details-DTO");
 
@@ -56,18 +56,19 @@ public class GraphsServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
         }
-        else if (req.getHeader("graph") != null)
+        else if (req.getParameter("graph") != null)
         {
             GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
-            String graphName = req.getHeader("graph");
+            String graphName = req.getParameter("graph");
 
             if(graphsManager.isGraphExists(graphName))
             {
-                File graphFile = graphsManager.getGraphFile(graphName);
-
-                String fileAsString = this.gson.toJson(graphFile);
-                resp.getWriter().print(fileAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+
+                File graphFile = graphsManager.getGraphFile(graphName);
+                String fileAsString = this.gson.toJson(graphFile, File.class);
+
+                resp.getWriter().write(fileAsString);
             }
             else
             {

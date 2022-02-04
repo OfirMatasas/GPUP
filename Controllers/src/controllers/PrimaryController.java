@@ -39,7 +39,7 @@ import java.util.Optional;
 public class PrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
-    private Graph graph = null;
+    private static Graph graph = null;
     private DashboardController dashboardController;
     private GraphDetailsController graphDetailsController;
     private TaskController taskController;
@@ -86,6 +86,12 @@ public class PrimaryController {
         this.userName = userName;
     }
 
+    public void initialize(Stage primaryStage, String userName)
+    {
+        setUserName(userName);
+        setPrimaryStage(primaryStage);
+        UpdateDashboardControllerAndPane();
+    }
     //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML void aboutPressed(ActionEvent event) {}
 
@@ -385,6 +391,7 @@ public class PrimaryController {
         try {
             this.DashboardPane = loader.load(url.openStream());
             this.dashboardController = loader.getController();
+            this.dashboardController.setPrimaryController(this);
         } catch (IOException e) {
             e.printStackTrace();
         }

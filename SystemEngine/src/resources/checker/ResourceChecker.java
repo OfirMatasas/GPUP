@@ -21,7 +21,7 @@ public class ResourceChecker
     private int parallelThreads;
 
     public int getParallelThreads() {
-        return parallelThreads;
+        return this.parallelThreads;
     }
 
     private enum DependencyType { requiredFor, dependsOn};
