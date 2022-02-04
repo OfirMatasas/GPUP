@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.gson.Gson;
+import dtos.DashboardGraphDetailsDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -9,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import okhttp3.*;
@@ -40,8 +42,8 @@ public class DashboardController {
     @FXML private Color x21;
     @FXML private TextField GraphNameTextField;
     @FXML private TextField uploadedByTextField;
-    @FXML private TextField GraphNameTextField1;
-    @FXML private TextField GraphNameTextField11;
+    @FXML private TextField SimulationPriceTextField;
+    @FXML private TextField CompilationPriceTextField;
     @FXML private TableView<?> GraphTargetsTableView;
     @FXML private TableColumn<?, ?> GraphTargetsAmount;
     @FXML private TableColumn<?, ?> GraphIndependentAmount;
@@ -66,6 +68,59 @@ public class DashboardController {
     private PrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
+
+    public void GraphSelectedFromListView(MouseEvent mouseEvent) {
+        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
+
+        if(selectedGraphName == null)
+            return;
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.LOCAL_HOST + Patterns.GRAPHS)
+                .newBuilder()
+                .addQueryParameter("graph-details-DTO", selectedGraphName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for graph-dto!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    Platform.runLater(() ->
+                            {
+                                Gson gson = new Gson();
+                                ResponseBody responseBody = response.body();
+                                try {
+                                    if (responseBody != null) {
+                                        DashboardGraphDetailsDTO graphDetailsDTO = gson.fromJson(responseBody.string(), DashboardGraphDetailsDTO.class);
+                                        refreshGraphDetailsDTO(graphDetailsDTO);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                    );
+                } else //Failed
+                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+            }
+
+            private void refreshGraphDetailsDTO(DashboardGraphDetailsDTO graphDetailsDTO) {
+                DashboardController.this.GraphNameTextField.setText(graphDetailsDTO.getGraphName());
+                DashboardController.this.uploadedByTextField.setText(graphDetailsDTO.getUploader());
+                DashboardController.this.SimulationPriceTextField.setText(graphDetailsDTO.getSimulationPrice().toString());
+                DashboardController.this.CompilationPriceTextField.setText(graphDetailsDTO.getCompilationPrice().toString());
+
+
+            }
+        });
+
+    }
 
     public class PullerThread extends Thread
     {
@@ -93,7 +148,6 @@ public class DashboardController {
                     .toString();
 
             HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for graph-list!"));
@@ -110,25 +164,24 @@ public class DashboardController {
                                 try {
                                     if (responseBody != null) {
                                         Set graphList = gson.fromJson(responseBody.string(), Set.class);
-
                                         refreshGraphList(graphList);
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-
                             }
                         );
                     } else //Failed
-                    {
                         Platform.runLater(() -> System.out.println("couldn't pull graph-list from server!"));
-                    }
                 }
             });
         }
 
         private void refreshGraphList(Set<String> graphlist)
         {
+            if(graphlist == null)
+                return;
+
             for(String curr : graphlist)
             {
                 if(!DashboardController.this.onlineGraphsList.contains(curr))

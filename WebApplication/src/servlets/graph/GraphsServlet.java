@@ -38,12 +38,13 @@ public class GraphsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         System.out.println("in graphs servlet - get");
+        GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
 
         if(req.getParameter("graph-details-DTO") != null)
         {
-            String graphName = req.getHeader("graph-details-DTO");
+            String graphName = req.getParameter("graph-details-DTO");
 
-            if(this.graphDetailsDTOMap.containsKey(graphName))
+            if(graphsManager.isGraphExists(graphName))
             {
                 DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
                 String dtoAsString = this.gson.toJson(currDTO, DashboardGraphDetailsDTO.class);
@@ -59,7 +60,6 @@ public class GraphsServlet extends HttpServlet {
         }
         else if (req.getParameter("graph") != null)
         {
-            GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
             String graphName = req.getParameter("graph");
 
             if(graphsManager.isGraphExists(graphName))
