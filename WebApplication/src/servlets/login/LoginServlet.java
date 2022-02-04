@@ -1,34 +1,39 @@
 package servlets.login;
-
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import users.UserManager;
+import utils.ServletUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
-@WebServlet(name = "LoginServlet", urlPatterns = "/login")
+@WebServlet(name = "LoginServlet" , urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
-
-    private final Set<String> loggedInUsers = new HashSet<>();
-
+    boolean isAdmin;
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("in login servlet");
-        String userName = req.getParameter("username");
-
-        if(this.loggedInUsers.contains(userName.toLowerCase(Locale.ROOT)))
-        {
-            resp.getWriter().println("User name already exists.");
-            resp.setStatus(300);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String userName = req.getParameter("adminUsername");
+        if(userName!=null)
+            this.isAdmin = true;
+        else{
+            userName = req.getParameter("workerUsername");
+            this.isAdmin = false;
         }
-        else
-        {
-            this.loggedInUsers.add(userName.toLowerCase(Locale.ROOT));
-            resp.getWriter().println("Logged in successfully!");
+        userName = userName.trim();
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        resp.setContentType("text/plain");
+        if(userManager.isUserExists(userName)){
+            resp.getWriter().println("The chosen user name is taken");
+            resp.setStatus(400);
+        }
+        else {
+            req.getSession(true).setAttribute("username", userName);
+            if(this.isAdmin)
+                userManager.addAdmin(userName);
+            else
+                userManager.addWorker(userName);
+            resp.getWriter().println("Logged in successfully");
             resp.addHeader("username", userName);
             resp.setStatus(200);
         }

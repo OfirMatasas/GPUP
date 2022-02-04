@@ -140,7 +140,6 @@ public class PrimaryController {
 
         if(selectedFile != null)
             uploadFileToServer(Patterns.LOCAL_HOST + Patterns.GRAPHS, selectedFile);
-//        loadGraph(selectedFile);
     }
 
     public void uploadFileToServer(String url, File file) {
@@ -151,7 +150,7 @@ public class PrimaryController {
                 .build();
 
         Request request = new Request.Builder()
-                .url(Patterns.LOCAL_HOST + Patterns.GRAPHS)
+                .url(url)
                 .post(body).addHeader("username", this.userName)
                 .build();
 

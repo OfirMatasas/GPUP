@@ -18,6 +18,7 @@ import javafx.scene.text.Font;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.Patterns;
+import users.UsersLists;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,6 +28,9 @@ import java.util.Set;
 
 public class DashboardController {
 
+    private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
+    private final ObservableList<String> onlineAdminsList = FXCollections.observableArrayList();
+    private final ObservableList<String> onlineWorkersList = FXCollections.observableArrayList();
     @FXML private TitledPane OnlineGraphsTiltedPane;
     @FXML private ListView<String> OnlineGraphsListView;
     private final ObservableList<String> onlineGraphsList = FXCollections.observableArrayList();
@@ -34,12 +38,12 @@ public class DashboardController {
     @FXML private Button AddNewGraphButton;
     @FXML private Button LoadGraphButton;
     @FXML private TitledPane OnlineAdminsTiltedPane;
-    @FXML private ListView<?> onlineAdminsListView;
+    @FXML private ListView<String> onlineAdminsListView;
     @FXML private TitledPane OnlineWorkersTiltedPane;
-    @FXML private ListView<?> onlineWorkersListView;
+    @FXML private ListView<String> onlineWorkersListView;
     @FXML private TitledPane OnlineTasksTiltedPane;
-    @FXML private ListView<?> AllTasksListView;
-    @FXML private ListView<?> myTasksListView;
+    @FXML private ListView<String> AllTasksListView;
+    @FXML private ListView<String> myTasksListView;
     @FXML private Button ControlSelectedTaskButton;
     @FXML private Font x11;
     @FXML private Color x21;
@@ -71,6 +75,7 @@ public class DashboardController {
     private PrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
+    private Thread usersListsRefreshThread;
 
     public void initialize(PrimaryController primaryController, String username)
     {
@@ -78,8 +83,65 @@ public class DashboardController {
         setUsername(username);
         createPullingThread();
 
+        this.usersListsRefreshThread = new Thread(this::refreshUsersLists);
+        this.onlineAdminsListView.setItems(this.onlineAdminsList);
+        this.onlineWorkersListView.setItems(this.onlineWorkersList);
+        this.usersListsRefreshThread.setDaemon(true);
+        this.usersListsRefreshThread.start();
+
         setupListeners();
         initializeTargetDetailsTable();
+    }
+
+    private void refreshUsersLists() {
+        while (this.usersListsRefreshThread.isAlive()) {
+            getUsersLists();
+        }
+    }
+
+    private void getUsersLists() {
+        try {
+            System.out.println("going to sleep for 1 second");
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.LOCAL_HOST + Patterns.USERS_LISTS)
+                .newBuilder()
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("I failed you master");
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                System.out.println("responding to refresh call");
+                Gson gson = new Gson();
+                ResponseBody responseBody = response.body();
+                UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
+                if(usersLists.getAdminsList().isEmpty())
+                    System.out.println("admins list is empty");
+                else
+                    System.out.println("there are admins in the list");
+                Platform.runLater(() -> {
+                    updateUsersLists(usersLists);
+                });
+            }
+        });
+    }
+
+    private void updateUsersLists(UsersLists usersLists) {
+        this.onlineAdminsList.clear();
+        this.onlineWorkersList.clear();
+        this.onlineAdminsList.addAll(usersLists.getAdminsList());
+        this.onlineWorkersList.addAll(usersLists.getWorkersList());
     }
 
     public void initializeTargetDetailsTable() {

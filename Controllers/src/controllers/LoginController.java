@@ -28,6 +28,7 @@ import java.util.Objects;
 public class LoginController {
     private Stage primaryStage;
     private PrimaryController primaryController;
+    private String username;
 
     @FXML
     public TextField userNameTextField;
@@ -53,12 +54,11 @@ public class LoginController {
         }
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.LOGIN_PATTERN)
+                .parse(Patterns.LOCAL_HOST + Patterns.LOGIN)
                 .newBuilder()
-                .addQueryParameter("username", userName)
+                .addQueryParameter("adminUsername", userName)
                 .build()
                 .toString();
-
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
 
@@ -79,6 +79,8 @@ public class LoginController {
                 } else {
                     Platform.runLater(() -> {
                         try{
+                            LoginController.this.username = response.header("username");
+
                             URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);
                             FXMLLoader fxmlLoader = new FXMLLoader();
                             fxmlLoader.setLocation(url);
@@ -109,4 +111,8 @@ public class LoginController {
     }
 
     public void setPrimaryStage(Stage primaryStage) { this.primaryStage = primaryStage; }
+
+    public String getCurrentUser() {
+        return this.username;
+    }
 }
