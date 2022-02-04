@@ -37,7 +37,6 @@ public class GraphsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("in graphs servlet - get");
         GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
 
         if(req.getParameter("graph-details-DTO") != null)
@@ -125,7 +124,7 @@ public class GraphsServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println("in graphs servlet post - failed in creating graph from xml");
             System.out.println(e.getMessage());
-            resp.getWriter().println(e);
+            resp.addHeader("message", e.getMessage());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }

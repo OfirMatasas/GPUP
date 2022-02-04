@@ -15,13 +15,13 @@ import java.io.IOException;
 public class UsersListServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("entered to users lists servlet doGet");
-        resp.setContentType("application/json");
         Gson gson = new Gson();
+
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         UsersLists usersLists = userManager.getUsersLists();
         String usersListsJson = gson.toJson(usersLists, UsersLists.class);
-        resp.getWriter().write(usersListsJson);
-    }
 
+        resp.getWriter().write(usersListsJson);
+        resp.setContentType("application/json");
+    }
 }

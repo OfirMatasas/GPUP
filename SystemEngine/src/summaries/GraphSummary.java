@@ -16,17 +16,14 @@ public class GraphSummary implements Serializable {
     private Map<TargetSummary.ResultStatus, Integer> allResultStatus;
     private Boolean firstRun;
     private Integer skippedTargets;
-    private final String workingDirectory;
-    private Set<String> closedSerialSets;
     private Instant timePaused;
     private Duration totalPausedTime;
 
     //------------------------------------------------Constructors--------------------------------------------------//
-    public GraphSummary(Graph graph, String workingDirectory) {
+    public GraphSummary(Graph graph) {
         this.targetsSummaryMap = new HashMap<>();
         this.firstRun = true;
         this.graphName = graph.getGraphName();
-        this.workingDirectory = workingDirectory;
         this.totalPausedTime = Duration.ZERO;
         this.timePaused = null;
 
@@ -54,11 +51,7 @@ public class GraphSummary implements Serializable {
 
     public Integer getSkippedTargets() { return this.skippedTargets; }
 
-    public String getWorkingDirectory() { return this.workingDirectory; }
-
     public void setSkippedTargetsToZero() { this.skippedTargets = 0; }
-
-    public Set<String> getClosedSerialSets() { return this.closedSerialSets; }
 
     //--------------------------------------------------Setters-----------------------------------------------------//
     public void setFirstRun(Boolean firstRun) { this.firstRun = firstRun; }
@@ -81,7 +74,6 @@ public class GraphSummary implements Serializable {
             if(newSkippedTargetSummary.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped))
                 continue;
 
-//            Platform.runLater(() -> System.out.println(newSkippedTarget.getTargetName() + " is skipped."));
             newSkippedTargetSummary.setRuntimeStatus(TargetSummary.RuntimeStatus.Skipped);
             newSkippedTargetSummary.setResultStatus(TargetSummary.ResultStatus.Failure);
             newSkippedTargetSummary.setSkipped(true);
@@ -179,10 +171,6 @@ public class GraphSummary implements Serializable {
         this.allResultStatus.put(TargetSummary.ResultStatus.Warning, warning);
     }
 
-    public void MakeNewClosedSerialSets() {
-        this.closedSerialSets = new HashSet<>();
-    }
-
     public synchronized void UpdateTargetSummary(Target target, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus, boolean init)
     {
         TargetSummary targetSummary = this.targetsSummaryMap.get(target.getTargetName());
@@ -194,9 +182,6 @@ public class GraphSummary implements Serializable {
 
        else if(runtimeStatus.equals(TargetSummary.RuntimeStatus.InProcess))
             targetSummary.startProcessingTime();
-
-       if(!init)
-           removeClosedSerialSets(target);
 
         if(resultStatus.equals(TargetSummary.ResultStatus.Failure))
             setAllRequiredForTargetsOnSkipped(target, target);
@@ -231,24 +216,5 @@ public class GraphSummary implements Serializable {
         //Runnable
         UpdateTargetSummary(target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, false);
         return true;
-    }
-    public synchronized void addClosedSerialSets(Target target)
-    {
-        this.closedSerialSets.addAll(target.getSerialSets());
-    }
-
-    public synchronized void removeClosedSerialSets(Target target)
-    {
-        this.closedSerialSets.removeAll(target.getSerialSets());
-    }
-
-    public synchronized Boolean checkIfSerialSetsAreOpen(Set<String> otherSerialSet)
-    {
-        return Collections.disjoint(this.closedSerialSets, otherSerialSet);
-    }
-
-    public synchronized void resetSerialSets()
-    {
-        this.closedSerialSets.clear();
     }
 }

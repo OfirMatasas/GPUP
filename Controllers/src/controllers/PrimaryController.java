@@ -48,7 +48,6 @@ public class PrimaryController {
     private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
     private ScrollPane taskPane = null;
-    private int maxParallelThreads;
     private GraphSummary graphSummary;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
@@ -186,12 +185,11 @@ public class PrimaryController {
 
             //Loading the graph from the xml file
             this.graph = rc.extractFromXMLToGraph(file.toPath());
-            this.maxParallelThreads = rc.getParallelThreads();
+            this.graphSummary = new GraphSummary(graph);
 
             //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
 
-            this.graphSummary = new GraphSummary(this.graph, rc.getWorkingDirectoryPath());
             setGraphOnControllers();
             //Setting Graphviz and display its outcome
 
@@ -387,7 +385,6 @@ public class PrimaryController {
         try {
             this.taskPane = loader.load(url.openStream());
             this.taskController = loader.getController();
-            this.taskController.setMaxParallelThreads(this.maxParallelThreads);
         } catch (IOException e) {
             e.printStackTrace();
         }

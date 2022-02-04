@@ -8,11 +8,10 @@ public class TargetDetails {
     private int allDependsOn;
     private int directRequiredFor;
     private int allRequiredFor;
-    private int serialSets;
     private String extraInformation;
 
     public TargetDetails(int num, String targetName, String position, int directDependsOn, int allDependsOn,
-                         int directRequiredFor, int allRequiredFor, int serialSets,String extraInformation) {
+                         int directRequiredFor, int allRequiredFor, String extraInformation) {
         this.num = num;
         this.targetName = targetName;
         this.position = position;
@@ -20,7 +19,6 @@ public class TargetDetails {
         this.allDependsOn = allDependsOn;
         this.directRequiredFor = directRequiredFor;
         this.allRequiredFor = allRequiredFor;
-        this.serialSets = serialSets;
         this.extraInformation = extraInformation;
     }
 
@@ -78,14 +76,6 @@ public class TargetDetails {
 
     public void setAllRequiredFor(int allRequiredFor) {
         this.allRequiredFor = allRequiredFor;
-    }
-
-    public int getSerialSets() {
-        return this.serialSets;
-    }
-
-    public void setSerialSets(int serialSets) {
-        this.serialSets = serialSets;
     }
 
     public String getExtraInformation() {return this.extraInformation;}

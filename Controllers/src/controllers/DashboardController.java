@@ -82,59 +82,8 @@ public class DashboardController {
         setPrimaryController(primaryController);
         setUsername(username);
         createPullingThread();
-
-        this.usersListsRefreshThread = new Thread(this::refreshUsersLists);
-        this.onlineAdminsListView.setItems(this.onlineAdminsList);
-        this.onlineWorkersListView.setItems(this.onlineWorkersList);
-        this.usersListsRefreshThread.setDaemon(true);
-        this.usersListsRefreshThread.start();
-
         setupListeners();
         initializeTargetDetailsTable();
-    }
-
-    private void refreshUsersLists() {
-        while (this.usersListsRefreshThread.isAlive()) {
-            getUsersLists();
-        }
-    }
-
-    private void getUsersLists() {
-        try {
-            System.out.println("going to sleep for 1 second");
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.USERS_LISTS)
-                .newBuilder()
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                System.out.println("I failed you master");
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                System.out.println("responding to refresh call");
-                Gson gson = new Gson();
-                ResponseBody responseBody = response.body();
-                UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
-                if(usersLists.getAdminsList().isEmpty())
-                    System.out.println("admins list is empty");
-                else
-                    System.out.println("there are admins in the list");
-                Platform.runLater(() -> {
-                    updateUsersLists(usersLists);
-                });
-            }
-        });
     }
 
     private void updateUsersLists(UsersLists usersLists) {
@@ -181,8 +130,11 @@ public class DashboardController {
                                 ResponseBody responseBody = response.body();
                                 try {
                                     if (responseBody != null) {
-                                        DashboardGraphDetailsDTO graphDetailsDTO = gson.fromJson(responseBody.string(), DashboardGraphDetailsDTO.class);
-                                        refreshGraphDetailsDTO(graphDetailsDTO);
+                                        {
+                                            DashboardGraphDetailsDTO graphDetailsDTO = gson.fromJson(responseBody.string(), DashboardGraphDetailsDTO.class);
+                                            refreshGraphDetailsDTO(graphDetailsDTO);
+                                            responseBody.close();
+                                        }
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -215,6 +167,10 @@ public class DashboardController {
             }
 
         });
+    }
+
+    public void AddNewGraphButtonPressed(MouseEvent mouseEvent) throws IOException {
+        this.primaryController.loadXMLButtonPressed(new ActionEvent());
     }
 
     public class PullerThread extends Thread
@@ -260,6 +216,7 @@ public class DashboardController {
                                     if (responseBody != null) {
                                         Set graphList = gson.fromJson(responseBody.string(), Set.class);
                                         refreshGraphList(graphList);
+                                        responseBody.close();
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -285,11 +242,29 @@ public class DashboardController {
         }
 
         private void refreshUsersLists() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.LOCAL_HOST + Patterns.USERS_LISTS)
+                    .newBuilder()
+                    .build()
+                    .toString();
 
-        }
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
 
-        private void getAndUpdateUsersLists() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for users list!"));
+                }
 
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    Gson gson = new Gson();
+                    ResponseBody responseBody = response.body();
+                    UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
+                    responseBody.close();
+
+                    Platform.runLater(() -> updateUsersLists(usersLists));
+                }
+            });
         }
     }
 
@@ -308,8 +283,13 @@ public class DashboardController {
 
     private void createPullingThread() {
         this.pullerThread = new PullerThread();
+
+        this.onlineAdminsListView.setItems(this.onlineAdminsList);
+        this.onlineWorkersListView.setItems(this.onlineWorkersList);
+
         this.pullerThread.setDaemon(true);
         this.pullerThread.start();
+
     }
 
     public void setPrimaryController(PrimaryController primaryController) {
@@ -377,11 +357,12 @@ public class DashboardController {
                     Gson gson = new Gson();
                     ResponseBody responseBody = response.body();
                     File graphFile = gson.fromJson(responseBody.string(), File.class);
+                    responseBody.close();
                     System.out.println("Just got " +  graphFile.getName() + " file from server!");
                     Platform.runLater(()-> DashboardController.this.primaryController.loadGraph(graphFile));
                 } else //Failed
                 {
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, response.message()));
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, response.header("error")));
                 }
             }
         });

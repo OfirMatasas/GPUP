@@ -76,7 +76,8 @@ public class LoginController {
                     Platform.runLater(() ->
                             LoginController.this.errorMessageProperty.set("Login failed: " + responseBody)
                     );
-                } else {
+                } else
+                {
                     Platform.runLater(() -> {
                         try{
                             LoginController.this.username = response.header("username");

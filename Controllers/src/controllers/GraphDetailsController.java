@@ -59,7 +59,6 @@ public class GraphDetailsController {
     private void initializeSerialSetChoiceBox() {
         this.TargetSerialSetChoiceBox.setOnAction((event) -> {
             this.serialSetsInformationList.clear();
-            this.serialSetsInformationList.addAll(this.graph.getSerialSetsMap().get(this.TargetSerialSetChoiceBox.getValue()));
             this.SerialSetsListsView.setItems(this.serialSetsInformationList.sorted());
         });
     }
@@ -112,10 +111,8 @@ public class GraphDetailsController {
     public void setGraph(Graph graph, GraphSummary graphSummary) throws FileNotFoundException {
         this.graph = graph;
         this.graphSummary = graphSummary;
-        this.directoryPath = this.graphSummary.getWorkingDirectory();
         setTargetDetailsTable();
         setGraphPositionsTable();
-        setTargetSerialSetChoiceBox();
         initializePie();
         convertXMLToDot(true);
         setGraphImage(this.directoryPath + "\\" + "GeneratedGraph.png");
@@ -135,7 +132,7 @@ public class GraphDetailsController {
         for (Target currentTarget : this.graph.getGraphTargets().values()) {
             currentTargetDetails = new TargetDetails(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
                     currentTarget.getDependsOnTargets().size(), currentTarget.getAllDependsOnTargets().size(),
-                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getSerialSets().size(), currentTarget.getExtraInformation());
+                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getExtraInformation());
 
             this.targetDetailsList.add(currentTargetDetails);
             ++i;
@@ -155,15 +152,6 @@ public class GraphDetailsController {
         this.graphPositionsList.clear();
         this.graphPositionsList.add(graphPositionsInformation);
         this.TargetPositionsTable.setItems(this.graphPositionsList);
-    }
-
-    private void setTargetSerialSetChoiceBox() {
-        int i = 0;
-        for (String currentSerialSetName : this.graph.getSerialSetsNames())
-            this.serialSetsNameList.add(i++, currentSerialSetName);
-
-        this.TargetSerialSetChoiceBox.setItems(this.serialSetsNameList.sorted());
-        this.TargetSerialSetChoiceBox.setTooltip(new Tooltip("Choose a serial set"));
     }
 
     public void initializePie() {
@@ -197,7 +185,7 @@ public class GraphDetailsController {
         Target.TargetPosition targetPosition;
         String fileNameDOT = "GeneratedGraph.dot";
         String fileNamePNG = "GeneratedGraph.png";
-        String workingDirectory = this.graphSummary.getWorkingDirectory();
+        this.directoryPath = "C:\\gpup-working-dir";
         String createPNGFromDOT = "dot -Tpng "+ fileNameDOT + " -o " + fileNamePNG;
         String properties = "digraph G {\n" + "bgcolor=transparent \n" +  "node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]\n" +
                 "\n" +

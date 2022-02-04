@@ -13,7 +13,6 @@ public class Target implements Serializable
     //--------------------------------------------------Members-----------------------------------------------------//
     private final Set<Target> dependsOnTargets;
     private final Set<Target> requiredForTargets;
-    private final Set<String> serialSets;
     private TargetPosition targetPosition;
     private String targetName;
     private String extraInformation;
@@ -26,7 +25,6 @@ public class Target implements Serializable
         this.dependsOnTargets = new HashSet<>();
         this.requiredForTargets = new HashSet<>();
         this.targetPosition = TargetPosition.INDEPENDENT;
-        this.serialSets = new HashSet<>();
         this.allDependsOnTargets = new HashSet<>();
         this.allRequiredForTargets = new HashSet<>();
     }
@@ -38,10 +36,6 @@ public class Target implements Serializable
 
     public Set<Target> getDependsOnTargets() {
         return this.dependsOnTargets;
-    }
-
-    public Set<String> getSerialSets() {
-        return this.serialSets;
     }
 
     public Set<Target> getRequiredForTargets() {
@@ -78,9 +72,6 @@ public class Target implements Serializable
     public void setTargetPosition(TargetPosition targetPosition) {
         this.targetPosition = targetPosition;
     }
-
-    public void addSerialSet(String newSerialSet) {
-        this.serialSets.add(newSerialSet); }
 
     public void setFQN(String FQN) {
         this.FQN = FQN;

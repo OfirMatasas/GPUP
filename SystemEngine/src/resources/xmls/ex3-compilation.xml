@@ -1,8 +1,10 @@
-<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V2.xsd">
+<GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V3.xsd">
 	<GPUP-Configuration>
 		<GPUP-Graph-Name>XOO Example Java Project</GPUP-Graph-Name>
-		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
-		<GPUP-Max-Parallelism>4</GPUP-Max-Parallelism>
+		<GPUP-Pricing>
+			<GPUP-Task name="Simulation" price-per-target="5"/>
+			<GPUP-Task name="Compilation" price-per-target="15"/>
+		</GPUP-Pricing>
 	</GPUP-Configuration>
 	<GPUP-Targets>
 		<GPUP-Target name="ZOO">

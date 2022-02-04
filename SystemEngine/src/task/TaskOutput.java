@@ -25,13 +25,12 @@ public class TaskOutput {
     private final TextArea log;
     private final GraphSummary graphSummary;
     private final Graph graph;
-    private String directoryPath;
+    private String directoryPath = "C:\\gpup-working-dir";
 
     public TaskOutput(TextArea log, GraphSummary graphSummary, Graph graph) {
         this.log = log;
         this.graphSummary = graphSummary;
         this.graph = graph;
-        this.directoryPath = graphSummary.getWorkingDirectory();
 
         //Clearing the log text area
         this.log.clear();

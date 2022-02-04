@@ -11,7 +11,6 @@ import utils.ServletUtils;
 public class LogoutServlet extends HttpServlet {
 
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("entering logout doPost");
         String username = request.getParameter("username");
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
 

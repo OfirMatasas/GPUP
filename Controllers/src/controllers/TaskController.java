@@ -943,11 +943,6 @@ public class TaskController implements Initializable {
              detailMsg = "Target : " + currentTargetName + "\n"
                     + "Position : " + currentTarget.getTargetPosition() + "\n";
 
-            if (currentTarget.getSerialSets().isEmpty())
-                detailMsg += "Serial Sets : None" + "\n";
-            else
-                detailMsg += "Serial Sets : " + currentTarget.getSerialSets() + "\n";
-
             switch (currentTargetSummary.getRuntimeStatus())
             {
                 case Frozen:

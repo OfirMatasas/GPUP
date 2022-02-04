@@ -10,11 +10,8 @@ public class Graph implements Serializable {
     private String graphName;
     private final Map<String, Target> graphTargets;
     private final Map<Target.TargetPosition, Set<Target>> targetsByPositions;
-    private Map<String, Set<String>> serialSetsMap;
-    private Set<String> serialSetsNames;
-    private int MaxParallelism;
     private String uploader;
-    private Map<TaskType, Integer> tasksPricesMap;
+    private final Map<TaskType, Integer> tasksPricesMap;
     //------------------------------------------------Constructors--------------------------------------------------//
     public Graph() {
         this.graphTargets = new HashMap<>();
@@ -23,8 +20,6 @@ public class Graph implements Serializable {
         this.targetsByPositions.put(Target.TargetPosition.INDEPENDENT, new HashSet<>());
         this.targetsByPositions.put(Target.TargetPosition.ROOT, new HashSet<>());
         this.targetsByPositions.put(Target.TargetPosition.MIDDLE, new HashSet<>());
-        this.serialSetsNames = new HashSet<>();
-        this.serialSetsMap = new HashMap<>();
         this.tasksPricesMap = new HashMap<>();
     }
 
@@ -42,15 +37,6 @@ public class Graph implements Serializable {
         return this.graphTargets.get(targetName.toLowerCase());
     }
 
-    public Set<String> getSerialSetsNames() {
-        return this.serialSetsNames;
-    }
-
-    public Map<String, Set<String>> getSerialSetsMap() {
-        return this.serialSetsMap;
-    }
-    public int getMaxParallelism() {return this.MaxParallelism;}
-
     public String getUploader() {
         return this.uploader;
     }
@@ -67,17 +53,6 @@ public class Graph implements Serializable {
     public void setGraphName(String graphName) {
         this.graphName = graphName;
     }
-
-    public void setSerialSetsMap(Map<String, Set<String>> serialSetsMap) {
-        this.serialSetsMap = serialSetsMap;
-    }
-
-    public void setSerialSetsNames(Set<String> serialSetsNames) {
-        this.serialSetsNames = serialSetsNames;
-    }
-
-    public void setMaxParallelism(int maxParallelism) {
-        this.MaxParallelism = maxParallelism;}
 
     public void setUploader(String uploader) {
         this.uploader = uploader;

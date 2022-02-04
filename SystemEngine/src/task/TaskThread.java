@@ -101,7 +101,6 @@ public class TaskThread extends Thread {
                     }
                     futures.clear();
                     submitted.clear();
-                    this.graphSummary.resetSerialSets();
 
                     this.pausedBefore = true;
                     this.graphSummary.pauseTheClock();
@@ -125,10 +124,8 @@ public class TaskThread extends Thread {
 
                 if(this.graphSummary.isSkipped(currTargetName))
                     continue;
-                else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet) && this.graphSummary.checkIfSerialSetsAreOpen(currTarget.getSerialSets()))
+                else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet))
                 { //The target is ready to run!
-                    this.graphSummary.addClosedSerialSets(currTarget);
-
                     if(this.taskType.equals(TaskType.Simulation))
                         futures.add(this.executor.submit(new SimulationThread(this.taskParametersMap.get(currTargetName), currTarget, this.graphSummary, this.taskOutput)));
                     else
@@ -167,7 +164,7 @@ public class TaskThread extends Thread {
     {
         TargetSummary currentTargetSummary;
         Target currentTarget;
-        Boolean targetFrozen;
+        boolean targetFrozen;
         TargetSummary.ResultStatus resultStatus;
 
         //Preparing the graph summary
@@ -179,7 +176,6 @@ public class TaskThread extends Thread {
                     && (!this.incremental || resultStatus.equals(TargetSummary.ResultStatus.Failure)));
             currentTargetSummary.setSkipped(false);
         }
-        this.graphSummary.MakeNewClosedSerialSets();
         this.graphSummary.setSkippedTargetsToZero();
         //Finished preparing the graph summary
 

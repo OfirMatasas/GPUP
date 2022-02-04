@@ -13,16 +13,23 @@ public class LoginServlet extends HttpServlet {
     boolean isAdmin;
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String userName = req.getParameter("adminUsername");
-        if(userName!=null)
+        String userName;
+
+        if(req.getParameter("adminUsername") != null)
+        {
             this.isAdmin = true;
-        else{
-            userName = req.getParameter("workerUsername");
-            this.isAdmin = false;
+            userName = req.getParameter("adminUsername");
         }
+        else
+        {
+            this.isAdmin = false;
+            userName = req.getParameter("workerUsername");
+        }
+
         userName = userName.trim();
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         resp.setContentType("text/plain");
+
         if(userManager.isUserExists(userName)){
             resp.getWriter().println("The chosen user name is taken");
             resp.setStatus(400);

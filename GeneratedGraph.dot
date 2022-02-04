@@ -1,0 +1,22 @@
+digraph G {
+bgcolor=transparent 
+node [margin=0 fontcolor=black fontsize=28 width=1 shape=circle style=filled]
+
+nodesep = 2;
+ranksep = 2;
+A [fillcolor = green3]
+B [fillcolor = green3]
+C [fillcolor = green3]
+D [fillcolor = Gold]
+E [fillcolor = dodgerblue]
+rankdir=TB; 
+Roots [shape=plaintext fillcolor=dodgerblue]
+Middles [shape=plaintext fillcolor=Gold]
+Leaves [shape=plaintext fillcolor=green3]
+Independents [shape=plaintext fillcolor=chocolate1]
+A
+B
+C
+D-> {A B }
+E-> {B C D }
+}
