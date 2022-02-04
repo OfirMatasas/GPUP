@@ -225,6 +225,9 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
 
+        this.DashboardPane.getStylesheets().clear();
+        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+
         if(this.graph != null)
         {
             this.graphDetailsPane.getStylesheets().clear();
@@ -241,6 +244,9 @@ public class PrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
 
+        this.DashboardPane.getStylesheets().clear();
+        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+
         if(this.graph != null)
         {
             this.graphDetailsPane.getStylesheets().clear();
@@ -256,6 +262,9 @@ public class PrimaryController {
         Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
+
+        this.DashboardPane.getStylesheets().clear();
+        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
 
         if(this.graph != null)
         {
@@ -279,6 +288,8 @@ public class PrimaryController {
         if(this.DashboardPane == null)
             UpdateDashboardControllerAndPane();
 
+        this.DashboardPane.getStylesheets().clear();
+        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
         this.mainBorderPane.setCenter(this.DashboardPane);
     }
 

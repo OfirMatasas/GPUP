@@ -288,11 +288,10 @@ public class DashboardController {
     }
 
     public void LoadGraphButtonPressed() {
-//        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
+        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
 
-        String selectedGraphName = "Test";
-//        if(selectedGraphName == null)
-//            return;
+        if(selectedGraphName == null)
+            return;
 
         String finalUrl = HttpUrl
                 .parse(Patterns.LOCAL_HOST + Patterns.GRAPHS)
