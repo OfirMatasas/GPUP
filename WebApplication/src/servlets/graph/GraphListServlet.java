@@ -23,7 +23,7 @@ public class GraphListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        if(req.getHeader("graphList") != null)
+        if(req.getParameter("graph-list") != null)
         {
             GraphsManager graphsManager;
             String listAsString;

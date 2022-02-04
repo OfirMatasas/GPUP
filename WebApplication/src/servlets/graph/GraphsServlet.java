@@ -46,8 +46,9 @@ public class GraphsServlet extends HttpServlet {
             if(this.graphDetailsDTOMap.containsKey(graphName))
             {
                 DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
-                String dtoAsString = this.gson.toJson(currDTO);
-                resp.getWriter().print(dtoAsString);
+                String dtoAsString = this.gson.toJson(currDTO, DashboardGraphDetailsDTO.class);
+                resp.getWriter().write(dtoAsString);
+
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             }
             else
@@ -63,12 +64,11 @@ public class GraphsServlet extends HttpServlet {
 
             if(graphsManager.isGraphExists(graphName))
             {
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-
                 File graphFile = graphsManager.getGraphFile(graphName);
                 String fileAsString = this.gson.toJson(graphFile, File.class);
-
                 resp.getWriter().write(fileAsString);
+
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             }
             else
             {

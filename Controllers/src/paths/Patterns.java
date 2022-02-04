@@ -11,4 +11,5 @@ public class Patterns
 
     //----------------------------------------Graphs--------------------------------------//
     public static String GRAPHS = "/graphs";
+    public static String GRAPH_LIST = "/graph-list";
 }

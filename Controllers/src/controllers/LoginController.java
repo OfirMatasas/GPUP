@@ -52,7 +52,6 @@ public class LoginController {
             return;
         }
 
-        //noinspection ConstantConditions
         String finalUrl = HttpUrl
                 .parse(Patterns.LOCAL_HOST + Patterns.LOGIN_PATTERN)
                 .newBuilder()

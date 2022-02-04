@@ -391,7 +391,7 @@ public class PrimaryController {
         try {
             this.DashboardPane = loader.load(url.openStream());
             this.dashboardController = loader.getController();
-            this.dashboardController.setPrimaryController(this);
+            this.dashboardController.initialize(this, this.userName);
         } catch (IOException e) {
             e.printStackTrace();
         }

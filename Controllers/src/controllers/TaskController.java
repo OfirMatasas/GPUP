@@ -136,6 +136,7 @@ public class TaskController implements Initializable {
             TaskController.this.taskThread.resetStatusChanged();
         }
     }
+
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
     @FXML private ToolBar toolBar;
