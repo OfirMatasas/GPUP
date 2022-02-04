@@ -3,6 +3,7 @@ package controllers;
 import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
 import http.HttpClientUtil;
+import information.SelectedGraphTableItem;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -10,6 +11,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -28,6 +30,7 @@ public class DashboardController {
     @FXML private TitledPane OnlineGraphsTiltedPane;
     @FXML private ListView<String> OnlineGraphsListView;
     private final ObservableList<String> onlineGraphsList = FXCollections.observableArrayList();
+    private final ObservableList<SelectedGraphTableItem> selectedGraphTargetsList = FXCollections.observableArrayList();
     @FXML private Button AddNewGraphButton;
     @FXML private Button LoadGraphButton;
     @FXML private TitledPane OnlineAdminsTiltedPane;
@@ -44,12 +47,12 @@ public class DashboardController {
     @FXML private TextField uploadedByTextField;
     @FXML private TextField SimulationPriceTextField;
     @FXML private TextField CompilationPriceTextField;
-    @FXML private TableView<?> GraphTargetsTableView;
-    @FXML private TableColumn<?, ?> GraphTargetsAmount;
-    @FXML private TableColumn<?, ?> GraphIndependentAmount;
-    @FXML private TableColumn<?, ?> GraphLeafAmount;
-    @FXML private TableColumn<?, ?> GraphMiddleAmount;
-    @FXML private TableColumn<?, ?> GraphRootAmount;
+    @FXML private TableView<SelectedGraphTableItem> GraphTargetsTableView;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphTargetsAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphIndependentAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphLeafAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphMiddleAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphRootAmount;
     @FXML private Font x1;
     @FXML private Color x2;
     @FXML private TextField TaskNameTextField;
@@ -68,6 +71,24 @@ public class DashboardController {
     private PrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
+
+    public void initialize(PrimaryController primaryController, String username)
+    {
+        setPrimaryController(primaryController);
+        setUsername(username);
+        createPullingThread();
+
+        setupListeners();
+        initializeTargetDetailsTable();
+    }
+
+    public void initializeTargetDetailsTable() {
+        this.GraphTargetsAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("targets"));
+        this.GraphRootAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("roots"));
+        this.GraphMiddleAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("middles"));
+        this.GraphLeafAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("leaves"));
+        this.GraphIndependentAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("independents"));
+    }
 
     public void GraphSelectedFromListView(MouseEvent mouseEvent) {
         String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
@@ -110,16 +131,28 @@ public class DashboardController {
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
             }
 
+
             private void refreshGraphDetailsDTO(DashboardGraphDetailsDTO graphDetailsDTO) {
                 DashboardController.this.GraphNameTextField.setText(graphDetailsDTO.getGraphName());
                 DashboardController.this.uploadedByTextField.setText(graphDetailsDTO.getUploader());
                 DashboardController.this.SimulationPriceTextField.setText(graphDetailsDTO.getSimulationPrice().toString());
                 DashboardController.this.CompilationPriceTextField.setText(graphDetailsDTO.getCompilationPrice().toString());
 
-
+                updateTargetDetailsTable(graphDetailsDTO);
             }
-        });
 
+            private void updateTargetDetailsTable(DashboardGraphDetailsDTO graphDetailsDTO) {
+
+                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(graphDetailsDTO.getRoots(),
+                        graphDetailsDTO.getMiddles(), graphDetailsDTO.getLeaves(), graphDetailsDTO.getIndependents());
+
+                DashboardController.this.selectedGraphTargetsList.clear();
+                DashboardController.this.selectedGraphTargetsList.add(selectedGraphTableItem);
+
+                DashboardController.this.GraphTargetsTableView.setItems(DashboardController.this.selectedGraphTargetsList);
+            }
+
+        });
     }
 
     public class PullerThread extends Thread
@@ -196,15 +229,6 @@ public class DashboardController {
         private void getAndUpdateUsersLists() {
 
         }
-    }
-
-    public void initialize(PrimaryController primaryController, String username)
-    {
-        setPrimaryController(primaryController);
-        setUsername(username);
-        createPullingThread();
-
-        setupListeners();
     }
 
     private void setupListeners() {

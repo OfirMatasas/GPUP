@@ -10,6 +10,7 @@ public class DashboardGraphDetailsDTO {
 
     private final String graphName;
     private final String uploader;
+    private final Integer targets;
     private final Integer roots;
     private final Integer middles;
     private final Integer leaves;
@@ -26,6 +27,7 @@ public class DashboardGraphDetailsDTO {
         this.middles = targetsPositions.get(Target.TargetPosition.MIDDLE).size();
         this.leaves = targetsPositions.get(Target.TargetPosition.LEAF).size();
         this.independents = targetsPositions.get(Target.TargetPosition.INDEPENDENT).size();
+        this.targets = this.roots + this.middles + this.leaves + this.independents;
 
         Map<Graph.TaskType, Integer> taskPrices = graph.getTasksPricesMap();
         this.simulationPrice = taskPrices.get(Graph.TaskType.Simulation) != null ? taskPrices.get(Graph.TaskType.Simulation) : 0;

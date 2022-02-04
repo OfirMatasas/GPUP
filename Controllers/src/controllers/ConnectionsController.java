@@ -59,8 +59,6 @@ public class ConnectionsController {
 
 
     //--------------------------------------------------Settings-----------------------------------------------------//
-
-
     public void setGraph(Graph graph)
     {
         this.graph = graph;
