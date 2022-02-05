@@ -2,6 +2,8 @@ package controllers;
 
 import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
+import dtos.DashboardTaskDetailsDTO;
+import dtos.DashboardTaskStatusDTO;
 import http.HttpClientUtil;
 import information.SelectedGraphTableItem;
 import javafx.application.Platform;
@@ -18,6 +20,8 @@ import javafx.scene.text.Font;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.Patterns;
+import task.CompilationTaskInformation;
+import task.SimulationTaskInformation;
 import users.UsersLists;
 
 import java.io.File;
@@ -28,13 +32,15 @@ import java.util.Set;
 
 public class DashboardController {
 
-    private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineAdminsList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineWorkersList = FXCollections.observableArrayList();
     @FXML private TitledPane OnlineGraphsTiltedPane;
     @FXML private ListView<String> OnlineGraphsListView;
     private final ObservableList<String> onlineGraphsList = FXCollections.observableArrayList();
+    private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
+    private final ObservableList<String> myTasksList = FXCollections.observableArrayList();
     private final ObservableList<SelectedGraphTableItem> selectedGraphTargetsList = FXCollections.observableArrayList();
+    private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();
     @FXML private Button AddNewGraphButton;
     @FXML private Button LoadGraphButton;
     @FXML private TitledPane OnlineAdminsTiltedPane;
@@ -62,16 +68,16 @@ public class DashboardController {
     @FXML private TextField TaskNameTextField;
     @FXML private TextField CreatedByTextField;
     @FXML private TextField TaskOnGraphTextField;
-    @FXML private TableView<?> typeTableView1;
-    @FXML private TableColumn<?, ?> TaskTargetsAmount;
-    @FXML private TableColumn<?, ?> TaskIndependentAmount;
-    @FXML private TableColumn<?, ?> TaskLeafAmount;
-    @FXML private TableColumn<?, ?> TaskMiddleAmount;
-    @FXML private TableColumn<?, ?> TaskRootAmount;
-    @FXML private TableView<?> typeTableView11;
-    @FXML private TableColumn<?, ?> TaskStatus;
-    @FXML private TableColumn<?, ?> currentWorkers;
-    @FXML private TableColumn<?, ?> TaskWorkPayment;
+    @FXML private TableView<SelectedGraphTableItem> TaskTargetsTableView;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskTargetsAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskIndependentAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskLeafAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskMiddleAmount;
+    @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskRootAmount;
+    @FXML private TableView<DashboardTaskStatusDTO> TaskStatusTableView;
+    @FXML private TableColumn<DashboardTaskStatusDTO, String> TaskStatus;
+    @FXML private TableColumn<DashboardTaskStatusDTO, Integer> currentWorkers;
+    @FXML private TableColumn<DashboardTaskStatusDTO, Integer> TaskWorkPayment;
     private PrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
@@ -173,6 +179,76 @@ public class DashboardController {
         this.primaryController.loadXMLButtonPressed(new ActionEvent());
     }
 
+    public void TaskSelectedFromListView(MouseEvent mouseEvent) {
+        String selectedTaskName = null;
+
+        if(this.myTasksListView.getSelectionModel().getSelectedItem() != null)
+            selectedTaskName = this.myTasksListView.getSelectionModel().getSelectedItem();
+        else if(this.AllTasksListView.getSelectionModel().getSelectedItem() != null)
+            selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTaskName == null)
+            return;
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .newBuilder()
+                .addQueryParameter("task-info", selectedTaskName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    Platform.runLater(() ->
+                            {
+                                Gson gson = new Gson();
+                                ResponseBody responseBody = response.body();
+                                try {
+                                    if (responseBody != null) {
+                                        {
+                                            DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
+                                            refreshTaskDetailsDTO(taskDetailsDTO);
+                                            responseBody.close();
+                                        }
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                    );
+                } else //Failed
+                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+            }
+
+            private void refreshTaskDetailsDTO(DashboardTaskDetailsDTO taskDetailsDTO) {
+                DashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
+                DashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
+                DashboardController.this.TaskOnGraphTextField.setText(taskDetailsDTO.getGraphName());
+
+                updateTaskTargetDetailsTable(taskDetailsDTO);
+            }
+
+            private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+
+                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
+                        taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
+
+                DashboardController.this.selectedTaskTargetsList.clear();
+                DashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
+
+                DashboardController.this.TaskTargetsTableView.setItems(DashboardController.this.selectedGraphTargetsList);
+            }
+        });
+    }
+
     public class PullerThread extends Thread
     {
         @Override
@@ -187,6 +263,8 @@ public class DashboardController {
                 }
                 refreshUsersLists();
                 refreshGraphList();
+                refreshAllTasksList();
+                refreshMyTasksList();
             }
         }
 
@@ -229,15 +307,118 @@ public class DashboardController {
             });
         }
 
-        private void refreshGraphList(Set<String> graphlist)
+        private void refreshGraphList(Set<String> graphList)
         {
-            if(graphlist == null)
+            if(graphList == null)
                 return;
 
-            for(String curr : graphlist)
+            for(String curr : graphList)
             {
                 if(!DashboardController.this.onlineGraphsList.contains(curr))
                     DashboardController.this.onlineGraphsList.add(curr);
+            }
+        }
+
+        private void refreshAllTasksList() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
+                    .newBuilder()
+                    .addQueryParameter("all-tasks-list", "all-tasks-list")
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for task-list!"));
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                                {
+                                    Gson gson = new Gson();
+                                    ResponseBody responseBody = response.body();
+                                    try {
+                                        if (responseBody != null) {
+                                            Set taskList = gson.fromJson(responseBody.string(), Set.class);
+                                            refreshAllTasksList(taskList);
+                                            responseBody.close();
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                        );
+                    } else //Failed
+                        Platform.runLater(() -> System.out.println("couldn't pull all-task-list from server!"));
+                }
+            });
+        }
+
+        private void refreshAllTasksList(Set<String> taskList)
+        {
+            if(taskList == null)
+                return;
+
+            for(String curr : taskList)
+            {
+                if(!DashboardController.this.onlineTasksList.contains(curr))
+                    DashboardController.this.onlineTasksList.add(curr);
+            }
+        }
+
+        private void refreshMyTasksList() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
+                    .newBuilder()
+                    .addQueryParameter("my-tasks-list", "my-tasks-list")
+                    .addQueryParameter("username", DashboardController.this.username)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for my-task-list!"));
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                                {
+                                    Gson gson = new Gson();
+                                    ResponseBody responseBody = response.body();
+                                    try {
+                                        if (responseBody != null) {
+                                            Set taskList = gson.fromJson(responseBody.string(), Set.class);
+                                            refreshMyTasksList(taskList);
+                                            responseBody.close();
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                        );
+                    } else //Failed
+                        Platform.runLater(() -> System.out.println("couldn't pull my-task-list from server!"));
+                }
+            });
+        }
+
+        private void refreshMyTasksList(Set<String> taskList)
+        {
+            if(taskList == null)
+                return;
+
+            for(String curr : taskList)
+            {
+                if(!DashboardController.this.myTasksList.contains(curr))
+                    DashboardController.this.myTasksList.add(curr);
             }
         }
 
@@ -279,6 +460,28 @@ public class DashboardController {
                 }
             }
         });
+
+        this.onlineTasksList.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                for(String curr : c.getList())
+                {
+                    if(!DashboardController.this.AllTasksListView.getItems().contains(curr))
+                        DashboardController.this.AllTasksListView.getItems().add(curr);
+                }
+            }
+        });
+
+        this.myTasksList.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                for(String curr : c.getList())
+                {
+                    if(!DashboardController.this.myTasksListView.getItems().contains(curr))
+                        DashboardController.this.myTasksListView.getItems().add(curr);
+                }
+            }
+        });
     }
 
     private void createPullingThread() {
@@ -301,7 +504,51 @@ public class DashboardController {
     }
 
     @FXML void ControlSelectedTaskButtonClicked(ActionEvent event) {
+        String selectedTaskName = this.myTasksListView.getSelectionModel().getSelectedItem();
 
+        if(selectedTaskName == null)
+            return;
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .newBuilder()
+                .addQueryParameter("task", selectedTaskName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() ->
+                        ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    Gson gson = new Gson();
+                    ResponseBody responseBody = response.body();
+                    if(response.header("task-type").equals("simulation"))
+                    {
+                        SimulationTaskInformation info = gson.fromJson(responseBody.string(), SimulationTaskInformation.class);
+                        System.out.println("Just got " +  info.getTaskName() + " task from server!");
+//                        Platform.runLater(()-> );
+                    }
+                    else
+                    {
+                        CompilationTaskInformation info = gson.fromJson(responseBody.string(), CompilationTaskInformation.class);
+                        System.out.println("Just got " +  info.getTaskName() + " task from server!");
+
+                    }
+                    responseBody.close();
+                } else //Failed
+                {
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, response.header("error")));
+                }
+            }
+        });
     }
 
     private File convertResponseBodyToTempFile(Response response) {

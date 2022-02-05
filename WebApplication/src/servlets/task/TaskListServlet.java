@@ -16,34 +16,33 @@ import java.util.Set;
 public class TaskListServlet extends HttpServlet {
 
     private static final Object dummy = new Object();
-
     private static final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        if(req.getParameter("tasks-list") != null)
+        TasksManager tasksManager;
+        String listAsString;
+
+        synchronized (dummy)
         {
-            TasksManager tasksManager;
-            String listAsString;
-
-            synchronized (dummy)
-            {
-                tasksManager = ServletUtils.getTasksManager(getServletContext());
-            }
-            Set<String> tasksList = tasksManager.getListOfTasks();
-
-            if(!tasksList.isEmpty())
-            {
-                listAsString = gson.toJson(tasksList);
-
-                resp.getWriter().println(listAsString);
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            tasksManager = ServletUtils.getTasksManager(getServletContext());
         }
-        else
+
+        if(req.getParameter("all-tasks-list") == null && req.getParameter("my-tasks-list") == null)
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        else
+        {
+            Set<String> tasksList;
+            if(req.getParameter("all-tasks-list") != null)
+                tasksList = tasksManager.getAllTaskList();
+            else //(req.getParameter("my-tasks-list") != null)
+                tasksList = tasksManager.getUserTaskList(req.getParameter("username"));
+
+            listAsString = gson.toJson(tasksList);
+
+            resp.getWriter().println(listAsString);
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
     }
 }

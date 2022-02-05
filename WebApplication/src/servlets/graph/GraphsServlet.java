@@ -115,7 +115,7 @@ public class GraphsServlet extends HttpServlet {
             {
                 graph.setUploader(req.getHeader("username"));
                 graphsManager.addGraph(graph.getGraphName(), filePath.toFile(), graph);
-                this.graphDetailsDTOMap.put(graph.getGraphName(), new DashboardGraphDetailsDTO(graph));
+                this.graphDetailsDTOMap.put(graph.getGraphName(), new DashboardGraphDetailsDTO(taskName, graph));
 
                 resp.addHeader("message", "The graph " + graph.getGraphName() +" loaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);

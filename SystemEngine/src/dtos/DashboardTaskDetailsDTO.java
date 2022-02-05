@@ -6,7 +6,8 @@ import target.Target;
 import java.util.Map;
 import java.util.Set;
 
-public class DashboardGraphDetailsDTO {
+public class DashboardTaskDetailsDTO {
+
     private final String taskName;
     private final String graphName;
     private final String uploader;
@@ -15,13 +16,16 @@ public class DashboardGraphDetailsDTO {
     private final Integer middles;
     private final Integer leaves;
     private final Integer independents;
-    private Integer simulationPrice;
-    private Integer compilationPrice;
+    private final Integer totalPayment;
+    private Integer totalWorkers;
+    private String taskStatus;
 
-    public DashboardGraphDetailsDTO(String taskName, Graph graph) {
+    public DashboardTaskDetailsDTO(String taskName, Graph graph) {
         this.taskName = taskName;
         this.graphName = graph.getGraphName();
         this.uploader = graph.getUploader();
+        this.totalWorkers = 0;
+        this.taskStatus = "New";
 
         Map<Target.TargetPosition, Set<Target>> targetsPositions = graph.getTargetsByPositions();
         this.roots = targetsPositions.get(Target.TargetPosition.ROOT).size();
@@ -31,17 +35,15 @@ public class DashboardGraphDetailsDTO {
         this.targets = this.roots + this.middles + this.leaves + this.independents;
 
         Map<Graph.TaskType, Integer> taskPrices = graph.getTasksPricesMap();
-        this.simulationPrice = taskPrices.get(Graph.TaskType.Simulation) != null ? taskPrices.get(Graph.TaskType.Simulation) : 0;
-        this.compilationPrice = taskPrices.get(Graph.TaskType.Compilation) != null ? taskPrices.get(Graph.TaskType.Compilation) : 0;
+        this.totalPayment = taskPrices.get(Graph.TaskType.Simulation) != null ?
+                taskPrices.get(Graph.TaskType.Simulation) * this.targets : taskPrices.get(Graph.TaskType.Compilation) * this.targets;
     }
 
-    public String getTaskName() {
-        return this.taskName;
-    }
+    public void addWorker() { this.totalWorkers++; }
 
-    public Integer getTargets() {
-        return this.targets;
-    }
+    public void removeWorker() { this.totalWorkers--; }
+
+    public void setTaskStatus(String status) { this.taskStatus = status; }
 
     public String getGraphName() {
         return this.graphName;
@@ -67,19 +69,23 @@ public class DashboardGraphDetailsDTO {
         return this.independents;
     }
 
-    public Integer getSimulationPrice() {
-        return this.simulationPrice;
+    public String getTaskName() {
+        return this.taskName;
     }
 
-    public void setSimulationPrice(Integer simulationPrice) {
-        this.simulationPrice = simulationPrice;
+    public Integer getTargets() {
+        return this.targets;
     }
 
-    public Integer getCompilationPrice() {
-        return this.compilationPrice;
+    public Integer getTotalPayment() {
+        return this.totalPayment;
     }
 
-    public void setCompilationPrice(Integer compilationPrice) {
-        this.compilationPrice = compilationPrice;
+    public Integer getTotalWorkers() {
+        return this.totalWorkers;
+    }
+
+    public String getTaskStatus() {
+        return this.taskStatus;
     }
 }

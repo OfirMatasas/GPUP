@@ -40,6 +40,7 @@ public class CreateTaskController implements Initializable{
     public TextArea taskDetailsOnTargetTextArea;
     private Graph graph;
     private String userName;
+    private Gson gson;
     private Map<String, SimulationParameters> taskParametersMap = new HashMap<>();
     private SimulationParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
@@ -129,7 +130,7 @@ public class CreateTaskController implements Initializable{
 
             SimulationTaskInformation taskInfo = new SimulationTaskInformation(taskName, uploader, graphName, targets, pricing, simulationParameters);
             taskTypeRequest = "Simulation";
-            stringObject = new Gson().toJson(taskInfo);
+            stringObject = this.gson.toJson(taskInfo);
         }
         else if(this.taskSelection.getValue().equals("Compilation"))
         {
@@ -137,9 +138,16 @@ public class CreateTaskController implements Initializable{
 
             CompilationTaskInformation taskInfo = new CompilationTaskInformation(taskName, uploader, graphName, targets, pricing);
             taskTypeRequest = "Simulation";
-            stringObject = new Gson().toJson(taskInfo);
+            stringObject = this.gson.toJson(taskInfo);
         }
 
+        if(!checkForValidCreationOfTask())
+            return;
+
+        uploadTaskToServer(stringObject, taskTypeRequest);
+    }
+
+    private void uploadTaskToServer(String stringObject, String taskTypeRequest) {
         RequestBody body = RequestBody.create(stringObject, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
@@ -212,9 +220,12 @@ public class CreateTaskController implements Initializable{
     private Boolean checkForValidCreationOfTask()
     {
         String errorMessage = "";
-        boolean validIncremental = false;
 
-        if(this.taskType.equals(TaskThread.TaskType.Simulation))
+        if(this.taskTargetDetailsTableView.getItems().isEmpty())
+            errorMessage = "You have to choose at least 1 target first!";
+        else if(this.TaskNameTextField.getText().trim().equals(""))
+            errorMessage = "You have to name your task!";
+        else if(this.taskType.equals(TaskThread.TaskType.Simulation))
         {
             if(this.taskParameters == null)
                 errorMessage = "You have to apply the parameters for the task first!";
@@ -431,9 +442,9 @@ public class CreateTaskController implements Initializable{
         addListenersToButtons();
         addListenersForCompilationButtons();
 
-        String NONE = "none";
-        this.affectedTargetsOptions.addAll(NONE, this.DEPENDED, this.REQUIRED);
+        this.affectedTargetsOptions.addAll("none", this.DEPENDED, this.REQUIRED);
         this.affectedTargets.setItems(this.affectedTargetsOptions);
+        this.gson = new Gson();
 
         initializeGraphDetails();
     }
