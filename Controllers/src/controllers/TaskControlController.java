@@ -38,7 +38,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-public class TaskController implements Initializable {
+public class TaskControlController implements Initializable {
     private Graph graph;
     private Map<String, SimulationParameters> taskParametersMap = new HashMap<>();
     private int maxParallelThreads;
@@ -65,39 +65,39 @@ public class TaskController implements Initializable {
         public void run()
         {
             disableTaskOptions(true);
-            TaskController.this.PauseButton.setDisable(false);
-            TaskController.this.stopButton.setDisable(false);
+            TaskControlController.this.PauseButton.setDisable(false);
+            TaskControlController.this.stopButton.setDisable(false);
 
-            while(TaskController.this.taskThread.isAlive())
+            while(TaskControlController.this.taskThread.isAlive())
             {
-                if(TaskController.this.taskThread.getStatusChanged())
+                if(TaskControlController.this.taskThread.getStatusChanged())
                     taskPausedOrStopped();
             }
 
             disableTaskOptions(false);
-            TaskController.this.PauseButton.setDisable(true);
-            TaskController.this.stopButton.setDisable(true);
+            TaskControlController.this.PauseButton.setDisable(true);
+            TaskControlController.this.stopButton.setDisable(true);
 
-            Platform.runLater(() -> TaskController.this.PauseButton.setText("Pause"));
+            Platform.runLater(() -> TaskControlController.this.PauseButton.setText("Pause"));
         }
 
         public void taskPausedOrStopped()
         {
-            if(TaskController.this.taskThread.getStopped()) //Stopped
+            if(TaskControlController.this.taskThread.getStopped()) //Stopped
             {
-                if(!TaskController.this.taskThread.getPaused())
-                    TaskController.this.logTextArea.appendText("\nWaiting for the task to stop...\n\n");
+                if(!TaskControlController.this.taskThread.getPaused())
+                    TaskControlController.this.logTextArea.appendText("\nWaiting for the task to stop...\n\n");
 
-                while(!TaskController.this.taskThread.getExecutor().isTerminated()) {}
+                while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
 
-                Platform.runLater(() -> TaskController.this.logTextArea.appendText("\nTask stopped!\n\n"));
+                Platform.runLater(() -> TaskControlController.this.logTextArea.appendText("\nTask stopped!\n\n"));
             }
             else //Paused / Resumed
             {
                 String firstOutput, secondOutput = "", newButtonText;
                 boolean updateThread;
 
-                if(TaskController.this.taskThread.getPaused()) //Paused
+                if(TaskControlController.this.taskThread.getPaused()) //Paused
                 {
                     firstOutput = "\nWaiting for the task to pause...\n\n";
                     newButtonText = "Resume";
@@ -111,29 +111,29 @@ public class TaskController implements Initializable {
                     updateThread = false;
                 }
 
-                TaskController.this.PauseButton.setDisable(true);
-                TaskController.this.stopButton.setDisable(true);
-                TaskController.this.logTextArea.appendText(firstOutput);
+                TaskControlController.this.PauseButton.setDisable(true);
+                TaskControlController.this.stopButton.setDisable(true);
+                TaskControlController.this.logTextArea.appendText(firstOutput);
 
-                if(TaskController.this.taskThread.getPaused())
-                    while(!TaskController.this.taskThread.getExecutor().isTerminated()) {}
+                if(TaskControlController.this.taskThread.getPaused())
+                    while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
 
-                TaskController.this.updateThreadButton.setVisible(updateThread);
-                TaskController.this.updateThreadButton.setDisable(!updateThread);
-                TaskController.this.numberOfThreadToExecuteLabel.setDisable(!updateThread);
-                TaskController.this.threadsSpinner.setDisable(!updateThread);
+                TaskControlController.this.updateThreadButton.setVisible(updateThread);
+                TaskControlController.this.updateThreadButton.setDisable(!updateThread);
+                TaskControlController.this.numberOfThreadToExecuteLabel.setDisable(!updateThread);
+                TaskControlController.this.threadsSpinner.setDisable(!updateThread);
 
                 String finalSecondOutput = secondOutput;
                 Platform.runLater(() ->
                         {
-                            TaskController.this.logTextArea.appendText(finalSecondOutput);
-                            TaskController.this.PauseButton.setText(newButtonText);
+                            TaskControlController.this.logTextArea.appendText(finalSecondOutput);
+                            TaskControlController.this.PauseButton.setText(newButtonText);
                         });
-                TaskController.this.PauseButton.setDisable(false);
-                TaskController.this.stopButton.setDisable(false);
+                TaskControlController.this.PauseButton.setDisable(false);
+                TaskControlController.this.stopButton.setDisable(false);
             }
 
-            TaskController.this.taskThread.resetStatusChanged();
+            TaskControlController.this.taskThread.resetStatusChanged();
         }
     }
 
@@ -439,11 +439,11 @@ public class TaskController implements Initializable {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                int maxSize = TaskController.this.taskTargetDetailsTableView.getItems().size();
-                while (TaskController.this.taskThread.isAlive()) {
+                int maxSize = TaskControlController.this.taskTargetDetailsTableView.getItems().size();
+                while (TaskControlController.this.taskThread.isAlive()) {
                     Thread.sleep(200);
                     getFinishedTargetsInRealTime();
-                    updateProgress(TaskController.this.finishedTargets, maxSize);
+                    updateProgress(TaskControlController.this.finishedTargets, maxSize);
                 }
                 updateProgress(maxSize, maxSize);
                 return null;
@@ -709,7 +709,7 @@ public class TaskController implements Initializable {
         this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    setVisibilityOfTask(TaskController.this.taskSelection.getValue().equals(TaskController.this.COMPILATION));
+                    setVisibilityOfTask(TaskControlController.this.taskSelection.getValue().equals(TaskControlController.this.COMPILATION));
             }
         });
     }
@@ -747,23 +747,23 @@ public class TaskController implements Initializable {
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental, selectAll, deselectAll button
         this.currentSelectedTargets.addListener((ListChangeListener<String>) c -> {
-            boolean containAll = TaskController.this.currentSelectedTargets.containsAll(TaskController.this.allTargetsList);
-            TaskController.this.selectAllButton.setDisable(containAll);
-            TaskController.this.deselectAllButton.setDisable(!containAll);
+            boolean containAll = TaskControlController.this.currentSelectedTargets.containsAll(TaskControlController.this.allTargetsList);
+            TaskControlController.this.selectAllButton.setDisable(containAll);
+            TaskControlController.this.deselectAllButton.setDisable(!containAll);
 
             while (c.next()) {
                 for (String remitem : c.getRemoved()) {
-                    TaskController.this.currentSelectedTargetListView.getItems().remove(remitem);
-                    TaskController.this.addSelectedButton.setDisable(true);
+                    TaskControlController.this.currentSelectedTargetListView.getItems().remove(remitem);
+                    TaskControlController.this.addSelectedButton.setDisable(true);
                 }
                 for (String additem : c.getAddedSubList()) {
-                    TaskController.this.currentSelectedTargetListView.getItems().add(additem);
-                    TaskController.this.addSelectedButton.setDisable(false);
+                    TaskControlController.this.currentSelectedTargetListView.getItems().add(additem);
+                    TaskControlController.this.addSelectedButton.setDisable(false);
                 }
             }
 
-            if(TaskController.this.currentSelectedTargets.isEmpty())
-                TaskController.this.addSelectedButton.setDisable(true);
+            if(TaskControlController.this.currentSelectedTargets.isEmpty())
+                TaskControlController.this.addSelectedButton.setDisable(true);
         });
     }
 
@@ -772,10 +772,10 @@ public class TaskController implements Initializable {
         this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<TaskTargetInformation>() {
             @Override
             public void onChanged(Change<? extends TaskTargetInformation> c) {
-                TaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
+                TaskControlController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
                // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
 
-                TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
+                TaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
             }
         });
     }
@@ -898,7 +898,7 @@ public class TaskController implements Initializable {
             updateTable(itemsList, startTime, currTime);
         }
         updateTable(itemsList, startTime, currTime);
-        TaskController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
+        TaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)

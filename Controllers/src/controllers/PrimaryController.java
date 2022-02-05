@@ -42,12 +42,14 @@ public class PrimaryController {
     private static Graph graph = null;
     private DashboardController dashboardController;
     private GraphDetailsController graphDetailsController;
-    private TaskController taskController;
+    private TaskControlController taskControlController;
+    private CreateTaskController createTaskController;
     private ConnectionsController connectionsController;
     private SplitPane DashboardPane = null;
     private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
-    private ScrollPane taskPane = null;
+    private ScrollPane createTaskPane = null;
+    private ScrollPane taskControlPane = null;
     private GraphSummary graphSummary;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
@@ -62,7 +64,8 @@ public class PrimaryController {
     @FXML private Button DashboardButton;
     @FXML private Button graphDetailsButton;
     @FXML private Button connectionsButton;
-    @FXML private Button taskButton;
+    @FXML private Button CreateTaskButton;
+    @FXML private Button TaskControlButton;
     @FXML private Menu file;
     @FXML private MenuItem loadXMLButton;
     @FXML private MenuItem saveProgressButton;
@@ -207,7 +210,7 @@ public class PrimaryController {
     private void setGraphOnControllers() throws FileNotFoundException {
         this.graphDetailsController.setGraph(this.graph,this.graphSummary);
         this.connectionsController.setGraph(this.graph);
-        this.taskController.setGraph(this.graph, this.graphSummary);
+        this.taskControlController.setGraph(this.graph, this.graphSummary);
     }
 
     private void RefreshCurrentCenterPane() {
@@ -231,8 +234,10 @@ public class PrimaryController {
             this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
             this.connectionsPane.getStylesheets().clear();
             this.connectionsPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
-            this.taskPane.getStylesheets().clear();
-            this.taskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            this.taskControlPane.getStylesheets().clear();
+            this.taskControlPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+            this.createTaskPane.getStylesheets().clear();
+            this.createTaskPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
         }
     }
 
@@ -250,8 +255,10 @@ public class PrimaryController {
             this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
             this.connectionsPane.getStylesheets().clear();
             this.connectionsPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-            this.taskPane.getStylesheets().clear();
-            this.taskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            this.taskControlPane.getStylesheets().clear();
+            this.taskControlPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
+            this.createTaskPane.getStylesheets().clear();
+            this.createTaskPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
         }
     }
 
@@ -269,15 +276,18 @@ public class PrimaryController {
             this.graphDetailsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
             this.connectionsPane.getStylesheets().clear();
             this.connectionsPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-            this.taskPane.getStylesheets().clear();
-            this.taskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            this.taskControlPane.getStylesheets().clear();
+            this.taskControlPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+            this.createTaskPane.getStylesheets().clear();
+            this.createTaskPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
         }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     private void UpdateButtons() {
         this.graphDetailsButton.setDisable(false);
         this.connectionsButton.setDisable(false);
-        this.taskButton.setDisable(false);
+        this.CreateTaskButton.setDisable(false);
+        this.TaskControlButton.setDisable(false);
     }
 
     @FXML void DashboardButtonPressed(ActionEvent event) {
@@ -299,8 +309,12 @@ public class PrimaryController {
         this.mainBorderPane.setCenter(this.graphDetailsPane);
     }
 
-    @FXML void taskButtonPressed(ActionEvent event) {
-        this.mainBorderPane.setCenter(this.taskPane);
+    @FXML void CreateTaskButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.createTaskPane);
+    }
+
+    @FXML void TaskControlButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.taskControlPane);
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
@@ -346,7 +360,8 @@ public class PrimaryController {
     private void updatePanesAndControllers() {
         UpdateGraphDetailsControllerAndPane();
         UpdateConnectionsControllerAndPane();
-        UpdateTaskControllerAndPane();
+        UpdateCreateTaskControllerAndPane();
+        UpdateTaskControlControllerAndPane();
         UpdateButtons();
         UpdatePanesStyles();
     }
@@ -377,14 +392,27 @@ public class PrimaryController {
         }
     }
 
-    private void UpdateTaskControllerAndPane()
+    private void UpdateTaskControlControllerAndPane()
     {
         FXMLLoader loader = new FXMLLoader();
-        URL url = getClass().getResource(BodyComponentsPaths.TASK);
+        URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
         loader.setLocation(url);
         try {
-            this.taskPane = loader.load(url.openStream());
-            this.taskController = loader.getController();
+            this.taskControlPane = loader.load(url.openStream());
+            this.taskControlController = loader.getController();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void UpdateCreateTaskControllerAndPane()
+    {
+        FXMLLoader loader = new FXMLLoader();
+        URL url = getClass().getResource(BodyComponentsPaths.CREATE_TASK);
+        loader.setLocation(url);
+        try {
+            this.createTaskPane = loader.load(url.openStream());
+            this.createTaskController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }

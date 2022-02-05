@@ -8,7 +8,8 @@ public class BodyComponentsPaths
     public static String DASHBOARD = "/userInterface/FXML/Dashboard.fxml";
     public static String CONNECTIONS = "/userInterface/FXML/Connections.fxml";
     public static String GRAPH_DETAILS = "/userInterface/FXML/GraphDetails.fxml";
-    public static String TASK = "/userInterface/FXML/Task.fxml";
+    public static String TASK_CONTROL = "/userInterface/FXML/TaskControl.fxml";
+    public static String CREATE_TASK = "/userInterface/FXML/CreateTask.fxml";
     public static String LOGIN = "/userInterface/FXML/Login.fxml";
     //--------------------------------------------THEMES----------------------------------------------------
 
