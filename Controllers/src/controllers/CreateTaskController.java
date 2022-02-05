@@ -1,6 +1,9 @@
 package controllers;
 
+import com.google.gson.Gson;
+import http.HttpClientUtil;
 import information.CreateTaskTargetInformation;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -16,13 +19,18 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
-import summaries.GraphSummary;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import paths.Patterns;
 import target.Graph;
 import target.Target;
+import task.CompilationTaskInformation;
 import task.SimulationParameters;
+import task.SimulationTaskInformation;
 import task.TaskThread;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -31,6 +39,7 @@ import java.util.*;
 public class CreateTaskController implements Initializable{
     public TextArea taskDetailsOnTargetTextArea;
     private Graph graph;
+    private String userName;
     private Map<String, SimulationParameters> taskParametersMap = new HashMap<>();
     private SimulationParameters taskParameters;
     private final ObservableList<String> affectedTargetsOptions = FXCollections.observableArrayList();
@@ -103,7 +112,57 @@ public class CreateTaskController implements Initializable{
 
     @FXML
     void CreateNewTaskButtonPressed(ActionEvent event) {
+        String taskName = this.TaskNameTextField.getText();
+        String uploader = this.userName;
+        String graphName = this.graph.getGraphName();
+        Set<String> targets = new HashSet<>();
+        String taskTypeRequest = null;
+        String stringObject = null;
 
+        for (CreateTaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+            targets.add(curr.getTargetName());
+
+        if(this.taskSelection.getValue().equals("Simulation"))
+        {
+            Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Simulation);
+            SimulationParameters simulationParameters = this.taskParameters;
+
+            SimulationTaskInformation taskInfo = new SimulationTaskInformation(taskName, uploader, graphName, targets, pricing, simulationParameters);
+            taskTypeRequest = "Simulation";
+            stringObject = new Gson().toJson(taskInfo);
+        }
+        else if(this.taskSelection.getValue().equals("Compilation"))
+        {
+            Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Compilation);
+
+            CompilationTaskInformation taskInfo = new CompilationTaskInformation(taskName, uploader, graphName, targets, pricing);
+            taskTypeRequest = "Simulation";
+            stringObject = new Gson().toJson(taskInfo);
+        }
+
+        RequestBody body = RequestBody.create(stringObject, MediaType.parse("application/json"));
+
+        Request request = new Request.Builder()
+                .url(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .post(body).addHeader(taskTypeRequest, taskTypeRequest)
+                .build();
+
+        HttpClientUtil.runAsyncWithRequest(request, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                System.out.println("got task response - failed");
+                Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in uploading task!", null, e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                System.out.println("got task response - success");
+                if(response.code() >= 200 && response.code() < 300)
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "Task uploaded successfully!", null, response.header("message")));
+                else
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Error in uploading task!", null, response.header("message")));
+            }
+        });
     }
 
     @FXML void addSelectedTargetsToTable(ActionEvent event)
@@ -527,8 +586,7 @@ public class CreateTaskController implements Initializable{
         this.successRateWithWarnings.setVisible(!flag);
     }
 
-
-    public void setGraph(Graph graph, GraphSummary graphSummary) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
         setAllTargetsList();
         setTaskTargetDetailsTable();
@@ -574,4 +632,16 @@ public class CreateTaskController implements Initializable{
         this.targetSelection.getItems().addAll(sorted);
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
+    {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

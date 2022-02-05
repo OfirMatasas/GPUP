@@ -62,6 +62,7 @@ public class TaskControlController {
     private Graph graph;
     private TaskControlPullerThread taskControlPullerThread;
 
+    //----------------------------------------------Puller Thread--------------------------------------------//
     public class TaskControlPullerThread extends Thread
     {
         @Override
@@ -135,12 +136,12 @@ public class TaskControlController {
         }
     }
 
+    //-------------------------------------------------Initialize-----------------------------------------------//
     @FXML public void initialize()
     {
         this.taskControlPullerThread = new TaskControlPullerThread();
         initializeGraphDetails();
     }
-
 
     private void initializeGraphDetails() {
         this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, Integer>("number"));
@@ -174,18 +175,10 @@ public class TaskControlController {
         });
     }
 
+    //--------------------------------------------Target information----------------------------------------------//
     @FXML void getSelectedRow(MouseEvent event) {
         updateTargetTaskDetailsInTextArea();
         enableTargetInfoTextArea(true);
-    }
-
-    private boolean incrementalIsOptional() {
-        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
-        {
-            if(curr.getResultStatus().equals("Undefined"))
-                return false;
-        }
-        return true;
     }
 
     private void updateTargetTaskDetailsInTextArea() {
@@ -265,37 +258,6 @@ public class TaskControlController {
         this.taskDetailsOnTargetTextArea.setText(detailMsg);
     }
 
-    private void createNewProgressBar()
-    {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                int maxSize = TaskControlController.this.taskTargetDetailsTableView.getItems().size();
-                while (TaskControlController.this.taskThread.isAlive()) {
-                    Thread.sleep(200);
-                    getFinishedTargetsInRealTime();
-                    updateProgress(TaskControlController.this.finishedTargets, maxSize);
-                }
-                updateProgress(maxSize, maxSize);
-                return null;
-            }
-        };
-        this.progressBar.setStyle("-fx-accent: #00FF00;");
-        this.progressBar.progressProperty().bind(task.progressProperty());
-        this.progressBarLabel.textProperty().bind
-                (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
-
-        Thread progressBarThread = new Thread(task);
-        progressBarThread.setDaemon(true);
-        progressBarThread.start();
-    }
-
-    private void turnOnProgressBar() {
-        this.progressBar.setDisable(false);
-        this.progressBarLabel.setDisable(false);
-        this.targetsFinishedLabel.setDisable(false);
-    }
-
     public String printTargetWaitingForTargets(String currentTargetName)
     {
         String waitingForTargets = "", dependedOnTarget;
@@ -340,6 +302,16 @@ public class TaskControlController {
         }
     }
 
+    //------------------------------------------Preparations For Launch-------------------------------------------//
+    private boolean incrementalIsOptional() {
+        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        {
+            if(curr.getResultStatus().equals("Undefined"))
+                return false;
+        }
+        return true;
+    }
+
     private void turnOnIncrementalButton() {
         boolean change = false;
 
@@ -354,17 +326,39 @@ public class TaskControlController {
         this.incrementalRadioButton.setDisable(change);
     }
 
-    @FXML void pausePressed(ActionEvent event) {
-        if(!this.taskThread.getPaused()) //Pausing the task
-        {
-            this.PauseButton.setDisable(true);
-            this.stopButton.setDisable(true);
-            this.taskThread.pauseTheTask();
-        }
-        else //Resuming the task
-            this.taskThread.continueTheTask();
+    //------------------------------------------------Progress Bar------------------------------------------------//
+    private void turnOnProgressBar() {
+        this.progressBar.setDisable(false);
+        this.progressBarLabel.setDisable(false);
+        this.targetsFinishedLabel.setDisable(false);
     }
 
+    private void createNewProgressBar()
+    {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                int maxSize = TaskControlController.this.taskTargetDetailsTableView.getItems().size();
+                while (TaskControlController.this.taskThread.isAlive()) {
+                    Thread.sleep(200);
+                    getFinishedTargetsInRealTime();
+                    updateProgress(TaskControlController.this.finishedTargets, maxSize);
+                }
+                updateProgress(maxSize, maxSize);
+                return null;
+            }
+        };
+        this.progressBar.setStyle("-fx-accent: #00FF00;");
+        this.progressBar.progressProperty().bind(task.progressProperty());
+        this.progressBarLabel.textProperty().bind
+                (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
+
+        Thread progressBarThread = new Thread(task);
+        progressBarThread.setDaemon(true);
+        progressBarThread.start();
+    }
+
+    //-------------------------------------------------During Task------------------------------------------------//
     @FXML
     void runPressed(ActionEvent event) {
 //        if(!checkForValidRun())
@@ -401,6 +395,21 @@ public class TaskControlController {
 //        updateThread.start();
     }
 
+    @FXML void pausePressed(ActionEvent event) {
+        if(!this.taskThread.getPaused()) //Pausing the task
+        {
+            this.PauseButton.setDisable(true);
+            this.stopButton.setDisable(true);
+            this.taskThread.pauseTheTask();
+        }
+        else //Resuming the task
+            this.taskThread.continueTheTask();
+    }
+
+    @FXML void stopPressed(ActionEvent event) {
+        this.taskThread.stopTheTask();
+    }
+
     private void updateTableRuntimeStatuses()
     {
         ObservableList<TaskTargetInformation> itemsList = this.taskTargetDetailsTableView.getItems();
@@ -432,10 +441,7 @@ public class TaskControlController {
         Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
     }
 
-    @FXML void stopPressed(ActionEvent event) {
-        this.taskThread.stopTheTask();
-    }
-
+    //----------------------------------------------------Other---------------------------------------------------//
     private void ShowPopup(String message, String title) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

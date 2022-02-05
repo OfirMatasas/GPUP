@@ -156,7 +156,6 @@ public class PrimaryController {
                 .post(body).addHeader("username", this.userName)
                 .build();
 
-
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -412,6 +411,8 @@ public class PrimaryController {
         try {
             this.createTaskPane = loader.load(url.openStream());
             this.createTaskController = loader.getController();
+            this.createTaskController.setUserName(this.userName);
+            this.createTaskController.setGraph(this.graph);
         } catch (IOException e) {
             e.printStackTrace();
         }
