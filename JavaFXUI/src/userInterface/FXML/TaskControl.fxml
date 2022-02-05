@@ -55,12 +55,12 @@
                          <Pane fx:id="leftPane">
                            <HBox alignment="CENTER" layoutX="30.0" layoutY="225.0" prefHeight="40.0" prefWidth="207.0">
                               <children>
-                                 <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" onAction="#fromScratchOptionPressed" selected="true" text="From Scratch">
+                                 <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" selected="true" text="From Scratch">
                                     <toggleGroup>
                                        <ToggleGroup fx:id="scratchOrIncremental" />
                                     </toggleGroup>
                                  </RadioButton>
-                                 <RadioButton fx:id="incrementalRadioButton" disable="true" mnemonicParsing="false" onAction="#incrementalOptionPressed" text="Incremental" toggleGroup="$scratchOrIncremental">
+                                 <RadioButton fx:id="incrementalRadioButton" disable="true" mnemonicParsing="false" text="Incremental" toggleGroup="$scratchOrIncremental">
                                     <HBox.margin>
                                        <Insets left="15.0" />
                                     </HBox.margin>
@@ -127,16 +127,14 @@
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                               </TableView>
-                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="15.0" layoutY="442.0" prefHeight="153.0" prefWidth="474.0" style="-fx-background-color: black;" visible="false" />
-                              <Button fx:id="removeSelectedButton" disable="true" layoutX="322.0" layoutY="279.0" mnemonicParsing="false" onAction="#removeSelectedRowFromTable" text="Remove Selected" />
-                              <Button fx:id="clearTableButton" disable="true" layoutX="95.0" layoutY="279.0" mnemonicParsing="false" onAction="#ClearTable" text="Clear Table" />
-                              <ProgressBar fx:id="progressBar" disable="true" layoutX="40.0" layoutY="355.0" prefHeight="25.0" prefWidth="434.0" progress="0.0" />
-                              <Label fx:id="targetsFinishedLabel" disable="true" layoutX="187.0" layoutY="314.0" prefHeight="26.0" prefWidth="140.0" text="Targets Finished">
+                              <TextArea fx:id="taskDetailsOnTargetTextArea" disable="true" editable="false" layoutX="26.0" layoutY="390.0" prefHeight="182.0" prefWidth="463.0" style="-fx-background-color: black;" visible="false" />
+                              <ProgressBar fx:id="progressBar" disable="true" layoutX="40.0" layoutY="321.0" prefHeight="25.0" prefWidth="434.0" progress="0.0" />
+                              <Label fx:id="targetsFinishedLabel" disable="true" layoutX="187.0" layoutY="294.0" prefHeight="26.0" prefWidth="140.0" text="Targets Finished">
                                  <font>
                                     <Font size="17.0" />
                                  </font>
                               </Label>
-                              <Label fx:id="progressBarLabel" disable="true" layoutX="477.0" layoutY="359.0" prefHeight="17.0" prefWidth="40.0" text="0" />
+                              <Label fx:id="progressBarLabel" disable="true" layoutX="474.0" layoutY="325.0" prefHeight="17.0" prefWidth="40.0" text="0" />
                            </children>
                         </Pane>
                      </center>

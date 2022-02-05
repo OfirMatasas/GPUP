@@ -210,7 +210,6 @@ public class PrimaryController {
     private void setGraphOnControllers() throws FileNotFoundException {
         this.graphDetailsController.setGraph(this.graph,this.graphSummary);
         this.connectionsController.setGraph(this.graph);
-        this.taskControlController.setGraph(this.graph, this.graphSummary);
     }
 
     private void RefreshCurrentCenterPane() {
