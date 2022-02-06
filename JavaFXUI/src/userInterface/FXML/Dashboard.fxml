@@ -79,7 +79,7 @@
                                     <VBox alignment="CENTER" spacing="5.0" VBox.vgrow="ALWAYS">
                                        <children>
                                           <Label text="My tasks:" />
-                                          <ListView fx:id="myTasksListView" onMouseClicked="#TaskSelectedFromListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                          <ListView fx:id="myTasksListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                           <Button fx:id="ControlSelectedTaskButton" maxHeight="1.7976931348623157E308" minWidth="30.0" mnemonicParsing="false" onAction="#ControlSelectedTaskButtonClicked" prefWidth="100.0" text="select task" textAlignment="CENTER" VBox.vgrow="NEVER" />
                                        </children>
                                     </VBox>

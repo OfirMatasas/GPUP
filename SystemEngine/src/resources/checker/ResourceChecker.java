@@ -14,14 +14,12 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ResourceChecker
 {
-    private enum DependencyType { requiredFor, dependsOn};
-    private Map<Graph.TaskType, Integer> taskPricingMap;
+    private enum DependencyType { requiredFor, dependsOn}
+    private Graph graph;
 
     public Graph extractFromXMLToGraph(Path path) throws NotXMLFile, FileNotFound, DoubledTarget, InvalidConnectionBetweenTargets, EmptyGraph, InvalidTaskFound, DoublePricingForTask, TaskPricingNotFound {
         if(!path.getFileName().toString().endsWith(".xml"))
@@ -31,11 +29,11 @@ public class ResourceChecker
 
         //The file can be executed
         GPUPDescriptor descriptor = fromXmlFileToObject(path);
-        Graph graph = checkResource(descriptor);
+        this.graph = checkResource(descriptor);
 
-        graph.calculatePositions();
+        this.graph.calculatePositions();
 
-        return graph;
+        return this.graph;
     }
 
     private GPUPDescriptor fromXmlFileToObject(Path fileName)
@@ -59,8 +57,8 @@ public class ResourceChecker
 
     private Graph checkResource(GPUPDescriptor descriptor) throws InvalidConnectionBetweenTargets, DoubledTarget, EmptyGraph,  InvalidTaskFound, DoublePricingForTask, TaskPricingNotFound {
         List<GPUPTarget> gpupTargetsAsList = descriptor.getGPUPTargets().getGPUPTarget();
-        Graph graph = FillTheGraphWithTargets(gpupTargetsAsList);
-        graph.setGraphName(descriptor.getGPUPConfiguration().getGPUPGraphName());
+        this.graph = FillTheGraphWithTargets(gpupTargetsAsList);
+        this.graph.setGraphName(descriptor.getGPUPConfiguration().getGPUPGraphName());
         Target currentTarget, secondTarget;
         String currentTargetName, secondTargetName;
 
@@ -70,7 +68,7 @@ public class ResourceChecker
         for(GPUPTarget currentgpupTarget : gpupTargetsAsList)
         {
             currentTargetName = currentgpupTarget.getName();
-            currentTarget = graph.getTarget(currentTargetName);
+            currentTarget = this.graph.getTarget(currentTargetName);
             currentTarget.setFQN(currentgpupTarget.getGPUPUserData());
 
             if(currentgpupTarget.getGPUPTargetDependencies() == null)
@@ -80,7 +78,7 @@ public class ResourceChecker
                     currentgpupTarget.getGPUPTargetDependencies().getGPUGDependency())
             {
                 //Check if the target exists in the graph
-                secondTarget = graph.getTarget(dep.getValue());
+                secondTarget = this.graph.getTarget(dep.getValue());
                 if(secondTarget == null)
                     throw new InvalidConnectionBetweenTargets(currentTargetName, dep.getValue());
 
@@ -95,10 +93,10 @@ public class ResourceChecker
         getPricingForTasks(descriptor);
 
         //Calculate all depends-on and all required-for for all targets
-        graph.calculateAllDependsOn();
-        graph.calculateAllRequiredFor();
+        this.graph.calculateAllDependsOn();
+        this.graph.calculateAllRequiredFor();
 
-        return graph;
+        return this.graph;
     }
 
     private Graph FillTheGraphWithTargets(List<GPUPTarget> lst) throws DoubledTarget {
@@ -152,8 +150,6 @@ public class ResourceChecker
        if(gpupPricing == null)
            throw new TaskPricingNotFound();
 
-        this.taskPricingMap = new HashMap<>();
-
        for(GPUPConfiguration.GPUPPricing.GPUPTask curr : gpupPricing.getGPUPTask())
        {
            Graph.TaskType taskType = null;
@@ -166,11 +162,11 @@ public class ResourceChecker
            }
            if(taskType == null)
                throw new InvalidTaskFound(curr.getName());
-           else if(this.taskPricingMap.containsKey(taskType))
+           else if(this.graph.getTasksPricesMap().containsKey(taskType))
                throw new DoublePricingForTask(curr.getName());
 
            //valid task type
-           this.taskPricingMap.put(taskType, curr.getPricePerTarget());
+           this.graph.addTaskAndPrice(taskType, curr.getPricePerTarget());
        }
     }
 }

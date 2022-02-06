@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class DashboardGraphDetailsDTO {
-    private final String taskName;
     private final String graphName;
     private final String uploader;
     private final Integer targets;
@@ -18,8 +17,7 @@ public class DashboardGraphDetailsDTO {
     private Integer simulationPrice;
     private Integer compilationPrice;
 
-    public DashboardGraphDetailsDTO(String taskName, Graph graph) {
-        this.taskName = taskName;
+    public DashboardGraphDetailsDTO(Graph graph) {
         this.graphName = graph.getGraphName();
         this.uploader = graph.getUploader();
 
@@ -33,10 +31,6 @@ public class DashboardGraphDetailsDTO {
         Map<Graph.TaskType, Integer> taskPrices = graph.getTasksPricesMap();
         this.simulationPrice = taskPrices.get(Graph.TaskType.Simulation) != null ? taskPrices.get(Graph.TaskType.Simulation) : 0;
         this.compilationPrice = taskPrices.get(Graph.TaskType.Compilation) != null ? taskPrices.get(Graph.TaskType.Compilation) : 0;
-    }
-
-    public String getTaskName() {
-        return this.taskName;
     }
 
     public Integer getTargets() {

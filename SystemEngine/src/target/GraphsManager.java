@@ -19,7 +19,7 @@ public class GraphsManager {
     }
 
     public synchronized Graph getGraph(String graphName) {
-        return actualGraphsMap.get(graphName);
+        return actualGraphsMap.get(graphName.toLowerCase());
     }
 
     public synchronized void addGraph(String graphName, File file, Graph graph) {

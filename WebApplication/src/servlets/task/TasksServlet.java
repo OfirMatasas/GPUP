@@ -33,6 +33,8 @@ public class TasksServlet extends HttpServlet {
             {
                 DashboardTaskDetailsDTO taskInfo = tasksManager.getTaskDetailsDTO(taskInfoName);
                 infoAsString = this.gson.toJson(taskInfo, DashboardTaskDetailsDTO.class);
+
+                resp.getWriter().write(infoAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             }
             else //Task not exists in the system
@@ -40,7 +42,6 @@ public class TasksServlet extends HttpServlet {
                 resp.getWriter().println("The task " + taskInfoName + " doesn't exist in the system!");
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
-
         }
         else if(req.getParameter("task") != null) //Requesting for task-info
         {
@@ -95,6 +96,7 @@ public class TasksServlet extends HttpServlet {
 
                 resp.addHeader("message", "The task " + newTaskInfo.getTaskName() + " uploaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+
                 tasksManager.addTaskDetailsDTO(newTaskInfo.getTaskName(), ServletUtils.getGraphsManager(getServletContext()).getGraph(newTaskInfo.getGraphName()));
             }
             else //A task with the same name already exists in the system
@@ -112,6 +114,7 @@ public class TasksServlet extends HttpServlet {
 
                 resp.addHeader("message", "The task " + newTaskInfo.getTaskName() + " uploaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+
                 tasksManager.addTaskDetailsDTO(newTaskInfo.getTaskName(), ServletUtils.getGraphsManager(getServletContext()).getGraph(newTaskInfo.getGraphName()));
             }
             else //A task with the same name already exists in the system

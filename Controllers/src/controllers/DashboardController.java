@@ -3,9 +3,9 @@ package controllers;
 import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
 import dtos.DashboardTaskDetailsDTO;
-import dtos.DashboardTaskStatusDTO;
 import http.HttpClientUtil;
 import information.SelectedGraphTableItem;
+import information.SelectedTaskStatusTableItem;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -41,6 +41,7 @@ public class DashboardController {
     private final ObservableList<String> myTasksList = FXCollections.observableArrayList();
     private final ObservableList<SelectedGraphTableItem> selectedGraphTargetsList = FXCollections.observableArrayList();
     private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();
+    private final ObservableList<SelectedTaskStatusTableItem> selectedTaskStatusList = FXCollections.observableArrayList();
     @FXML private Button AddNewGraphButton;
     @FXML private Button LoadGraphButton;
     @FXML private TitledPane OnlineAdminsTiltedPane;
@@ -74,10 +75,10 @@ public class DashboardController {
     @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskLeafAmount;
     @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskMiddleAmount;
     @FXML private TableColumn<SelectedGraphTableItem, Integer> TaskRootAmount;
-    @FXML private TableView<DashboardTaskStatusDTO> TaskStatusTableView;
-    @FXML private TableColumn<DashboardTaskStatusDTO, String> TaskStatus;
-    @FXML private TableColumn<DashboardTaskStatusDTO, Integer> currentWorkers;
-    @FXML private TableColumn<DashboardTaskStatusDTO, Integer> TaskWorkPayment;
+    @FXML private TableView<SelectedTaskStatusTableItem> TaskStatusTableView;
+    @FXML private TableColumn<SelectedTaskStatusTableItem, String> TaskStatus;
+    @FXML private TableColumn<SelectedTaskStatusTableItem, Integer> currentWorkers;
+    @FXML private TableColumn<SelectedTaskStatusTableItem, Integer> TaskWorkPayment;
     private PrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
@@ -89,7 +90,9 @@ public class DashboardController {
         setUsername(username);
         createPullingThread();
         setupListeners();
-        initializeTargetDetailsTable();
+        initializeGraphTargetDetailsTable();
+        initializeTaskTargetDetailsTable();
+        initializeTaskStatusTable();
     }
 
     private void updateUsersLists(UsersLists usersLists) {
@@ -99,12 +102,26 @@ public class DashboardController {
         this.onlineWorkersList.addAll(usersLists.getWorkersList());
     }
 
-    public void initializeTargetDetailsTable() {
+    public void initializeGraphTargetDetailsTable() {
         this.GraphTargetsAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("targets"));
         this.GraphRootAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("roots"));
         this.GraphMiddleAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("middles"));
         this.GraphLeafAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("leaves"));
         this.GraphIndependentAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("independents"));
+    }
+
+    public void initializeTaskTargetDetailsTable() {
+        this.TaskTargetsAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("targets"));
+        this.TaskRootAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("roots"));
+        this.TaskMiddleAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("middles"));
+        this.TaskLeafAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("leaves"));
+        this.TaskIndependentAmount.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("independents"));
+    }
+
+    public void initializeTaskStatusTable() {
+        this.TaskStatus.setCellValueFactory(new PropertyValueFactory<SelectedTaskStatusTableItem, String>("status"));
+        this.currentWorkers.setCellValueFactory(new PropertyValueFactory<SelectedTaskStatusTableItem, Integer>("workers"));
+        this.TaskWorkPayment.setCellValueFactory(new PropertyValueFactory<SelectedTaskStatusTableItem, Integer>("totalPayment"));
     }
 
     public void GraphSelectedFromListView(MouseEvent mouseEvent) {
@@ -180,12 +197,7 @@ public class DashboardController {
     }
 
     public void TaskSelectedFromListView(MouseEvent mouseEvent) {
-        String selectedTaskName = null;
-
-        if(this.myTasksListView.getSelectionModel().getSelectedItem() != null)
-            selectedTaskName = this.myTasksListView.getSelectionModel().getSelectedItem();
-        else if(this.AllTasksListView.getSelectionModel().getSelectedItem() != null)
-            selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
+        String selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
 
         if(selectedTaskName == null)
             return;
@@ -234,6 +246,7 @@ public class DashboardController {
                 DashboardController.this.TaskOnGraphTextField.setText(taskDetailsDTO.getGraphName());
 
                 updateTaskTargetDetailsTable(taskDetailsDTO);
+                updateTaskStatusTable(taskDetailsDTO);
             }
 
             private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
@@ -244,7 +257,18 @@ public class DashboardController {
                 DashboardController.this.selectedTaskTargetsList.clear();
                 DashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
 
-                DashboardController.this.TaskTargetsTableView.setItems(DashboardController.this.selectedGraphTargetsList);
+                DashboardController.this.TaskTargetsTableView.setItems(DashboardController.this.selectedTaskTargetsList);
+            }
+
+            private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+
+                SelectedTaskStatusTableItem selectedTaskStatusTableItem = new SelectedTaskStatusTableItem(taskDetailsDTO.getTaskStatus(),
+                        taskDetailsDTO.getTotalWorkers(), taskDetailsDTO.getTotalPayment());
+
+                DashboardController.this.selectedTaskStatusList.clear();
+                DashboardController.this.selectedTaskStatusList.add(selectedTaskStatusTableItem);
+
+                DashboardController.this.TaskStatusTableView.setItems(DashboardController.this.selectedTaskStatusList);
             }
         });
     }
