@@ -1,5 +1,6 @@
 package controllers;
 
+import dtos.DashboardTaskDetailsDTO;
 import information.TaskTargetInformation;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -173,6 +174,13 @@ public class TaskControlController {
                     setStyle("-fx-background-color: #e47bff;");
             }
         });
+    }
+
+    //---------------------------------------------Task information-----------------------------------------------//
+    public void setTaskStaticInformation(String taskName, String graphName)
+    {
+        this.TaskNameTextField.setText(taskName);
+        this.GraphNameTextField.setText(graphName);
     }
 
     //--------------------------------------------Target information----------------------------------------------//

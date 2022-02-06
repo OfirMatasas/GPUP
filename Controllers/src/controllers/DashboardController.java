@@ -130,6 +130,8 @@ public class DashboardController {
         if(selectedGraphName == null)
             return;
 
+        this.LoadGraphButton.setDisable(false);
+
         String finalUrl = HttpUrl
                 .parse(Patterns.LOCAL_HOST + Patterns.GRAPHS)
                 .newBuilder()
@@ -196,7 +198,7 @@ public class DashboardController {
         this.primaryController.loadXMLButtonPressed(new ActionEvent());
     }
 
-    public void TaskSelectedFromListView(MouseEvent mouseEvent) {
+    public void TaskSelectedFromAllListView(MouseEvent mouseEvent) {
         String selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
 
         if(selectedTaskName == null)
@@ -271,6 +273,10 @@ public class DashboardController {
                 DashboardController.this.TaskStatusTableView.setItems(DashboardController.this.selectedTaskStatusList);
             }
         });
+    }
+
+    public void TaskSelectedFromMyListView(MouseEvent mouseEvent) {
+        this.ControlSelectedTaskButton.setDisable(false);
     }
 
     public class PullerThread extends Thread
@@ -558,13 +564,17 @@ public class DashboardController {
                     {
                         SimulationTaskInformation info = gson.fromJson(responseBody.string(), SimulationTaskInformation.class);
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
-//                        Platform.runLater(()-> );
+
+                        Platform.runLater(()-> DashboardController.this.primaryController.TaskPulledFromServer
+                                (info.getTaskName(), info.getGraphName()));
                     }
                     else
                     {
                         CompilationTaskInformation info = gson.fromJson(responseBody.string(), CompilationTaskInformation.class);
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
+                        Platform.runLater(()-> DashboardController.this.primaryController.TaskPulledFromServer
+                                (info.getTaskName(), info.getGraphName()));
                     }
                     responseBody.close();
                 } else //Failed

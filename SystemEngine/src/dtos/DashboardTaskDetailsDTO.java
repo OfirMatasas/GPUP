@@ -20,10 +20,10 @@ public class DashboardTaskDetailsDTO {
     private Integer totalWorkers;
     private String taskStatus;
 
-    public DashboardTaskDetailsDTO(String taskName, Graph graph) {
+    public DashboardTaskDetailsDTO(String taskName, String creatorName, Graph graph) {
         this.taskName = taskName;
         this.graphName = graph.getGraphName();
-        this.uploader = graph.getUploader();
+        this.uploader = creatorName;
         this.totalWorkers = 0;
         this.taskStatus = "New";
 
