@@ -285,6 +285,9 @@ public class PrimaryController {
 
     public void TaskPulledFromServer(String taskName, String graphName)
     {
+        if(this.taskControlPane == null)
+            UpdateTaskControlControllerAndPane();
+
         this.TaskControlButton.setDisable(false);
         TaskControlButtonPressed(new ActionEvent());
         this.taskControlController.setTaskStaticInformation(taskName, graphName);

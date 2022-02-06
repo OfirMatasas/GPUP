@@ -128,7 +128,8 @@ public class CreateTaskController implements Initializable{
             Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Simulation);
             SimulationParameters simulationParameters = this.taskParameters;
 
-            SimulationTaskInformation taskInfo = new SimulationTaskInformation(taskName, uploader, graphName, targets, pricing, simulationParameters);
+            SimulationTaskInformation taskInfo = new SimulationTaskInformation(taskName, uploader,
+                    graphName, targets, pricing, simulationParameters);
             taskTypeRequest = "Simulation";
             stringObject = this.gson.toJson(taskInfo);
         }

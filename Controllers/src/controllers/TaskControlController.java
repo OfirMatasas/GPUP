@@ -1,7 +1,9 @@
 package controllers;
 
-import dtos.DashboardTaskDetailsDTO;
-import information.TaskTargetInformation;
+import com.google.gson.Gson;
+import dtos.TaskCurrentInfoDTO;
+import http.HttpClientUtil;
+import information.TaskTargetCurrentInfoTableItem;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -15,12 +17,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import paths.Patterns;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 import task.TaskThread;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Set;
@@ -29,10 +35,11 @@ public class TaskControlController {
 
     private final String REQUIRED = "All required-for targets";
     private final String DEPENDED = "All depends-on targets";
-    private final ObservableList<TaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
+    private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
     private TaskThread taskThread;
     private GraphSummary graphSummary;
     private int finishedTargets;
+    private String taskName = null;
 
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
@@ -48,12 +55,11 @@ public class TaskControlController {
     @FXML private TextField TaskNameTextField;
     @FXML private TextField GraphNameTextField;
     @FXML private TextField NumberOfWorkersTextField;
-    @FXML private TableView<TaskTargetInformation> taskTargetDetailsTableView;
-    @FXML private TableColumn<TaskTargetInformation, Integer> numberColumn;
-    @FXML private TableColumn<TaskTargetInformation, String> targetNameColumn;
-    @FXML private TableColumn<TaskTargetInformation, String> positionColumn;
-    @FXML private TableColumn<TaskTargetInformation, String> currentRuntimeStatusColumn;
-    @FXML private TableColumn<TaskTargetInformation, String> resultStatusColumn;
+    @FXML private TableView<TaskTargetCurrentInfoTableItem> taskTargetDetailsTableView;
+    @FXML private TableColumn<TaskTargetCurrentInfoTableItem, Integer> numberColumn;
+    @FXML private TableColumn<TaskTargetCurrentInfoTableItem, String> targetNameColumn;
+    @FXML private TableColumn<TaskTargetCurrentInfoTableItem, String> currentRuntimeStatusColumn;
+    @FXML private TableColumn<TaskTargetCurrentInfoTableItem, String> resultStatusColumn;
     @FXML private TextArea taskDetailsOnTargetTextArea;
     @FXML private ProgressBar progressBar;
     @FXML private Label targetsFinishedLabel;
@@ -63,77 +69,85 @@ public class TaskControlController {
     private Graph graph;
     private TaskControlPullerThread taskControlPullerThread;
 
+    public void pausePressed(ActionEvent actionEvent) {
+    }
+
+    public void stopPressed(ActionEvent actionEvent) {
+    }
+
     //----------------------------------------------Puller Thread--------------------------------------------//
     public class TaskControlPullerThread extends Thread
     {
         @Override
         public void run()
         {
-//            disableTaskOptions(true);
-//            TaskControlController.this.PauseButton.setDisable(false);
-//            TaskControlController.this.stopButton.setDisable(false);
-//
-//            while(TaskControlController.this.taskThread.isAlive())
-//            {
-//                if(TaskControlController.this.taskThread.getStatusChanged())
-//                    taskPausedOrStopped();
-//            }
-//
-//            disableTaskOptions(false);
-//            TaskControlController.this.PauseButton.setDisable(true);
-//            TaskControlController.this.stopButton.setDisable(true);
-//
-//            Platform.runLater(() -> TaskControlController.this.PauseButton.setText("Pause"));
-//        }
-//
-//        public void taskPausedOrStopped()
-//        {
-//            if(TaskControlController.this.taskThread.getStopped()) //Stopped
-//            {
-//                if(!TaskControlController.this.taskThread.getPaused())
-//                    TaskControlController.this.logTextArea.appendText("\nWaiting for the task to stop...\n\n");
-//
-//                while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
-//
-//                Platform.runLater(() -> TaskControlController.this.logTextArea.appendText("\nTask stopped!\n\n"));
-//            }
-//            else //Paused / Resumed
-//            {
-//                String firstOutput, secondOutput = "", newButtonText;
-//                boolean updateThread;
-//
-//                if(TaskControlController.this.taskThread.getPaused()) //Paused
-//                {
-//                    firstOutput = "\nWaiting for the task to pause...\n\n";
-//                    newButtonText = "Resume";
-//                    secondOutput = "\nTask paused!\n\n";
-//                    updateThread = true;
-//                }
-//                else //Resumed
-//                {
-//                    firstOutput = "\nTask resumed!\n\n";
-//                    newButtonText = "Pause";
-//                    updateThread = false;
-//                }
-//
-//                TaskControlController.this.PauseButton.setDisable(true);
-//                TaskControlController.this.stopButton.setDisable(true);
-//                TaskControlController.this.logTextArea.appendText(firstOutput);
-//
-//                if(TaskControlController.this.taskThread.getPaused())
-//                    while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
-//
-//                String finalSecondOutput = secondOutput;
-//                Platform.runLater(() ->
-//                {
-//                    TaskControlController.this.logTextArea.appendText(finalSecondOutput);
-//                    TaskControlController.this.PauseButton.setText(newButtonText);
-//                });
-//                TaskControlController.this.PauseButton.setDisable(false);
-//                TaskControlController.this.stopButton.setDisable(false);
-//            }
-//
-//            TaskControlController.this.taskThread.resetStatusChanged();
+            while(true)
+            {
+                sendingThreadToSleep();
+
+                getTargetCurrentInfo();
+            }
+        }
+
+        private void sendingThreadToSleep() {
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void getTargetCurrentInfo() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("task-update", TaskControlController.this.taskName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for task-update!"));
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() -> System.out.println("Success in getting task update!"));
+                        Platform.runLater(() ->
+                                {
+                                    Gson gson = new Gson();
+                                    ResponseBody responseBody = response.body();
+                                    try {
+                                        if (responseBody != null) {
+                                            {
+                                                TaskCurrentInfoDTO updatedInfo = gson.fromJson(responseBody.string(), TaskCurrentInfoDTO.class);
+                                                refreshTargetsStatuses(updatedInfo);
+                                                responseBody.close();
+                                            }
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                        );
+                    } else //Failed
+                        Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
+                }
+
+                private void refreshTargetsStatuses(TaskCurrentInfoDTO updatedInfo) {
+                    updateTargetStatusesTable(updatedInfo);
+                }
+
+                private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
+                    TaskControlController.this.taskTargetStatusesList.clear();
+                    TaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
+
+                    TaskControlController.this.taskTargetDetailsTableView.setItems(TaskControlController.this.taskTargetStatusesList);
+                }
+            });
         }
     }
 
@@ -141,24 +155,24 @@ public class TaskControlController {
     @FXML public void initialize()
     {
         this.taskControlPullerThread = new TaskControlPullerThread();
-        initializeGraphDetails();
+        this.taskControlPullerThread.start();
+        initializeTaskDetailsTableView();
     }
 
-    private void initializeGraphDetails() {
-        this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, Integer>("number"));
-        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("targetName"));
-        this.positionColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("position"));
-        this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("currentRuntimeStatus"));
-        this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetInformation, String>("resultStatus"));
+    private void initializeTaskDetailsTableView() {
+        this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, Integer>("number"));
+        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("targetName"));
+        this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("currentRuntimeStatus"));
+        this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("resultStatus"));
 
-        this.taskTargetDetailsTableView.setRowFactory(tv -> new TableRow<TaskTargetInformation>()
+        this.taskTargetDetailsTableView.setRowFactory(tv -> new TableRow<TaskTargetCurrentInfoTableItem>()
         {
-            protected void updateItem(TaskTargetInformation item, boolean empty) {
+            protected void updateItem(TaskTargetCurrentInfoTableItem item, boolean empty) {
                 super.updateItem(item, empty);
 
                 if (item == null)
                     setStyle("");
-                else if (item.getCurrentRuntimeStatus().equals("Skipped"))
+                else if (item.getRuntimeStatus().equals("Skipped"))
                     setStyle("-fx-background-color: gray;");
                 else if (item.getResultStatus().equals("Failure"))
                     setStyle("-fx-background-color: #f33c3c;" + "-fx-text-fill: white;");
@@ -166,11 +180,11 @@ public class TaskControlController {
                     setStyle("-fx-background-color: #1bff1b;" + "-fx-text-fill: white;");
                 else if (item.getResultStatus().equals("Warning"))
                     setStyle("-fx-background-color: orange;");
-                else if (item.getCurrentRuntimeStatus().equals("In process"))
+                else if (item.getRuntimeStatus().equals("In process"))
                     setStyle("-fx-background-color: yellow;");
-                else if (item.getCurrentRuntimeStatus().equals("Frozen"))
+                else if (item.getRuntimeStatus().equals("Frozen"))
                     setStyle("-fx-background-color: #469eff;");
-                else if (item.getCurrentRuntimeStatus().equals("Waiting"))
+                else if (item.getRuntimeStatus().equals("Waiting"))
                     setStyle("-fx-background-color: #e47bff;");
             }
         });
@@ -192,7 +206,7 @@ public class TaskControlController {
     private void updateTargetTaskDetailsInTextArea() {
         if(!this.taskTargetDetailsTableView.getItems().isEmpty())
         {
-            TaskTargetInformation taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            TaskTargetCurrentInfoTableItem taskTargetInformation = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
             showDetailsOfSelectedTargetInTextArea(taskTargetInformation);
         }
         else
@@ -204,7 +218,7 @@ public class TaskControlController {
         this.taskDetailsOnTargetTextArea.setDisable(!flag);
     }
 
-    public void showDetailsOfSelectedTargetInTextArea(TaskTargetInformation taskTargetInformation)
+    public void showDetailsOfSelectedTargetInTextArea(TaskTargetCurrentInfoTableItem taskTargetInformation)
     {
         String detailMsg = null;
         String currentTargetName = taskTargetInformation.getTargetName();
@@ -271,7 +285,7 @@ public class TaskControlController {
         String waitingForTargets = "", dependedOnTarget;
         Set<String> dependedTargets = this.graph.getTarget(currentTargetName).getAllDependsOnTargets();
 
-        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
         {
             dependedOnTarget = curr.getTargetName();
             if(dependedTargets.contains(dependedOnTarget))
@@ -288,7 +302,7 @@ public class TaskControlController {
         String processedFailedTargets = "", dependedOnTarget;
         Set<String> dependedTargets = this.graph.getTarget(currentTargetName).getAllDependsOnTargets();
 
-        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
         {
             dependedOnTarget = curr.getTargetName();
             if (dependedTargets.contains(dependedOnTarget))
@@ -303,16 +317,16 @@ public class TaskControlController {
     public void getFinishedTargetsInRealTime()
     {
         this.finishedTargets = 0;
-        for(TaskTargetInformation currItem : this.taskTargetDetailsTableView.getItems())
+        for(TaskTargetCurrentInfoTableItem currItem : this.taskTargetDetailsTableView.getItems())
         {
-            if(currItem.getCurrentRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished.toString())||currItem.getCurrentRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped.toString()))
+            if(currItem.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished.toString())||currItem.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped.toString()))
                 this.finishedTargets++;
         }
     }
 
     //------------------------------------------Preparations For Launch-------------------------------------------//
     private boolean incrementalIsOptional() {
-        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
         {
             if(curr.getResultStatus().equals("Undefined"))
                 return false;
@@ -323,7 +337,7 @@ public class TaskControlController {
     private void turnOnIncrementalButton() {
         boolean change = false;
 
-        for(TaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
         {
             if(curr.getResultStatus().equals("Undefined"))
             {
@@ -403,24 +417,24 @@ public class TaskControlController {
 //        updateThread.start();
     }
 
-    @FXML void pausePressed(ActionEvent event) {
-        if(!this.taskThread.getPaused()) //Pausing the task
-        {
-            this.PauseButton.setDisable(true);
-            this.stopButton.setDisable(true);
-            this.taskThread.pauseTheTask();
-        }
-        else //Resuming the task
-            this.taskThread.continueTheTask();
-    }
-
-    @FXML void stopPressed(ActionEvent event) {
-        this.taskThread.stopTheTask();
-    }
+//    @FXML void pausePressed(ActionEvent event) {
+//        if(!this.taskThread.getPaused()) //Pausing the task
+//        {
+//            this.PauseButton.setDisable(true);
+//            this.stopButton.setDisable(true);
+//            this.taskThread.pauseTheTask();
+//        }
+//        else //Resuming the task
+//            this.taskThread.continueTheTask();
+//    }
+//
+//    @FXML void stopPressed(ActionEvent event) {
+//        this.taskThread.stopTheTask();
+//    }
 
     private void updateTableRuntimeStatuses()
     {
-        ObservableList<TaskTargetInformation> itemsList = this.taskTargetDetailsTableView.getItems();
+        ObservableList<TaskTargetCurrentInfoTableItem> itemsList = this.taskTargetDetailsTableView.getItems();
         LocalTime startTime = LocalTime.now();
         LocalTime currTime = LocalTime.now();
 
@@ -433,7 +447,7 @@ public class TaskControlController {
         TaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
-    public void updateTable(ObservableList<TaskTargetInformation> itemsList , LocalTime startTime, LocalTime currTime)
+    public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime)
     {
         try {
             Thread.sleep(200);
@@ -441,9 +455,9 @@ public class TaskControlController {
             e.printStackTrace();
         }
 
-        for (TaskTargetInformation item : itemsList)
+        for (TaskTargetCurrentInfoTableItem item : itemsList)
         {
-            item.setCurrentRuntimeStatus(this.graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
+            item.setRuntimeStatus(this.graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getRuntimeStatus().toString());
             item.setResultStatus(this.graphSummary.getTargetsSummaryMap().get(item.getTargetName()).getResultStatus().toString());
         }
         Platform.runLater(()->{this.taskTargetDetailsTableView.refresh();});
@@ -458,3 +472,71 @@ public class TaskControlController {
         alert.showAndWait();
     }
 }
+
+
+
+//            disableTaskOptions(true);
+//            TaskControlController.this.PauseButton.setDisable(false);
+//            TaskControlController.this.stopButton.setDisable(false);
+//
+//            while(TaskControlController.this.taskThread.isAlive())
+//            {
+//                if(TaskControlController.this.taskThread.getStatusChanged())
+//                    taskPausedOrStopped();
+//            }
+//
+//            disableTaskOptions(false);
+//            TaskControlController.this.PauseButton.setDisable(true);
+//            TaskControlController.this.stopButton.setDisable(true);
+//
+//            Platform.runLater(() -> TaskControlController.this.PauseButton.setText("Pause"));
+//        }
+//
+//        public void taskPausedOrStopped()
+//        {
+//            if(TaskControlController.this.taskThread.getStopped()) //Stopped
+//            {
+//                if(!TaskControlController.this.taskThread.getPaused())
+//                    TaskControlController.this.logTextArea.appendText("\nWaiting for the task to stop...\n\n");
+//
+//                while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
+//
+//                Platform.runLater(() -> TaskControlController.this.logTextArea.appendText("\nTask stopped!\n\n"));
+//            }
+//            else //Paused / Resumed
+//            {
+//                String firstOutput, secondOutput = "", newButtonText;
+//                boolean updateThread;
+//
+//                if(TaskControlController.this.taskThread.getPaused()) //Paused
+//                {
+//                    firstOutput = "\nWaiting for the task to pause...\n\n";
+//                    newButtonText = "Resume";
+//                    secondOutput = "\nTask paused!\n\n";
+//                    updateThread = true;
+//                }
+//                else //Resumed
+//                {
+//                    firstOutput = "\nTask resumed!\n\n";
+//                    newButtonText = "Pause";
+//                    updateThread = false;
+//                }
+//
+//                TaskControlController.this.PauseButton.setDisable(true);
+//                TaskControlController.this.stopButton.setDisable(true);
+//                TaskControlController.this.logTextArea.appendText(firstOutput);
+//
+//                if(TaskControlController.this.taskThread.getPaused())
+//                    while(!TaskControlController.this.taskThread.getExecutor().isTerminated()) {}
+//
+//                String finalSecondOutput = secondOutput;
+//                Platform.runLater(() ->
+//                {
+//                    TaskControlController.this.logTextArea.appendText(finalSecondOutput);
+//                    TaskControlController.this.PauseButton.setText(newButtonText);
+//                });
+//                TaskControlController.this.PauseButton.setDisable(false);
+//                TaskControlController.this.stopButton.setDisable(false);
+//            }
+//
+//            TaskControlController.this.taskThread.resetStatusChanged();

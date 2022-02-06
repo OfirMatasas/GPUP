@@ -11,6 +11,7 @@ public class Patterns
     //----------------------------------------Tasks--------------------------------------//
     public static String TASK_LIST = "/tasks-list";
     public static String TASKS = "/tasks";
+    public static String TASK_UPDATE = "/task-update";
     //----------------------------------------Graphs--------------------------------------//
     public static String GRAPHS = "/graphs";
     public static String GRAPH_LIST = "/graph-list";
