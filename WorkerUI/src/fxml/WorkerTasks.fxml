@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+
+<SplitPane fx:id="SplitPane" dividerPositions="0.3" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="929.0" styleClass="primaryBackground" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
+   <items>
+      <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="primaryBackground">
+         <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="trans" VBox.vgrow="ALWAYS">
+               <content>
+                  <Accordion styleClass="primaryBackground">
+                    <panes>
+                        <TitledPane fx:id="TargetsTitledPane" animated="false" layoutX="10.0" layoutY="10.0" styleClass="trans" text="Targets">
+                           <content>
+                              <VBox spacing="5.0" styleClass="primaryBackground">
+                                 <children>
+                                    <ListView fx:id="TargetsListView" onMouseClicked="#TaskSelectedFromAllListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                              </VBox>
+                           </content>
+                        </TitledPane>
+                        <TitledPane fx:id="TasksTiltedPane" animated="false" layoutX="10.0" layoutY="72.0" styleClass="trans" text="Tasks">
+                           <content>
+                              <VBox spacing="5.0" styleClass="primaryBackground">
+                                 <children>
+                                    <ListView fx:id="TasksListView" onMouseClicked="#TaskSelectedFromAllListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                              </VBox>
+                           </content>
+                        </TitledPane>
+                    </panes>
+                  </Accordion>
+               </content>
+            </ScrollPane>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </VBox>
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="200.0" styleClass="primaryBackground">
+         <items>
+            <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="primaryBackground">
+               <content>
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" styleClass="primaryBackground">
+                     <children>
+                        <Label alignment="CENTER" minWidth="60.0" prefWidth="-1.0" style="&#10;" styleClass="headLines" text="Chosen target information" textAlignment="CENTER" wrapText="false">
+                           <font>
+                              <Font size="18.0" fx:id="x11" />
+                           </font>
+                           <textFill>
+                              <Color blue="0.624" green="0.624" red="0.624" fx:id="x21" />
+                           </textFill>
+                        </Label>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <TableView fx:id="TargetTableView" prefHeight="200.0" prefWidth="200.0">
+                                <columns>
+                                  <TableColumn prefWidth="118.0" text="Target" />
+                                  <TableColumn prefWidth="119.0" text="Task" />
+                                    <TableColumn prefWidth="135.0" text="Task type" />
+                                    <TableColumn prefWidth="120.0" text="Status" />
+                                    <TableColumn prefWidth="152.0" text="Earned Credits" />
+                                </columns>
+                              </TableView>
+                           </children>
+                        </VBox>
+                        <HBox>
+                           <children>
+                              <Label alignment="CENTER" minWidth="60.0" prefWidth="-1.0" style="&#10;" styleClass="headLines" text="Log:" textAlignment="CENTER" wrapText="false">
+                                 <font>
+                                    <Font size="18.0" fx:id="x111" />
+                                 </font>
+                                 <textFill>
+                                    <Color blue="0.624" green="0.624" red="0.624" fx:id="x211" />
+                                 </textFill>
+                                 <HBox.margin>
+                                    <Insets top="8.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <TextArea fx:id="TargetLogTextArea" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                 <HBox.margin>
+                                    <Insets bottom="10.0" right="10.0" top="10.0" />
+                                 </HBox.margin>
+                              </TextArea>
+                           </children>
+                        </HBox>
+                        <VBox alignment="CENTER_LEFT" spacing="5.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" />
+                              <HBox alignment="CENTER_LEFT" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+            <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="primaryBackground">
+               <content>
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="primaryBackground">
+                     <children>
+                        <Label alignment="CENTER" minWidth="60.0" prefWidth="-1.0" style="&#10;" styleClass="headLines" text="Chosen task information" textAlignment="CENTER" wrapText="false">
+                           <font>
+                              <Font size="18.0" fx:id="x1" />
+                           </font>
+                           <textFill>
+                              <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                           </textFill>
+                           <VBox.margin>
+                              <Insets bottom="20.0" />
+                           </VBox.margin>
+                        </Label>
+                        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" styleClass="trans" VBox.vgrow="ALWAYS">
+                           <children>
+                              <VBox spacing="5.0" />
+                              <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="60.0" styleClass="primaryBackground" vbarPolicy="NEVER" VBox.vgrow="NEVER">
+                                 <content>
+                                    <TableView fx:id="TaskTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="70.0" minWidth="-Infinity" prefHeight="109.0" prefWidth="633.0">
+                                       <columns>
+                                          <TableColumn fx:id="Targets" minWidth="30.0" prefWidth="-1.0" text="Name" />
+                                          <TableColumn fx:id="Independents" minWidth="40.0" prefWidth="127.0" text="Status" />
+                                          <TableColumn fx:id="Leafs" minWidth="8.0" prefWidth="83.0" text="Workers" />
+                                          <TableColumn fx:id="Middles" minWidth="30.0" prefWidth="159.0" text="Finished&#10;Targets" />
+                                          <TableColumn fx:id="Roots" minWidth="13.0" prefWidth="127.0" text="Earned&#10;Credits" />
+                                       </columns>
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </content>
+                              </ScrollPane>
+                              <VBox alignment="CENTER_RIGHT" prefHeight="77.0" prefWidth="635.0" spacing="5.0">
+                                 <children>
+                                    <Button fx:id="PauseButton" mnemonicParsing="false" onAction="#PauseButtonPressed" prefWidth="95.0" text="Pause" />
+                                    <Button fx:id="LeaveTaskButton" mnemonicParsing="false" onAction="#LeaveTaskButtonPressed" prefWidth="95.0" text="Leave Task" />
+                                 </children>
+                              </VBox>
+                              <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0" VBox.vgrow="ALWAYS" />
+                           </children>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </items>
+      </SplitPane>
+   </items>
+</SplitPane>

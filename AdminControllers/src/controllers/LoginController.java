@@ -2,8 +2,6 @@ package controllers;
 
 import http.HttpClientUtil;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,20 +30,18 @@ public class LoginController {
     private Stage primaryStage;
     private PrimaryController primaryController;
     private String username;
-    private final StringProperty errorMessageProperty = new SimpleStringProperty();
     @FXML public TextField userNameTextField;
     @FXML public Label errorMessageLabel;
 
     @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.errorMessageLabel.textProperty().bind(this.errorMessageProperty);
     }
 
     @FXML private void loginButtonClicked(ActionEvent event) {
 
         String userName = this.userNameTextField.getText();
         if (userName.isEmpty()) {
-            this.errorMessageProperty.set("User name is empty. You can't login with empty user name");
+            loginError("User name is empty. You can't login with empty user name");
             return;
         }
 
@@ -60,9 +56,7 @@ public class LoginController {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() ->
-                        LoginController.this.errorMessageProperty.set("Something went wrong: " + e.getMessage())
-                );
+                Platform.runLater(() -> loginError("Something went wrong: " + e.getMessage()));
             }
 
             @Override
