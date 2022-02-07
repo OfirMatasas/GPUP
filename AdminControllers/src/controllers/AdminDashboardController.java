@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
 import dtos.DashboardTaskDetailsDTO;
 import http.HttpClientUtil;
-import information.SelectedGraphTableItem;
-import information.SelectedTaskStatusTableItem;
+import tableItems.SelectedGraphTableItem;
+import tableItems.SelectedTaskStatusTableItem;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -265,7 +265,7 @@ public class AdminDashboardController {
             private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
 
                 SelectedTaskStatusTableItem selectedTaskStatusTableItem = new SelectedTaskStatusTableItem(taskDetailsDTO.getTaskStatus(),
-                        taskDetailsDTO.getTotalWorkers(), taskDetailsDTO.getTotalPayment());
+                        taskDetailsDTO.getRegisteredWorkers().size(), taskDetailsDTO.getTotalPayment());
 
                 AdminDashboardController.this.selectedTaskStatusList.clear();
                 AdminDashboardController.this.selectedTaskStatusList.add(selectedTaskStatusTableItem);

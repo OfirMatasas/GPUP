@@ -2,7 +2,7 @@ package task;
 
 import dtos.DashboardTaskDetailsDTO;
 import dtos.TaskCurrentInfoDTO;
-import information.TaskTargetCurrentInfoTableItem;
+import tableItems.TaskTargetCurrentInfoTableItem;
 import summaries.TargetSummary;
 import target.Graph;
 

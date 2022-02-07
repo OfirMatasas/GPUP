@@ -1,4 +1,4 @@
-package information;
+package tableItems;
 
 public class TaskTargetCurrentInfoTableItem {
     private final Integer targetNumber;

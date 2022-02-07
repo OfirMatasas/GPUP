@@ -1,4 +1,4 @@
-package information;
+package tableItems;
 
 public class SelectedGraphTableItem {
     private Integer targets;

@@ -14,6 +14,7 @@ public class UserManager {
     public synchronized void addAdmin(String username) {
         this.usersLists.getAdminsList().add(username);
     }
+
     public synchronized Set<String> getAdmins() {
         return Collections.unmodifiableSet(this.usersLists.getAdminsList());
     }

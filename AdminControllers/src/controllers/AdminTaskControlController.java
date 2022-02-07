@@ -3,7 +3,7 @@ package controllers;
 import com.google.gson.Gson;
 import dtos.TaskCurrentInfoDTO;
 import http.HttpClientUtil;
-import information.TaskTargetCurrentInfoTableItem;
+import tableItems.TaskTargetCurrentInfoTableItem;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;

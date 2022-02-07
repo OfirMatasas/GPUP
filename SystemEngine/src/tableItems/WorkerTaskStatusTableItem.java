@@ -1,4 +1,4 @@
-package information;
+package tableItems;
 
 import java.util.Set;
 

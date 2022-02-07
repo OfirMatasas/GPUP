@@ -1,4 +1,4 @@
-package information;
+package tableItems;
 
 public class SelectedTaskStatusTableItem {
     private final String status;

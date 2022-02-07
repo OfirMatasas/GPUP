@@ -1,6 +1,6 @@
 package dtos;
 
-import information.TaskTargetCurrentInfoTableItem;
+import tableItems.TaskTargetCurrentInfoTableItem;
 
 import java.util.Set;
 
