@@ -32,7 +32,7 @@ public class Main extends Application
         primaryStage.setTitle("G.P.U.P Login");
         FXMLLoader loader = new FXMLLoader(getClass().getResource(BodyComponentsPaths.LOGIN));
         Parent root = loader.load();
-        primaryStage.setScene(new Scene(root, 300,200));
+        primaryStage.setScene(new Scene(root, 520,220));
         primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LOGIN_THEME);
 
         //Set the Stage

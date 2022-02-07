@@ -12,26 +12,49 @@ public class DashboardTaskDetailsDTO {
     private final String graphName;
     private final String uploader;
     private final Integer targets;
-    private final Integer roots;
-    private final Integer middles;
-    private final Integer leaves;
-    private final Integer independents;
+    private Integer roots = 0;
+    private Integer middles = 0;
+    private Integer leaves = 0;
+    private Integer independents = 0;
     private final Integer totalPayment;
     private Integer totalWorkers;
     private String taskStatus;
 
-    public DashboardTaskDetailsDTO(String taskName, String creatorName, Graph graph) {
+    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute, Graph graph) {
         this.taskName = taskName;
         this.graphName = graph.getGraphName();
         this.uploader = creatorName;
         this.totalWorkers = 0;
         this.taskStatus = "New";
 
-        Map<Target.TargetPosition, Set<Target>> targetsPositions = graph.getTargetsByPositions();
-        this.roots = targetsPositions.get(Target.TargetPosition.ROOT).size();
-        this.middles = targetsPositions.get(Target.TargetPosition.MIDDLE).size();
-        this.leaves = targetsPositions.get(Target.TargetPosition.LEAF).size();
-        this.independents = targetsPositions.get(Target.TargetPosition.INDEPENDENT).size();
+        if(targetsToExecute.size() == graph.getGraphTargets().size())
+        {
+            Map<Target.TargetPosition, Set<Target>> targetsPositions = graph.getTargetsByPositions();
+
+            this.roots = targetsPositions.get(Target.TargetPosition.ROOT).size();
+            this.middles = targetsPositions.get(Target.TargetPosition.MIDDLE).size();
+            this.leaves = targetsPositions.get(Target.TargetPosition.LEAF).size();
+            this.independents = targetsPositions.get(Target.TargetPosition.INDEPENDENT).size();
+        }
+        else
+        {
+            Target.TargetPosition currTargetPosition;
+
+            for(String currTargetName : targetsToExecute)
+            {
+                currTargetPosition = graph.getTarget(currTargetName).getTargetPosition();
+
+                if(currTargetPosition.equals(Target.TargetPosition.ROOT))
+                    ++this.roots;
+                else if(currTargetPosition.equals(Target.TargetPosition.MIDDLE))
+                    ++this.middles;
+                else if(currTargetPosition.equals(Target.TargetPosition.LEAF))
+                    ++this.leaves;
+                else
+                    ++this.independents;
+            }
+        }
+
         this.targets = this.roots + this.middles + this.leaves + this.independents;
 
         Map<Graph.TaskType, Integer> taskPrices = graph.getTasksPricesMap();

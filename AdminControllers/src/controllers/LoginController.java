@@ -1,7 +1,5 @@
 package controllers;
 
-import javafx.scene.input.KeyCode;
-import paths.BodyComponentsPaths;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -10,9 +8,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import okhttp3.Call;
@@ -20,6 +20,7 @@ import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import paths.BodyComponentsPaths;
 import paths.Patterns;
 
 import java.io.IOException;
@@ -27,26 +28,20 @@ import java.net.URL;
 import java.util.Objects;
 
 public class LoginController {
+    public Button loginButton;
     private Stage primaryStage;
     private PrimaryController primaryController;
     private String username;
-
-    @FXML
-    public TextField userNameTextField;
-
-    @FXML
-    public Label errorMessageLabel;
-
     private final StringProperty errorMessageProperty = new SimpleStringProperty();
+    @FXML public TextField userNameTextField;
+    @FXML public Label errorMessageLabel;
 
-    @FXML
-    public void initialize(Stage primaryStage) {
+    @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.errorMessageLabel.textProperty().bind(this.errorMessageProperty);
     }
 
-    @FXML
-    private void loginButtonClicked(ActionEvent event) {
+    @FXML private void loginButtonClicked(ActionEvent event) {
 
         String userName = this.userNameTextField.getText();
         if (userName.isEmpty()) {
@@ -72,43 +67,41 @@ public class LoginController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() != 200) {
-                    String responseBody = response.body().string();
-                    Platform.runLater(() ->
-                            LoginController.this.errorMessageProperty.set("Login failed: " + responseBody)
-                    );
-                } else
+                if(response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() -> loggedInAsAdmin(response));
+                else //Failure
                 {
-                    Platform.runLater(() -> {
-                        try{
-                            LoginController.this.username = response.header("username");
-
-                            URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);
-                            FXMLLoader fxmlLoader = new FXMLLoader();
-                            fxmlLoader.setLocation(url);
-                            ScrollPane mainMenuComponent = fxmlLoader.load(Objects.requireNonNull(url).openStream());
-                            LoginController.this.primaryController = fxmlLoader.getController();
-
-                            Scene scene = new Scene(mainMenuComponent,1280, 800);
-                            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
-                            LoginController.this.primaryStage.setTitle("G.P.U.P");
-                            LoginController.this.primaryController.initialize(LoginController.this.primaryStage, response.header("username"));
-                            LoginController.this.primaryStage.setScene(scene);
-                        }
-                        catch(Exception ignore) {}
-                    });
+                    String responseBody = Objects.requireNonNull(response.body()).string();
+                    Platform.runLater(() -> loginError("Login failed: " + responseBody));
                 }
             }
         });
     }
 
-    @FXML
-    private void userNameKeyTyped(KeyEvent event) {
-        this.errorMessageProperty.set("");
+    private void loggedInAsAdmin(Response response) {
+        try{
+            LoginController.this.username = response.header("username");
+
+            URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(url);
+            ScrollPane mainMenuComponent = fxmlLoader.load(Objects.requireNonNull(url).openStream());
+            LoginController.this.primaryController = fxmlLoader.getController();
+
+            Scene scene = new Scene(mainMenuComponent,1280, 800);
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
+            LoginController.this.primaryStage.setTitle("G.P.U.P");
+            LoginController.this.primaryController.initialize(LoginController.this.primaryStage, response.header("username"));
+            LoginController.this.primaryStage.setScene(scene);
+        }
+        catch (Exception e) { System.out.println("Error uploading app: " + e.getMessage()); }
     }
 
-    @FXML
-    private void quitButtonClicked(ActionEvent e) {
+    private void loginError(String errorMessage) {
+        this.errorMessageLabel.setText(errorMessage);
+    }
+
+    @FXML private void quitButtonClicked(ActionEvent e) {
         Platform.exit();
     }
 
@@ -118,7 +111,7 @@ public class LoginController {
         return this.username;
     }
 
-    public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
+    @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
         if(keyEvent.getCode()== KeyCode.ENTER)
             loginButtonClicked(new ActionEvent());
     }
