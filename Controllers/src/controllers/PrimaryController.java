@@ -229,8 +229,7 @@ public class PrimaryController {
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
 
-        if(this.graph != null)
-            updateThemeOnAllPanes(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        updateThemeOnAllPanes(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
 
     @FXML void darkModeThemePressed(ActionEvent event) {
@@ -241,8 +240,7 @@ public class PrimaryController {
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
 
-        if(this.graph != null)
-            updateThemeOnAllPanes(BodyComponentsPaths.DARK_CENTER_THEME);
+        updateThemeOnAllPanes(BodyComponentsPaths.DARK_CENTER_THEME);
     }
 
     @FXML void rainbowThemePressed(ActionEvent event) {
@@ -253,19 +251,24 @@ public class PrimaryController {
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
 
-        if(this.graph != null)
-            updateThemeOnAllPanes(BodyComponentsPaths.RAINBOW_CENTER_THEME);
+        updateThemeOnAllPanes(BodyComponentsPaths.RAINBOW_CENTER_THEME);
     }
 
     private void updateThemeOnAllPanes(String themePath)
     {
-        this.graphDetailsPane.getStylesheets().clear();
-        this.graphDetailsPane.getStylesheets().add(themePath);
-        this.connectionsPane.getStylesheets().clear();
-        this.connectionsPane.getStylesheets().add(themePath);
-        this.createTaskPane.getStylesheets().clear();
-        this.createTaskPane.getStylesheets().add(themePath);
+        if(this.graph != null) {
+            this.graphDetailsPane.getStylesheets().clear();
+            this.graphDetailsPane.getStylesheets().add(themePath);
+            this.connectionsPane.getStylesheets().clear();
+            this.connectionsPane.getStylesheets().add(themePath);
+            this.createTaskPane.getStylesheets().clear();
+            this.createTaskPane.getStylesheets().add(themePath);
+        }
 
+        updateThemeOnTaskControlPane(themePath);
+    }
+
+    private void updateThemeOnTaskControlPane(String themePath) {
         if(this.taskControlPane != null)
         {
             this.taskControlPane.getStylesheets().clear();
