@@ -28,7 +28,7 @@ import java.util.Objects;
 public class WorkerLoginController {
     public Button loginButton;
     private Stage primaryStage;
-    private PrimaryController primaryController;
+    private WorkerPrimaryController workerPrimaryController;
     private String username;
     @FXML public TextField userNameTextField;
     @FXML public Label errorMessageLabel;
@@ -80,12 +80,12 @@ public class WorkerLoginController {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(url);
             ScrollPane mainMenuComponent = fxmlLoader.load(Objects.requireNonNull(url).openStream());
-            WorkerLoginController.this.primaryController = fxmlLoader.getController();
+            WorkerLoginController.this.workerPrimaryController = fxmlLoader.getController();
 
             Scene scene = new Scene(mainMenuComponent,1280, 800);
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
             WorkerLoginController.this.primaryStage.setTitle("G.P.U.P");
-            WorkerLoginController.this.primaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
+            WorkerLoginController.this.workerPrimaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
             WorkerLoginController.this.primaryStage.setScene(scene);
         }
         catch (Exception e) { System.out.println("Error uploading app: " + e.getMessage()); }

@@ -3,11 +3,13 @@ package dtos;
 import target.Graph;
 import target.Target;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class DashboardTaskDetailsDTO {
 
+    private final String taskType;
     private final String taskName;
     private final String graphName;
     private final String uploader;
@@ -17,14 +19,15 @@ public class DashboardTaskDetailsDTO {
     private Integer leaves = 0;
     private Integer independents = 0;
     private final Integer totalPayment;
-    private Integer totalWorkers;
+    private final Set<String> registeredWorkers;
     private String taskStatus;
 
-    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute, Graph graph) {
+    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute, String taskType, Graph graph) {
         this.taskName = taskName;
+        this.taskType = taskType;
         this.graphName = graph.getGraphName();
         this.uploader = creatorName;
-        this.totalWorkers = 0;
+        this.registeredWorkers = new HashSet<>();
         this.taskStatus = "New";
 
         if(targetsToExecute.size() == graph.getGraphTargets().size())
@@ -62,11 +65,19 @@ public class DashboardTaskDetailsDTO {
                 taskPrices.get(Graph.TaskType.Simulation) * this.targets : taskPrices.get(Graph.TaskType.Compilation) * this.targets;
     }
 
-    public void addWorker() { this.totalWorkers++; }
+    public void addWorker(String workerName) {
+        this.registeredWorkers.add(workerName);
+    }
 
-    public void removeWorker() { this.totalWorkers--; }
+    public void removeWorker(String workerName) {
+        this.registeredWorkers.remove(workerName);
+    }
 
     public void setTaskStatus(String status) { this.taskStatus = status; }
+
+    public String getTaskType() {
+        return this.taskType;
+    }
 
     public String getGraphName() {
         return this.graphName;
@@ -104,8 +115,8 @@ public class DashboardTaskDetailsDTO {
         return this.totalPayment;
     }
 
-    public Integer getTotalWorkers() {
-        return this.totalWorkers;
+    public Set<String> getRegisteredWorkers() {
+        return this.registeredWorkers;
     }
 
     public String getTaskStatus() {

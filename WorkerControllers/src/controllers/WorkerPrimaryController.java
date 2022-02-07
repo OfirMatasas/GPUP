@@ -13,13 +13,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
-import patterns.Patterns;
-import resources.checker.ResourceChecker;
 import target.Graph;
 
 import java.io.File;
@@ -27,21 +24,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
-import java.util.Optional;
 
-public class PrimaryController {
+public class WorkerPrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
     private static Graph graph = null;
-    private DashboardController dashboardController;
-    private TaskControlController taskControlController;
+    private WorkerDashboardController workerDashboardController = null;
+    private WorkerTasksController workerTasksController = null;
     private SplitPane DashboardPane = null;
     private ScrollPane taskControlPane = null;
     private String userName;
 
     @FXML private ToggleGroup templates;
     @FXML private BorderPane mainBorderPane;
-    @FXML private ImageView fireWorksImageView;
     @FXML private HBox HboxForLogo;
     @FXML private ImageView PrimaryLogo;
     @FXML private ScrollPane statusBar;
@@ -54,8 +49,6 @@ public class PrimaryController {
     @FXML private MenuItem loadXMLButton;
     @FXML private MenuItem saveProgressButton;
     @FXML private MenuItem exitButton;
-    @FXML private Menu animations;
-    @FXML private CheckBox enableAnimations;
     @FXML private Menu themes;
     @FXML private RadioMenuItem defaultTheme;
     @FXML private RadioMenuItem darkModeTheme;
@@ -82,19 +75,9 @@ public class PrimaryController {
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
     //--------------------------------------------------Toolbar-----------------------------------------------------//
-    @FXML void aboutPressed(ActionEvent event) {}
 
-    @FXML void loadXMLButtonPressed(ActionEvent event) throws IOException {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select a file");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xml files", "*.xml"));
-        File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
 
-        if(selectedFile != null)
-            uploadFileToServer(Patterns.LOCAL_HOST + Patterns.GRAPHS, selectedFile);
-    }
-
-    public void uploadFileToServer(String url, File file) {
+    public void uploadTaskUpdateToServer(String url, File file) {
 
         RequestBody body = new MultipartBody.Builder()
                 .addFormDataPart("fileToUpload", file.getName(),
@@ -123,34 +106,6 @@ public class PrimaryController {
             }
         });
     }
-
-    public void loadGraph(File file)
-    {
-        if(file == null)
-            return;
-
-        if(!OverrideGraph())
-            return;
-
-        try{
-            ResourceChecker rc = new ResourceChecker();
-
-            //Loading the graph from the xml file
-            this.graph = rc.extractFromXMLToGraph(file.toPath());
-
-            //Updating the panes and controllers for the loaded graph
-            updatePanesAndControllers();
-
-            //Knowing the user the file loaded successfully
-            FileLoadedSuccessfully();
-        }
-        catch(Exception ex)
-        {
-            ShowPopUp(Alert.AlertType.ERROR, "Error", null, ex.getMessage());
-        }
-    }
-
-    @FXML void saveProgressPressed(ActionEvent event) { }
 
     //--------------------------------------------------Themes-----------------------------------------------------//
     @FXML void defaultThemePressed(ActionEvent event) {
@@ -199,6 +154,34 @@ public class PrimaryController {
         }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
+    private void UpdateDashboardControllerAndPane()
+    {
+        FXMLLoader loader = new FXMLLoader();
+        URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
+        loader.setLocation(url);
+        try {
+            this.DashboardPane = loader.load(url.openStream());
+            this.workerDashboardController = loader.getController();
+            this.workerDashboardController.initialize(this, this.userName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void UpdateTaskControlControllerAndPane(String taskName)
+    {
+        FXMLLoader loader = new FXMLLoader();
+        URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
+        loader.setLocation(url);
+        try {
+            this.taskControlPane = loader.load(url.openStream());
+            this.workerTasksController = loader.getController();
+            this.workerTasksController.initialize(taskName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void EnableSidebarButtons() {
         this.graphDetailsButton.setDisable(false);
         this.connectionsButton.setDisable(false);
@@ -206,10 +189,6 @@ public class PrimaryController {
     }
 
     @FXML void DashboardButtonPressed(ActionEvent event) {
-
-        if(this.DashboardPane == null)
-            UpdateDashboardControllerAndPane();
-
         this.mainBorderPane.setCenter(this.DashboardPane);
     }
 
@@ -220,7 +199,7 @@ public class PrimaryController {
 
         this.TaskControlButton.setDisable(false);
         TaskControlButtonPressed(new ActionEvent());
-        this.taskControlController.setTaskStaticInformation(taskName, graphName);
+        this.workerTasksController.setTaskStaticInformation(taskName, graphName);
     }
 
     @FXML void TaskControlButtonPressed(ActionEvent event) {
@@ -232,73 +211,13 @@ public class PrimaryController {
         this.primaryStage = stage;
     }
 
-    private Boolean OverrideGraph()
-    {
-        if(this.graph == null)
-            return true;
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Override existed graph");
-        alert.setHeaderText(null);
-        alert.setContentText("Are you sure you want to override the graph " + this.graph.getGraphName() + "?");
-        ButtonType yesButton = new ButtonType("Yes");
-        ButtonType noButton = new ButtonType("No");
-        alert.getButtonTypes().setAll(yesButton, noButton );
-        Optional<ButtonType> result = alert.showAndWait();
-
-        return result.get() == yesButton;
-    }
-
-    private void FileLoadedSuccessfully()
-    {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("File loaded Successfully");
-        alert.setHeaderText(null);
-        alert.setContentText("The graph " + this.graph.getGraphName() + " loaded successfully!");
-        alert.showAndWait();
-    }
-
-    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
+    public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
     {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    private void updatePanesAndControllers() {
-        EnableSidebarButtons();
-        UpdatePanesStyles();
-    }
-
-
-    private void UpdateTaskControlControllerAndPane(String taskName)
-    {
-        FXMLLoader loader = new FXMLLoader();
-        URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
-        loader.setLocation(url);
-        try {
-            this.taskControlPane = loader.load(url.openStream());
-            this.taskControlController = loader.getController();
-            this.taskControlController.initialize(taskName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void UpdateDashboardControllerAndPane()
-    {
-        FXMLLoader loader = new FXMLLoader();
-        URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
-        loader.setLocation(url);
-        try {
-            this.DashboardPane = loader.load(url.openStream());
-            this.dashboardController = loader.getController();
-            this.dashboardController.initialize(this, this.userName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void UpdatePanesStyles()

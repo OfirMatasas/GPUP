@@ -15,7 +15,7 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane fx:id="SplitPane" dividerPositions="0.3" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="929.0" styleClass="primaryBackground" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
+<SplitPane fx:id="SplitPane" dividerPositions="0.3" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="929.0" styleClass="primaryBackground" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.WorkerDashboardController">
    <items>
       <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="primaryBackground">
          <children>
@@ -27,7 +27,7 @@
                            <content>
                               <VBox spacing="5.0" styleClass="primaryBackground">
                                  <children>
-                                    <ListView fx:id="TasksListView" onMouseClicked="#TaskSelectedFromAllListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <ListView fx:id="TasksListView" onMouseClicked="#TaskSelectedFromTaskListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -51,7 +51,7 @@
                            <content>
                               <VBox spacing="5.0" styleClass="primaryBackground">
                                  <children>
-                                    <ListView fx:id="WorkersListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <ListView fx:id="onlineWorkersListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -150,7 +150,7 @@
                                        <columns>
                                           <TableColumn fx:id="Targets" minWidth="30.0" prefWidth="-1.0" text="Targets" />
                                           <TableColumn fx:id="Independents" minWidth="40.0" prefWidth="-1.0" text="Independent" />
-                                          <TableColumn fx:id="Leafs" minWidth="8.0" prefWidth="-1.0" text="Leaf" />
+                                          <TableColumn fx:id="Leaves" minWidth="8.0" prefWidth="-1.0" text="Leaf" />
                                           <TableColumn fx:id="Middles" minWidth="30.0" prefWidth="-1.0" text="Middle" />
                                           <TableColumn fx:id="Roots" minWidth="13.0" prefWidth="-1.0" text="Root" />
                                        </columns>

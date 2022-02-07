@@ -31,7 +31,7 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Set;
 
-public class TaskControlController {
+public class WorkerTasksController {
 
     private final String REQUIRED = "All required-for targets";
     private final String DEPENDED = "All depends-on targets";
@@ -95,7 +95,7 @@ public class TaskControlController {
             String finalUrl = HttpUrl
                     .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
                     .newBuilder()
-                    .addQueryParameter("task-update", TaskControlController.this.taskName)
+                    .addQueryParameter("task-update", WorkerTasksController.this.taskName)
                     .build()
                     .toString();
 
@@ -137,22 +137,22 @@ public class TaskControlController {
                 }
 
                 private void updateNumberOfWorkers(TaskCurrentInfoDTO updatedInfo) {
-                    TaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
+                    WorkerTasksController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
                 }
 
                 private void updateTaskLogHistory(TaskCurrentInfoDTO updatedInfo) {
                     if(updatedInfo.getLogHistory() != null)
                     {
-                        TaskControlController.this.logTextArea.clear();
-                        TaskControlController.this.logTextArea.appendText(updatedInfo.getLogHistory());
+                        WorkerTasksController.this.logTextArea.clear();
+                        WorkerTasksController.this.logTextArea.appendText(updatedInfo.getLogHistory());
                     }
                 }
 
                 private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
-                    TaskControlController.this.taskTargetStatusesList.clear();
-                    TaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
+                    WorkerTasksController.this.taskTargetStatusesList.clear();
+                    WorkerTasksController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
 
-                    TaskControlController.this.taskTargetDetailsTableView.setItems(TaskControlController.this.taskTargetStatusesList);
+                    WorkerTasksController.this.taskTargetDetailsTableView.setItems(WorkerTasksController.this.taskTargetStatusesList);
                 }
             });
         }
@@ -368,11 +368,11 @@ public class TaskControlController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                int maxSize = TaskControlController.this.taskTargetDetailsTableView.getItems().size();
-                while (TaskControlController.this.taskThread.isAlive()) {
+                int maxSize = WorkerTasksController.this.taskTargetDetailsTableView.getItems().size();
+                while (WorkerTasksController.this.taskThread.isAlive()) {
                     Thread.sleep(200);
                     getFinishedTargetsInRealTime();
-                    updateProgress(TaskControlController.this.finishedTargets, maxSize);
+                    updateProgress(WorkerTasksController.this.finishedTargets, maxSize);
                 }
                 updateProgress(maxSize, maxSize);
                 return null;
@@ -458,7 +458,7 @@ public class TaskControlController {
             updateTable(itemsList, startTime, currTime);
         }
         updateTable(itemsList, startTime, currTime);
-        TaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
+        WorkerTasksController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime)
