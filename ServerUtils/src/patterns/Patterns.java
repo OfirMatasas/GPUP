@@ -1,4 +1,4 @@
-package paths;
+package patterns;
 
 public class Patterns
 {

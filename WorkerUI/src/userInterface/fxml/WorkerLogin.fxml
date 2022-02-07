@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -15,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="550.0" vgap="3.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LoginController">
+<GridPane hgap="3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="550.0" stylesheets="@../../../../AdminUI/src/userInterface/stylesheets/Login.css" vgap="3.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.WorkerLoginController">
   <columnConstraints>
     <ColumnConstraints halignment="RIGHT" hgrow="NEVER" />
     <ColumnConstraints hgrow="ALWAYS" />
@@ -31,7 +30,7 @@
                <children>
                   <ImageView fitHeight="270.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../Documents/GitHub/GPUP-JavaFX/JavaFXUI/src/resourcers/GPUP%20logo.png" />
+                        <Image url="@../../../../AdminUI/src/resourcers/GPUP-logo.png" />
                      </image>
                   </ImageView>
                </children>
@@ -50,9 +49,14 @@
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
                         <Label maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="User Name: " />
-                        <TextField fx:id="userNameTextField" onKeyTyped="#userNameKeyTyped" />
+                        <TextField fx:id="userNameTextField" />
                      </children>
                   </HBox>
+                  <Label fx:id="errorMessageLabel" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="17.0" prefWidth="264.0" textFill="RED" underline="true">
+                     <VBox.margin>
+                        <Insets left="20.0" />
+                     </VBox.margin>
+                  </Label>
                   <HBox alignment="CENTER" prefHeight="70.0" prefWidth="200.0">
                      <children>
                         <Label maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Threads:      " />
@@ -76,8 +80,4 @@
    <padding>
       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
    </padding>
-   <stylesheets>
-      <URL value="@../Stylesheets/Login.css" />
-      <URL value="@../../Documents/GitHub/GPUP-JavaFX/JavaFXUI/src/userInterface/Stylesheets/Login.css" />
-   </stylesheets>
 </GridPane>

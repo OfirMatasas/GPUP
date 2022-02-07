@@ -19,13 +19,13 @@ import okhttp3.HttpUrl;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
-import paths.Patterns;
+import patterns.Patterns;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
-public class LoginController {
+public class WorkerLoginController {
     public Button loginButton;
     private Stage primaryStage;
     private PrimaryController primaryController;
@@ -62,7 +62,7 @@ public class LoginController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if(response.code() >= 200 && response.code() < 300) //Success
-                    Platform.runLater(() -> loggedInAsAdmin(response));
+                    Platform.runLater(() -> loggedInAsWorker(response));
                 else //Failure
                 {
                     String responseBody = Objects.requireNonNull(response.body()).string();
@@ -72,21 +72,21 @@ public class LoginController {
         });
     }
 
-    private void loggedInAsAdmin(Response response) {
+    private void loggedInAsWorker(Response response) {
         try{
-            LoginController.this.username = response.header("username");
+            WorkerLoginController.this.username = response.header("username");
 
             URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(url);
             ScrollPane mainMenuComponent = fxmlLoader.load(Objects.requireNonNull(url).openStream());
-            LoginController.this.primaryController = fxmlLoader.getController();
+            WorkerLoginController.this.primaryController = fxmlLoader.getController();
 
             Scene scene = new Scene(mainMenuComponent,1280, 800);
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
-            LoginController.this.primaryStage.setTitle("G.P.U.P");
-            LoginController.this.primaryController.initialize(LoginController.this.primaryStage, response.header("username"));
-            LoginController.this.primaryStage.setScene(scene);
+            WorkerLoginController.this.primaryStage.setTitle("G.P.U.P");
+            WorkerLoginController.this.primaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
+            WorkerLoginController.this.primaryStage.setScene(scene);
         }
         catch (Exception e) { System.out.println("Error uploading app: " + e.getMessage()); }
     }

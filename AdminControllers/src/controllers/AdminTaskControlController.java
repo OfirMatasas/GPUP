@@ -19,7 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import paths.Patterns;
+import patterns.Patterns;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
@@ -31,7 +31,7 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Set;
 
-public class TaskControlController {
+public class AdminTaskControlController {
 
     private final String REQUIRED = "All required-for targets";
     private final String DEPENDED = "All depends-on targets";
@@ -95,7 +95,7 @@ public class TaskControlController {
             String finalUrl = HttpUrl
                     .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
                     .newBuilder()
-                    .addQueryParameter("task-update", TaskControlController.this.taskName)
+                    .addQueryParameter("task-update", AdminTaskControlController.this.taskName)
                     .build()
                     .toString();
 
@@ -137,22 +137,22 @@ public class TaskControlController {
                 }
 
                 private void updateNumberOfWorkers(TaskCurrentInfoDTO updatedInfo) {
-                    TaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
+                    AdminTaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
                 }
 
                 private void updateTaskLogHistory(TaskCurrentInfoDTO updatedInfo) {
                     if(updatedInfo.getLogHistory() != null)
                     {
-                        TaskControlController.this.logTextArea.clear();
-                        TaskControlController.this.logTextArea.appendText(updatedInfo.getLogHistory());
+                        AdminTaskControlController.this.logTextArea.clear();
+                        AdminTaskControlController.this.logTextArea.appendText(updatedInfo.getLogHistory());
                     }
                 }
 
                 private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
-                    TaskControlController.this.taskTargetStatusesList.clear();
-                    TaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
+                    AdminTaskControlController.this.taskTargetStatusesList.clear();
+                    AdminTaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
 
-                    TaskControlController.this.taskTargetDetailsTableView.setItems(TaskControlController.this.taskTargetStatusesList);
+                    AdminTaskControlController.this.taskTargetDetailsTableView.setItems(AdminTaskControlController.this.taskTargetStatusesList);
                 }
             });
         }
@@ -368,11 +368,11 @@ public class TaskControlController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                int maxSize = TaskControlController.this.taskTargetDetailsTableView.getItems().size();
-                while (TaskControlController.this.taskThread.isAlive()) {
+                int maxSize = AdminTaskControlController.this.taskTargetDetailsTableView.getItems().size();
+                while (AdminTaskControlController.this.taskThread.isAlive()) {
                     Thread.sleep(200);
                     getFinishedTargetsInRealTime();
-                    updateProgress(TaskControlController.this.finishedTargets, maxSize);
+                    updateProgress(AdminTaskControlController.this.finishedTargets, maxSize);
                 }
                 updateProgress(maxSize, maxSize);
                 return null;
@@ -458,7 +458,7 @@ public class TaskControlController {
             updateTable(itemsList, startTime, currTime);
         }
         updateTable(itemsList, startTime, currTime);
-        TaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
+        AdminTaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime)

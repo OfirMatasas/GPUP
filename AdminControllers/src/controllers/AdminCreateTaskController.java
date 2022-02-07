@@ -21,7 +21,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import paths.Patterns;
+import patterns.Patterns;
 import target.Graph;
 import target.Target;
 import task.CompilationTaskInformation;
@@ -36,7 +36,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-public class CreateTaskController implements Initializable{
+public class AdminCreateTaskController implements Initializable{
     public TextArea taskDetailsOnTargetTextArea;
     private Graph graph;
     private String userName;
@@ -451,23 +451,23 @@ public class CreateTaskController implements Initializable{
     private void addListenersForSelectedTargets() {
         //Enable/Disable incremental, selectAll, deselectAll button
         this.currentSelectedTargets.addListener((ListChangeListener<String>) c -> {
-            boolean containAll = CreateTaskController.this.currentSelectedTargets.containsAll(CreateTaskController.this.allTargetsList);
-            CreateTaskController.this.selectAllButton.setDisable(containAll);
-            CreateTaskController.this.deselectAllButton.setDisable(!containAll);
+            boolean containAll = AdminCreateTaskController.this.currentSelectedTargets.containsAll(AdminCreateTaskController.this.allTargetsList);
+            AdminCreateTaskController.this.selectAllButton.setDisable(containAll);
+            AdminCreateTaskController.this.deselectAllButton.setDisable(!containAll);
 
             while (c.next()) {
                 for (String remitem : c.getRemoved()) {
-                    CreateTaskController.this.currentSelectedTargetListView.getItems().remove(remitem);
-                    CreateTaskController.this.addSelectedButton.setDisable(true);
+                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().remove(remitem);
+                    AdminCreateTaskController.this.addSelectedButton.setDisable(true);
                 }
                 for (String additem : c.getAddedSubList()) {
-                    CreateTaskController.this.currentSelectedTargetListView.getItems().add(additem);
-                    CreateTaskController.this.addSelectedButton.setDisable(false);
+                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().add(additem);
+                    AdminCreateTaskController.this.addSelectedButton.setDisable(false);
                 }
             }
 
-            if(CreateTaskController.this.currentSelectedTargets.isEmpty())
-                CreateTaskController.this.addSelectedButton.setDisable(true);
+            if(AdminCreateTaskController.this.currentSelectedTargets.isEmpty())
+                AdminCreateTaskController.this.addSelectedButton.setDisable(true);
         });
     }
 
@@ -549,7 +549,7 @@ public class CreateTaskController implements Initializable{
         this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<CreateTaskTargetInformation>() {
             @Override
             public void onChanged(Change<? extends CreateTaskTargetInformation> c) {
-                CreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
+                AdminCreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
                 // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
             }
         });
@@ -560,7 +560,7 @@ public class CreateTaskController implements Initializable{
         this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                setVisibilityOfTask(CreateTaskController.this.taskSelection.getValue().equals(CreateTaskController.this.COMPILATION));
+                setVisibilityOfTask(AdminCreateTaskController.this.taskSelection.getValue().equals(AdminCreateTaskController.this.COMPILATION));
             }
         });
     }

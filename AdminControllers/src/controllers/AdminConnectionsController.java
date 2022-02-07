@@ -17,7 +17,7 @@ import target.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ConnectionsController {
+public class AdminConnectionsController {
     //--------------------------------------------------Members-----------------------------------------------------//
     public ToggleGroup whatIfValue;
     private Graph graph = null;

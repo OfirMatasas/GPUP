@@ -22,7 +22,7 @@ import target.Target;
 import javax.imageio.ImageIO;
 import java.io.*;
 
-public class GraphDetailsController {
+public class AdminGraphDetailsController {
     private Graph graph = null;
     private final ObservableList<TargetDetails> targetDetailsList = FXCollections.observableArrayList();
     private final ObservableList<GraphPositionsInformation> graphPositionsList = FXCollections.observableArrayList();

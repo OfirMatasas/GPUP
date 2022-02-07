@@ -19,7 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import paths.Patterns;
+import patterns.Patterns;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
 import users.UsersLists;

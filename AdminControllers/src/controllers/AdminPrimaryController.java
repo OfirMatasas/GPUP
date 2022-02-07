@@ -23,7 +23,7 @@ import javafx.util.Duration;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
-import paths.Patterns;
+import patterns.Patterns;
 import resources.checker.ResourceChecker;
 import summaries.GraphSummary;
 import target.Graph;
@@ -36,15 +36,15 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.Optional;
 
-public class PrimaryController {
+public class AdminPrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
     private static Graph graph = null;
-    private DashboardController dashboardController;
-    private GraphDetailsController graphDetailsController;
-    private TaskControlController taskControlController;
-    private CreateTaskController createTaskController;
-    private ConnectionsController connectionsController;
+    private AdminDashboardController dashboardController;
+    private AdminGraphDetailsController adminGraphDetailsController;
+    private AdminTaskControlController adminTaskControlController;
+    private AdminCreateTaskController adminCreateTaskController;
+    private AdminConnectionsController adminConnectionsController;
     private SplitPane DashboardPane = null;
     private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
@@ -210,8 +210,8 @@ public class PrimaryController {
     }
 
     private void setGraphOnControllers() throws FileNotFoundException {
-        this.graphDetailsController.setGraph(this.graph, this.graphSummary);
-        this.connectionsController.setGraph(this.graph);
+        this.adminGraphDetailsController.setGraph(this.graph, this.graphSummary);
+        this.adminConnectionsController.setGraph(this.graph);
     }
 
     private void RefreshCurrentCenterPane() {
@@ -297,7 +297,7 @@ public class PrimaryController {
 
         this.TaskControlButton.setDisable(false);
         TaskControlButtonPressed(new ActionEvent());
-        this.taskControlController.setTaskStaticInformation(taskName, graphName);
+        this.adminTaskControlController.setTaskStaticInformation(taskName, graphName);
     }
 
     @FXML void connectionsButtonPressed(ActionEvent event) {
@@ -372,7 +372,7 @@ public class PrimaryController {
         loader.setLocation(url);
         try {
             this.connectionsPane = loader.load(url.openStream());
-            this.connectionsController = loader.getController();
+            this.adminConnectionsController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -385,7 +385,7 @@ public class PrimaryController {
         loader.setLocation(url);
         try {
             this.graphDetailsPane = loader.load(url.openStream());
-            this.graphDetailsController = loader.getController();
+            this.adminGraphDetailsController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -398,8 +398,8 @@ public class PrimaryController {
         loader.setLocation(url);
         try {
             this.taskControlPane = loader.load(url.openStream());
-            this.taskControlController = loader.getController();
-            this.taskControlController.initialize(taskName);
+            this.adminTaskControlController = loader.getController();
+            this.adminTaskControlController.initialize(taskName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -412,9 +412,9 @@ public class PrimaryController {
         loader.setLocation(url);
         try {
             this.createTaskPane = loader.load(url.openStream());
-            this.createTaskController = loader.getController();
-            this.createTaskController.setUserName(this.userName);
-            this.createTaskController.setGraph(this.graph);
+            this.adminCreateTaskController = loader.getController();
+            this.adminCreateTaskController.setUserName(this.userName);
+            this.adminCreateTaskController.setGraph(this.graph);
         } catch (IOException e) {
             e.printStackTrace();
         }
