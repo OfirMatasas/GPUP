@@ -210,7 +210,7 @@ public class PrimaryController {
     }
 
     private void setGraphOnControllers() throws FileNotFoundException {
-        this.graphDetailsController.setGraph(this.graph,this.graphSummary);
+        this.graphDetailsController.setGraph(this.graph, this.graphSummary);
         this.connectionsController.setGraph(this.graph);
     }
 
@@ -263,10 +263,14 @@ public class PrimaryController {
         this.graphDetailsPane.getStylesheets().add(themePath);
         this.connectionsPane.getStylesheets().clear();
         this.connectionsPane.getStylesheets().add(themePath);
-        this.taskControlPane.getStylesheets().clear();
-        this.taskControlPane.getStylesheets().add(themePath);
         this.createTaskPane.getStylesheets().clear();
         this.createTaskPane.getStylesheets().add(themePath);
+
+        if(this.taskControlPane != null)
+        {
+            this.taskControlPane.getStylesheets().clear();
+            this.taskControlPane.getStylesheets().add(themePath);
+        }
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     private void EnableSidebarButtons() {
@@ -285,8 +289,8 @@ public class PrimaryController {
 
     public void TaskPulledFromServer(String taskName, String graphName)
     {
-        if(this.taskControlPane == null)
-            UpdateTaskControlControllerAndPane();
+        UpdateTaskControlControllerAndPane(taskName);
+        UpdatePanesStyles();
 
         this.TaskControlButton.setDisable(false);
         TaskControlButtonPressed(new ActionEvent());
@@ -354,7 +358,6 @@ public class PrimaryController {
         UpdateGraphDetailsControllerAndPane();
         UpdateConnectionsControllerAndPane();
         UpdateCreateTaskControllerAndPane();
-        UpdateTaskControlControllerAndPane();
         EnableSidebarButtons();
         UpdatePanesStyles();
     }
@@ -385,7 +388,7 @@ public class PrimaryController {
         }
     }
 
-    private void UpdateTaskControlControllerAndPane()
+    private void UpdateTaskControlControllerAndPane(String taskName)
     {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
@@ -393,6 +396,7 @@ public class PrimaryController {
         try {
             this.taskControlPane = loader.load(url.openStream());
             this.taskControlController = loader.getController();
+            this.taskControlController.initialize(taskName);
         } catch (IOException e) {
             e.printStackTrace();
         }

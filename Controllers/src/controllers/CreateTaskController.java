@@ -94,25 +94,21 @@ public class CreateTaskController implements Initializable{
     @FXML private Button CreateNewTaskButton;
     @FXML private TextField TaskNameTextField;
 
-    @FXML
-    void ApplyParametersToTask(ActionEvent event) {
+    @FXML void ApplyParametersToTask(ActionEvent event) {
         this.taskParameters = getSimulationTaskParametersFromUser();
 
         if(this.taskParameters.getProcessingTime() != null) // Checking only on the processing time, because other parameters are already initialized
             this.CreateNewTaskButton.setDisable(false);
     }
 
-    @FXML
-    void ClearTable(ActionEvent event) {
+    @FXML void ClearTable(ActionEvent event) {
         this.taskTargetDetailsTableView.getItems().clear();
-        enableTargetInfoTextArea(false);
         this.CreateNewTaskButton.setDisable(true);
         this.clearTableButton.setDisable(true);
         this.removeSelectedButton.setDisable(true);
     }
 
-    @FXML
-    void CreateNewTaskButtonPressed(ActionEvent event) {
+    @FXML void CreateNewTaskButtonPressed(ActionEvent event) {
         String taskName = this.TaskNameTextField.getText();
         String uploader = this.userName;
         String graphName = this.graph.getGraphName();
@@ -157,14 +153,12 @@ public class CreateTaskController implements Initializable{
                 .build();
 
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 System.out.println("got task response - failed");
                 Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in uploading task!", null, e.getMessage()));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 System.out.println("got task response - success");
                 if(response.code() >= 200 && response.code() < 300)
                     Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "Task uploaded successfully!", null, response.header("message")));
@@ -245,8 +239,7 @@ public class CreateTaskController implements Initializable{
         return true;
     }
 
-    @FXML
-    void affectedTargetsPressed(ActionEvent event) {
+    @FXML void affectedTargetsPressed(ActionEvent event) {
         Set<String> affectedTargetsSet = null;
 
         switch (this.affectedTargets.getValue())
@@ -273,8 +266,7 @@ public class CreateTaskController implements Initializable{
         }
     }
 
-    @FXML
-    void chooseOutputDirectory(ActionEvent event) {
+    @FXML void chooseOutputDirectory(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         this.outputDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
         if(this.outputDirectory != null)

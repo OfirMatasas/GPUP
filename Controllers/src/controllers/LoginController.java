@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.scene.input.KeyCode;
 import paths.BodyComponentsPaths;
 import http.HttpClientUtil;
 import javafx.application.Platform;
@@ -115,5 +116,10 @@ public class LoginController {
 
     public String getCurrentUser() {
         return this.username;
+    }
+
+    public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
+        if(keyEvent.getCode()== KeyCode.ENTER)
+            loginButtonClicked(new ActionEvent());
     }
 }

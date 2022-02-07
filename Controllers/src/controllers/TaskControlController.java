@@ -69,12 +69,6 @@ public class TaskControlController {
     private Graph graph;
     private TaskControlPullerThread taskControlPullerThread;
 
-    public void pausePressed(ActionEvent actionEvent) {
-    }
-
-    public void stopPressed(ActionEvent actionEvent) {
-    }
-
     //----------------------------------------------Puller Thread--------------------------------------------//
     public class TaskControlPullerThread extends Thread
     {
@@ -115,7 +109,6 @@ public class TaskControlController {
                 public void onResponse(@NotNull Call call, @NotNull Response response) {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
-                        Platform.runLater(() -> System.out.println("Success in getting task update!"));
                         Platform.runLater(() ->
                                 {
                                     Gson gson = new Gson();
@@ -124,7 +117,7 @@ public class TaskControlController {
                                         if (responseBody != null) {
                                             {
                                                 TaskCurrentInfoDTO updatedInfo = gson.fromJson(responseBody.string(), TaskCurrentInfoDTO.class);
-                                                refreshTargetsStatuses(updatedInfo);
+                                                refreshInfo(updatedInfo);
                                                 responseBody.close();
                                             }
                                         }
@@ -137,8 +130,22 @@ public class TaskControlController {
                         Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
                 }
 
-                private void refreshTargetsStatuses(TaskCurrentInfoDTO updatedInfo) {
+                private void refreshInfo(TaskCurrentInfoDTO updatedInfo) {
                     updateTargetStatusesTable(updatedInfo);
+                    updateNumberOfWorkers(updatedInfo);
+                    updateTaskLogHistory(updatedInfo);
+                }
+
+                private void updateNumberOfWorkers(TaskCurrentInfoDTO updatedInfo) {
+                    TaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
+                }
+
+                private void updateTaskLogHistory(TaskCurrentInfoDTO updatedInfo) {
+                    if(updatedInfo.getLogHistory() != null)
+                    {
+                        TaskControlController.this.logTextArea.clear();
+                        TaskControlController.this.logTextArea.appendText(updatedInfo.getLogHistory());
+                    }
                 }
 
                 private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
@@ -152,17 +159,18 @@ public class TaskControlController {
     }
 
     //-------------------------------------------------Initialize-----------------------------------------------//
-    @FXML public void initialize()
+    public void initialize(String taskName)
     {
+        this.taskName = taskName;
         this.taskControlPullerThread = new TaskControlPullerThread();
         this.taskControlPullerThread.start();
         initializeTaskDetailsTableView();
     }
 
     private void initializeTaskDetailsTableView() {
-        this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, Integer>("number"));
+        this.numberColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, Integer>("targetNumber"));
         this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("targetName"));
-        this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("currentRuntimeStatus"));
+        this.currentRuntimeStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("runtimeStatus"));
         this.resultStatusColumn.setCellValueFactory(new PropertyValueFactory<TaskTargetCurrentInfoTableItem, String>("resultStatus"));
 
         this.taskTargetDetailsTableView.setRowFactory(tv -> new TableRow<TaskTargetCurrentInfoTableItem>()
@@ -381,6 +389,12 @@ public class TaskControlController {
     }
 
     //-------------------------------------------------During Task------------------------------------------------//
+    public void pausePressed(ActionEvent actionEvent) {
+    }
+
+    public void stopPressed(ActionEvent actionEvent) {
+    }
+
     @FXML
     void runPressed(ActionEvent event) {
 //        if(!checkForValidRun())

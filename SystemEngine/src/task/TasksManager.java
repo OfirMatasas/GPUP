@@ -6,76 +6,77 @@ import information.TaskTargetCurrentInfoTableItem;
 import summaries.TargetSummary;
 import target.Graph;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class TasksManager {
 
-    private static final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>();
-    private static final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>();
-    private static final Map<String, Set<String>> usersTasks = new HashMap<>();
-    private static final Set<String> listOfAllTasks = new HashSet<>();
-    private static final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
-    private static final Map<String, TaskCurrentInfoDTO> taskInfoMap = new HashMap<>();
+    private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>();
+    private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>();
+    private final Map<String, Set<String>> usersTasks = new HashMap<>();
+    private final Set<String> listOfAllTasks = new HashSet<>();
+    private final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
+    private final Map<String, TaskCurrentInfoDTO> taskInfoMap = new HashMap<>();
+    private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
     public synchronized boolean isTaskExists(String taskName) {
-        return simulationTasksMap.containsKey(taskName.toLowerCase()) || compilationTasksMap.containsKey(taskName.toLowerCase());
+        return this.simulationTasksMap.containsKey(taskName.toLowerCase()) || this.compilationTasksMap.containsKey(taskName.toLowerCase());
     }
 
-    public synchronized boolean isSimulationTask(String taskName) { return simulationTasksMap.containsKey(taskName.toLowerCase()); }
+    public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
 
     public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {
-        return compilationTasksMap.get(taskName.toLowerCase());
+        return this.compilationTasksMap.get(taskName.toLowerCase());
     }
 
     public synchronized SimulationTaskInformation getSimulationTaskInformation(String taskName) {
-        return simulationTasksMap.get(taskName.toLowerCase());
+        return this.simulationTasksMap.get(taskName.toLowerCase());
     }
 
     public synchronized void addSimulationTask(SimulationTaskInformation newTask) {
-        simulationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
-        listOfAllTasks.add(newTask.getTaskName());
+        this.simulationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
+        this.listOfAllTasks.add(newTask.getTaskName());
 
         addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
+        createNewTaskInfo(newTask.getTaskName(), newTask.getTaskCreator(), newTask.getTargetsToExecute());
     }
 
     public synchronized void addCompilationTask(CompilationTaskInformation newTask) {
-        compilationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
-        listOfAllTasks.add(newTask.getTaskName());
+        this.compilationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
+        this.listOfAllTasks.add(newTask.getTaskName());
 
         addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
+        createNewTaskInfo(newTask.getTaskName(), newTask.getTaskCreator(), newTask.getTargetsToExecute());
     }
 
     public synchronized void addUserTask(String taskCreator, String taskName) {
-        if(!usersTasks.containsKey(taskCreator))
-            usersTasks.put(taskCreator, new HashSet<>());
+        if(!this.usersTasks.containsKey(taskCreator))
+            this.usersTasks.put(taskCreator, new HashSet<>());
 
-        usersTasks.get(taskCreator).add(taskName);
+        this.usersTasks.get(taskCreator).add(taskName);
     }
 
     public synchronized Set<String> getAllTaskList()
     {
-        return listOfAllTasks;
+        return this.listOfAllTasks;
     }
 
     public synchronized Set<String> getUserTaskList(String userName)
     {
-        return usersTasks.get(userName.toLowerCase());
+        return this.usersTasks.get(userName.toLowerCase());
     }
 
     public synchronized void addTaskDetailsDTO(String taskName, String creatorName, Graph graph)
     {
-        taskDetailsDTOMap.put(taskName.toLowerCase(), new DashboardTaskDetailsDTO(taskName, creatorName, graph));
+        this.taskDetailsDTOMap.put(taskName.toLowerCase(), new DashboardTaskDetailsDTO(taskName, creatorName, graph));
     }
 
     public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName)
     {
-        return taskDetailsDTOMap.get(taskName.toLowerCase());
+        return this.taskDetailsDTOMap.get(taskName.toLowerCase());
     }
 
-    public synchronized void createNewTaskInfo(String taskName, Set<String> targets)
+    public synchronized void createNewTaskInfo(String taskName, String taskCreator, Set<String> targets)
     {
         Set<TaskTargetCurrentInfoTableItem> infoSet = new HashSet<>();
         int i = 1;
@@ -87,18 +88,20 @@ public class TasksManager {
                     TargetSummary.ResultStatus.Undefined.toString()));
         }
 
-        TaskCurrentInfoDTO newInfo = new TaskCurrentInfoDTO("Not Started", infoSet, 0, null);
-        taskInfoMap.put(taskName.toLowerCase(), newInfo);
+        TaskCurrentInfoDTO newInfo = new TaskCurrentInfoDTO("Not Started", infoSet, 0,
+                "Task created by " + taskCreator + " on " + this.formatter.format(new Date()));
+
+        this.taskInfoMap.put(taskName.toLowerCase(), newInfo);
     }
 
     public synchronized TaskCurrentInfoDTO getTaskCurrentInfo(String taskName)
     {
-        return taskInfoMap.get(taskName.toLowerCase());
+        return this.taskInfoMap.get(taskName.toLowerCase());
     }
 
     public synchronized void updateTargetInfoOnTask(String taskName, String targetName, TaskTargetCurrentInfoTableItem targetUpdate)
     {
-        TaskCurrentInfoDTO currTargetInfo = taskInfoMap.get(taskName.toLowerCase());
+        TaskCurrentInfoDTO currTargetInfo = this.taskInfoMap.get(taskName.toLowerCase());
 
         for(TaskTargetCurrentInfoTableItem curr : currTargetInfo.getTargetStatusSet())
         {

@@ -142,7 +142,7 @@
                            <children>
                               <ScrollPane layoutX="-1.0" layoutY="14.0">
                                  <content>
-                                    <TextArea fx:id="logTextArea" disable="true" editable="false" prefHeight="570.0" prefWidth="436.0" />
+                                    <TextArea fx:id="logTextArea" editable="false" prefHeight="570.0" prefWidth="436.0" />
                                  </content>
                               </ScrollPane>
                            </children>
