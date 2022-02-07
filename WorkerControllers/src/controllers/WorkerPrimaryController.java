@@ -1,9 +1,5 @@
 package controllers;
 
-import http.HttpClientUtil;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,13 +10,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
 import target.Graph;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
@@ -28,7 +20,7 @@ import java.util.Objects;
 public class WorkerPrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
-    private static Graph graph = null;
+    private static final Graph graph = null;
     private WorkerDashboardController workerDashboardController = null;
     private WorkerTasksController workerTasksController = null;
     private SplitPane DashboardPane = null;
@@ -56,55 +48,25 @@ public class WorkerPrimaryController {
     @FXML private Menu Help;
     @FXML private MenuItem about;
     @FXML private AnchorPane StatusBar;
-    private SimpleStringProperty selectedFileProperty;
-    private SimpleBooleanProperty isFileSelected;
-    private FileWriter dotFile;
 
     //--------------------------------------------------Settings-----------------------------------------------------//
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
     public void initialize(Stage primaryStage, String userName)
     {
         setUserName(userName);
         setPrimaryStage(primaryStage);
+
         UpdateDashboardControllerAndPane();
+        UpdateTasksControllerAndPane();
 
-        this.DashboardPane.getStylesheets().clear();
-        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
+        defaultThemePressed(new ActionEvent());
     }
-    //--------------------------------------------------Toolbar-----------------------------------------------------//
 
+    private void setUserName(String userName) {
+        this.userName = userName;
+    }
 
-    public void uploadTaskUpdateToServer(String url, File file) {
-
-        RequestBody body = new MultipartBody.Builder()
-                .addFormDataPart("fileToUpload", file.getName(),
-                        RequestBody.create(file, MediaType.parse("xml")))
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body).addHeader("username", this.userName)
-                .build();
-
-        HttpClientUtil.runAsyncWithRequest(request, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                System.out.println("got graph response - failed");
-                Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in loading file!", null, e.getMessage()));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                System.out.println("got graph response - success");
-                if(response.code() >= 200 && response.code() < 300)
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "File loaded successfully!", null, response.header("message")));
-                else
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Error in loading file!", null, response.header("message")));
-            }
-        });
+    private void setPrimaryStage(Stage stage){
+        this.primaryStage = stage;
     }
 
     //--------------------------------------------------Themes-----------------------------------------------------//
@@ -112,9 +74,6 @@ public class WorkerPrimaryController {
         Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
-
-        this.DashboardPane.getStylesheets().clear();
-        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
 
         updateThemeOnAllPanes(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
@@ -124,9 +83,6 @@ public class WorkerPrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.DARK_MAIN_THEME)).toExternalForm());
 
-        this.DashboardPane.getStylesheets().clear();
-        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.DARK_CENTER_THEME);
-
         updateThemeOnAllPanes(BodyComponentsPaths.DARK_CENTER_THEME);
     }
 
@@ -135,23 +91,16 @@ public class WorkerPrimaryController {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.RAINBOW_MAIN_THEME)).toExternalForm());
 
-        this.DashboardPane.getStylesheets().clear();
-        this.DashboardPane.getStylesheets().add(BodyComponentsPaths.RAINBOW_CENTER_THEME);
-
         updateThemeOnAllPanes(BodyComponentsPaths.RAINBOW_CENTER_THEME);
     }
 
     private void updateThemeOnAllPanes(String themePath)
     {
-        updateThemeOnTaskControlPane(themePath);
-    }
+        this.taskControlPane.getStylesheets().clear();
+        this.taskControlPane.getStylesheets().add(themePath);
 
-    private void updateThemeOnTaskControlPane(String themePath) {
-        if(this.taskControlPane != null)
-        {
-            this.taskControlPane.getStylesheets().clear();
-            this.taskControlPane.getStylesheets().add(themePath);
-        }
+        this.DashboardPane.getStylesheets().clear();
+        this.DashboardPane.getStylesheets().add(themePath);
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
     private void UpdateDashboardControllerAndPane()
@@ -168,38 +117,21 @@ public class WorkerPrimaryController {
         }
     }
 
-    private void UpdateTaskControlControllerAndPane(String taskName)
+    private void UpdateTasksControllerAndPane()
     {
         FXMLLoader loader = new FXMLLoader();
-        URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
+        URL url = getClass().getResource(BodyComponentsPaths.TASKS);
         loader.setLocation(url);
         try {
             this.taskControlPane = loader.load(url.openStream());
             this.workerTasksController = loader.getController();
-            this.workerTasksController.initialize(taskName);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void EnableSidebarButtons() {
-        this.graphDetailsButton.setDisable(false);
-        this.connectionsButton.setDisable(false);
-        this.CreateTaskButton.setDisable(false);
-    }
-
     @FXML void DashboardButtonPressed(ActionEvent event) {
         this.mainBorderPane.setCenter(this.DashboardPane);
-    }
-
-    public void TaskPulledFromServer(String taskName, String graphName)
-    {
-        UpdateTaskControlControllerAndPane(taskName);
-        UpdatePanesStyles();
-
-        this.TaskControlButton.setDisable(false);
-        TaskControlButtonPressed(new ActionEvent());
-        this.workerTasksController.setTaskStaticInformation(taskName, graphName);
     }
 
     @FXML void TaskControlButtonPressed(ActionEvent event) {
@@ -207,10 +139,6 @@ public class WorkerPrimaryController {
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
-    public void setPrimaryStage(Stage stage){
-        this.primaryStage = stage;
-    }
-
     public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
     {
         Alert alert = new Alert(alertType);
@@ -218,15 +146,5 @@ public class WorkerPrimaryController {
         alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    private void UpdatePanesStyles()
-    {
-        if(this.defaultTheme.isSelected())
-            defaultThemePressed(new ActionEvent());
-        else if(this.darkModeTheme.isSelected())
-            darkModeThemePressed(new ActionEvent());
-        else
-            rainbowThemePressed(new ActionEvent());
     }
 }

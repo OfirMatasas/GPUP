@@ -5,7 +5,7 @@ public class BodyComponentsPaths
     //--------------------------------------------SCENES----------------------------------------------------
     public static String PRIMARY = "/userInterface/fxml/WorkerPrimaryScene.fxml";
     public static String DASHBOARD = "/userInterface/fxml/WorkerDashboard.fxml";
-    public static String TASK_CONTROL = "/userInterface/fxml/WorkerTasks.fxml";
+    public static String TASKS = "/userInterface/fxml/WorkerTasks.fxml";
     public static String LOGIN = "/userInterface/fxml/WorkerLogin.fxml";
 
     //--------------------------------------------THEMES----------------------------------------------------

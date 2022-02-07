@@ -78,10 +78,6 @@ public class WorkerDashboardController {
         this.UserNameTextField.setText(userName);
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public void initializeTaskTargetDetailsTable() {
         this.Targets.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("targets"));
         this.Roots.setCellValueFactory(new PropertyValueFactory<SelectedGraphTableItem, Integer>("roots"));

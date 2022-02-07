@@ -159,9 +159,8 @@ public class WorkerTasksController {
     }
 
     //-------------------------------------------------Initialize-----------------------------------------------//
-    public void initialize(String taskName)
+    public void initialize()
     {
-        this.taskName = taskName;
         this.taskControlPullerThread = new TaskControlPullerThread();
         this.taskControlPullerThread.start();
         initializeTaskDetailsTableView();
