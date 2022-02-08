@@ -73,6 +73,7 @@ public class WorkerDashboardController {
         initializeTaskTargetDetailsTable();
         initializeTaskDetailsTable();
         setupListeners();
+        createPullingThread();
 
         this.workerPrimaryController = workerPrimaryController;
         this.UserNameTextField.setText(userName);

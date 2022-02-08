@@ -49,7 +49,7 @@
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
                         <Label maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="User Name: " />
-                        <TextField fx:id="userNameTextField" />
+                        <TextField fx:id="userNameTextField" onKeyPressed="#userNameTextFieldKeyPressed"/>
                      </children>
                   </HBox>
                   <Label fx:id="errorMessageLabel" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="17.0" prefWidth="264.0" textFill="RED" underline="true">

@@ -461,13 +461,11 @@ public class AdminDashboardController {
 
             HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
 
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for users list!"));
                 }
 
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     Gson gson = new Gson();
                     ResponseBody responseBody = response.body();
                     UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
@@ -481,8 +479,7 @@ public class AdminDashboardController {
 
     private void setupListeners() {
         this.onlineGraphsList.addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(Change<? extends String> c) {
+            @Override public void onChanged(Change<? extends String> c) {
                 for(String curr : c.getList())
                 {
                     if(!AdminDashboardController.this.OnlineGraphsListView.getItems().contains(curr))
@@ -492,8 +489,7 @@ public class AdminDashboardController {
         });
 
         this.onlineTasksList.addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(Change<? extends String> c) {
+            @Override public void onChanged(Change<? extends String> c) {
                 for(String curr : c.getList())
                 {
                     if(!AdminDashboardController.this.AllTasksListView.getItems().contains(curr))
@@ -503,8 +499,7 @@ public class AdminDashboardController {
         });
 
         this.myTasksList.addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(Change<? extends String> c) {
+            @Override public void onChanged(Change<? extends String> c) {
                 for(String curr : c.getList())
                 {
                     if(!AdminDashboardController.this.myTasksListView.getItems().contains(curr))
