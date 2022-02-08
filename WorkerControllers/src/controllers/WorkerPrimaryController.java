@@ -11,7 +11,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import paths.BodyComponentsPaths;
-import target.Graph;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,11 +19,10 @@ import java.util.Objects;
 public class WorkerPrimaryController {
     //--------------------------------------------------Members-----------------------------------------------------//
     private Stage primaryStage;
-    private static final Graph graph = null;
     private WorkerDashboardController workerDashboardController = null;
     private WorkerTasksController workerTasksController = null;
     private SplitPane DashboardPane = null;
-    private ScrollPane taskControlPane = null;
+    private SplitPane TasksPane = null;
     private String userName;
 
     @FXML private ToggleGroup templates;
@@ -96,8 +94,8 @@ public class WorkerPrimaryController {
 
     private void updateThemeOnAllPanes(String themePath)
     {
-        this.taskControlPane.getStylesheets().clear();
-        this.taskControlPane.getStylesheets().add(themePath);
+        this.TasksPane.getStylesheets().clear();
+        this.TasksPane.getStylesheets().add(themePath);
 
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(themePath);
@@ -123,7 +121,7 @@ public class WorkerPrimaryController {
         URL url = getClass().getResource(BodyComponentsPaths.TASKS);
         loader.setLocation(url);
         try {
-            this.taskControlPane = loader.load(url.openStream());
+            this.TasksPane = loader.load(url.openStream());
             this.workerTasksController = loader.getController();
         } catch (IOException e) {
             e.printStackTrace();
@@ -134,8 +132,8 @@ public class WorkerPrimaryController {
         this.mainBorderPane.setCenter(this.DashboardPane);
     }
 
-    @FXML void TaskControlButtonPressed(ActionEvent event) {
-        this.mainBorderPane.setCenter(this.taskControlPane);
+    @FXML void TasksButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.TasksPane);
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//

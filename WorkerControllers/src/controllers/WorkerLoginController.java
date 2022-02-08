@@ -6,10 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
@@ -26,15 +23,23 @@ import java.net.URL;
 import java.util.Objects;
 
 public class WorkerLoginController {
-    public Button loginButton;
     private Stage primaryStage;
     private WorkerPrimaryController workerPrimaryController;
     private String username;
-    @FXML public TextField userNameTextField;
-    @FXML public Label errorMessageLabel;
+
+    @FXML private Button loginButton;
+    @FXML private Spinner ThreadSpinner;
+    @FXML private TextField userNameTextField;
+    @FXML private Label errorMessageLabel;
 
     @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        initializeThreadSpinner();
+    }
+
+    private void initializeThreadSpinner()
+    {
+        this.ThreadSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 1));
     }
 
     @FXML private void loginButtonClicked(ActionEvent event) {
@@ -85,8 +90,8 @@ public class WorkerLoginController {
             Scene scene = new Scene(mainMenuComponent,1280, 800);
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
             WorkerLoginController.this.primaryStage.setTitle("G.P.U.P");
-            WorkerLoginController.this.workerPrimaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
             WorkerLoginController.this.primaryStage.setScene(scene);
+            WorkerLoginController.this.workerPrimaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
         }
         catch (Exception e) { System.out.println("Error uploading app: " + e.getMessage()); }
     }

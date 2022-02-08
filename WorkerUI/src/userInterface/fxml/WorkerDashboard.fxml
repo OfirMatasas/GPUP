@@ -74,7 +74,7 @@
                <content>
                   <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" styleClass="primaryBackground">
                      <children>
-                        <Label alignment="CENTER" minWidth="60.0" prefWidth="-1.0" style="&#10;" styleClass="headLines" text="User information" textAlignment="CENTER" wrapText="false">
+                        <Label alignment="CENTER" minWidth="60.0" style="&#10;" styleClass="headLines" text="User information" textAlignment="CENTER">
                            <font>
                               <Font size="18.0" fx:id="x11" />
                            </font>
@@ -87,7 +87,7 @@
                               <VBox prefHeight="200.0" prefWidth="100.0">
                                  <children>
                                     <Label text="Name" />
-                                    <TextField fx:id="UsernameTextField" />
+                                    <TextField fx:id="UserNameTextField" />
                                  </children>
                               </VBox>
                               <VBox layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="100.0">
@@ -112,7 +112,7 @@
                <content>
                   <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="primaryBackground">
                      <children>
-                        <Label alignment="CENTER" minWidth="60.0" prefWidth="-1.0" style="&#10;" styleClass="headLines" text="Selected task information" textAlignment="CENTER" wrapText="false">
+                        <Label alignment="CENTER" minWidth="60.0" style="&#10;" styleClass="headLines" text="Selected task information" textAlignment="CENTER">
                            <font>
                               <Font size="18.0" fx:id="x1" />
                            </font>

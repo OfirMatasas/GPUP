@@ -1,6 +1,6 @@
 package userInterface;
 
-import controllers.AdminLoginController;
+import controllers.WorkerLoginController;
 import http.HttpClientUtil;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -24,7 +24,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Optional;
 
-public class Main extends Application
+public class WorkerMain extends Application
 {
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -36,8 +36,8 @@ public class Main extends Application
         primaryStage.getScene().getStylesheets().add(BodyComponentsPaths.LOGIN_THEME);
 
         //Set the Stage
-        AdminLoginController adminLoginController = loader.getController();
-        adminLoginController.initialize(primaryStage);
+        WorkerLoginController loginController = loader.getController();
+        loginController.initialize(primaryStage);
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -50,7 +50,7 @@ public class Main extends Application
                 Toolkit.getDefaultToolkit().beep();
                 Optional<ButtonType> result = alert.showAndWait();
                 if(result.get() == ButtonType.OK) {
-                    logout(adminLoginController.getCurrentUser());
+                    logout(loginController.getCurrentUser());
                     Platform.exit();
                 }
                 event.consume();
@@ -87,6 +87,6 @@ public class Main extends Application
 
     public static void main(String[] args)
     {
-        launch(Main.class);
+        launch(WorkerMain.class);
     }
 }

@@ -110,6 +110,15 @@ public class WorkerTasksController {
         });
     }
 
+    public void TaskSelectedFromAllListView(MouseEvent mouseEvent) {
+    }
+
+    public void PauseButtonPressed(ActionEvent actionEvent) {
+    }
+
+    public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
+    }
+
     //----------------------------------------------- Puller Thread --------------------------------------------//
     public class TasksPullerThread extends Thread
     {

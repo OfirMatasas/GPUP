@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="550.0" stylesheets="@../../../../AdminUI/src/userInterface/stylesheets/Login.css" vgap="3.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.WorkerLoginController">
+<GridPane hgap="3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="550.0" stylesheets="@../stylesheets/Login.css" vgap="3.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.WorkerLoginController">
   <columnConstraints>
     <ColumnConstraints halignment="RIGHT" hgrow="NEVER" />
     <ColumnConstraints hgrow="ALWAYS" />
@@ -30,7 +30,7 @@
                <children>
                   <ImageView fitHeight="270.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../../../AdminUI/src/resourcers/GPUP-logo.png" />
+                        <Image url="@../../resourcers/GPUP-logo.png" />
                      </image>
                   </ImageView>
                </children>
@@ -60,7 +60,7 @@
                   <HBox alignment="CENTER" prefHeight="70.0" prefWidth="200.0">
                      <children>
                         <Label maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Threads:      " />
-                        <Spinner />
+                        <Spinner fx:id="ThreadSpinner" />
                      </children>
                   </HBox>
                   <HBox alignment="CENTER" prefHeight="70.0" prefWidth="488.0" spacing="15.0">
