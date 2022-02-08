@@ -31,7 +31,7 @@
                            <items>
                               <HBox fx:id="toolBarHBox">
                                  <children>
-                                  <Button fx:id="runButton" disable="true" mnemonicParsing="false" onAction="#runPressed" text="Run">
+                                  <Button fx:id="runButton" mnemonicParsing="false" onAction="#runPressed" text="Run">
                                        <HBox.margin>
                                           <Insets left="5.0" />
                                        </HBox.margin>

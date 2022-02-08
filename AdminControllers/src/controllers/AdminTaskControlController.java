@@ -3,7 +3,6 @@ package controllers;
 import com.google.gson.Gson;
 import dtos.TaskCurrentInfoDTO;
 import http.HttpClientUtil;
-import tableItems.TaskTargetCurrentInfoTableItem;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -22,9 +21,9 @@ import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
+import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
 import target.Target;
-import task.TaskThread;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -33,11 +32,7 @@ import java.util.Set;
 
 public class AdminTaskControlController {
 
-    private final String REQUIRED = "All required-for targets";
-    private final String DEPENDED = "All depends-on targets";
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
-    private TaskThread taskThread;
-    private GraphSummary graphSummary;
     private int finishedTargets;
     private String taskName = null;
 
@@ -68,10 +63,10 @@ public class AdminTaskControlController {
     @FXML private TextArea logTextArea;
     private Graph graph;
     private TaskControlPullerThread taskControlPullerThread;
+    private GraphSummary graphSummary;
 
     //----------------------------------------------Puller Thread--------------------------------------------//
-    public class TaskControlPullerThread extends Thread
-    {
+    public class TaskControlPullerThread extends Thread {
         @Override
         public void run()
         {
@@ -110,21 +105,18 @@ public class AdminTaskControlController {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
                         Platform.runLater(() ->
-                                {
-                                    Gson gson = new Gson();
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            {
-                                                TaskCurrentInfoDTO updatedInfo = gson.fromJson(responseBody.string(), TaskCurrentInfoDTO.class);
-                                                refreshInfo(updatedInfo);
-                                                responseBody.close();
-                                            }
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                            {
+                                ResponseBody responseBody = response.body();
+                                try {
+                                    if (responseBody != null) {
+                                        TaskCurrentInfoDTO updatedInfo = new Gson().fromJson(responseBody.string(), TaskCurrentInfoDTO.class);
+                                        refreshInfo(updatedInfo);
+                                        responseBody.close();
                                     }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
+                            }
                         );
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
@@ -159,12 +151,16 @@ public class AdminTaskControlController {
     }
 
     //-------------------------------------------------Initialize-----------------------------------------------//
-    public void initialize(String taskName)
-    {
+    public void initialize(String taskName) {
         this.taskName = taskName;
-        this.taskControlPullerThread = new TaskControlPullerThread();
-        this.taskControlPullerThread.start();
+        createTaskControlPullerThread();
         initializeTaskDetailsTableView();
+    }
+
+    private void createTaskControlPullerThread() {
+        this.taskControlPullerThread = new TaskControlPullerThread();
+        this.taskControlPullerThread.setDaemon(true);
+        this.taskControlPullerThread.start();
     }
 
     private void initializeTaskDetailsTableView() {
@@ -199,8 +195,7 @@ public class AdminTaskControlController {
     }
 
     //---------------------------------------------Task information-----------------------------------------------//
-    public void setTaskStaticInformation(String taskName, String graphName)
-    {
+    public void setTaskStaticInformation(String taskName, String graphName) {
         this.TaskNameTextField.setText(taskName);
         this.GraphNameTextField.setText(graphName);
     }
@@ -226,8 +221,7 @@ public class AdminTaskControlController {
         this.taskDetailsOnTargetTextArea.setDisable(!flag);
     }
 
-    public void showDetailsOfSelectedTargetInTextArea(TaskTargetCurrentInfoTableItem taskTargetInformation)
-    {
+    public void showDetailsOfSelectedTargetInTextArea(TaskTargetCurrentInfoTableItem taskTargetInformation) {
         String detailMsg = null;
         String currentTargetName = taskTargetInformation.getTargetName();
         TargetSummary currentTargetSummary = this.graphSummary.getTargetsSummaryMap().get(currentTargetName);
@@ -288,8 +282,7 @@ public class AdminTaskControlController {
         this.taskDetailsOnTargetTextArea.setText(detailMsg);
     }
 
-    public String printTargetWaitingForTargets(String currentTargetName)
-    {
+    public String printTargetWaitingForTargets(String currentTargetName) {
         String waitingForTargets = "", dependedOnTarget;
         Set<String> dependedTargets = this.graph.getTarget(currentTargetName).getAllDependsOnTargets();
 
@@ -305,8 +298,7 @@ public class AdminTaskControlController {
         return waitingForTargets;
     }
 
-    public String printProcessedFailedTargets(String currentTargetName)
-    {
+    public String printProcessedFailedTargets(String currentTargetName) {
         String processedFailedTargets = "", dependedOnTarget;
         Set<String> dependedTargets = this.graph.getTarget(currentTargetName).getAllDependsOnTargets();
 
@@ -322,8 +314,7 @@ public class AdminTaskControlController {
         return processedFailedTargets;
     }
 
-    public void getFinishedTargetsInRealTime()
-    {
+    public void getFinishedTargetsInRealTime() {
         this.finishedTargets = 0;
         for(TaskTargetCurrentInfoTableItem currItem : this.taskTargetDetailsTableView.getItems())
         {
@@ -334,6 +325,9 @@ public class AdminTaskControlController {
 
     //------------------------------------------Preparations For Launch-------------------------------------------//
     private boolean incrementalIsOptional() {
+//        if(this.runButton.isDisable())
+//            return false;
+
         for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
         {
             if(curr.getResultStatus().equals("Undefined"))
@@ -369,13 +363,13 @@ public class AdminTaskControlController {
             @Override
             protected Void call() throws Exception {
                 int maxSize = AdminTaskControlController.this.taskTargetDetailsTableView.getItems().size();
-                while (AdminTaskControlController.this.taskThread.isAlive()) {
+                while (true) {
                     Thread.sleep(200);
                     getFinishedTargetsInRealTime();
                     updateProgress(AdminTaskControlController.this.finishedTargets, maxSize);
                 }
-                updateProgress(maxSize, maxSize);
-                return null;
+//                updateProgress(maxSize, maxSize);
+//                return null;
             }
         };
         this.progressBar.setStyle("-fx-accent: #00FF00;");
@@ -395,10 +389,9 @@ public class AdminTaskControlController {
     public void stopPressed(ActionEvent actionEvent) {
     }
 
-    @FXML
-    void runPressed(ActionEvent event) {
-//        if(!checkForValidRun())
-//            return;
+    @FXML void runPressed(ActionEvent event) {
+        sendRequestToStartTask();
+
 //
 //        CompilationParameters compilationParameters = null;
 //        Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
@@ -431,6 +424,36 @@ public class AdminTaskControlController {
 //        updateThread.start();
     }
 
+    private void sendRequestToStartTask() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("start-task", AdminTaskControlController.this.taskName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for starting task!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                    {
+                        AdminTaskControlController.this.runButton.setDisable(true);
+                        AdminTaskControlController.this.PauseButton.setDisable(false);
+                        AdminTaskControlController.this.stopButton.setDisable(false);
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null, response.header("message"));
+                    });
+                else //Failed
+                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null, response.header("message")));
+            }
+        });
+    }
+
 //    @FXML void pausePressed(ActionEvent event) {
 //        if(!this.taskThread.getPaused()) //Pausing the task
 //        {
@@ -452,13 +475,13 @@ public class AdminTaskControlController {
         LocalTime startTime = LocalTime.now();
         LocalTime currTime = LocalTime.now();
 
-        while (this.taskThread.isAlive())
+        while (true)
         {
             startTime = LocalTime.now();
             updateTable(itemsList, startTime, currTime);
         }
-        updateTable(itemsList, startTime, currTime);
-        AdminTaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
+//        updateTable(itemsList, startTime, currTime);
+//        AdminTaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
     public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime)
@@ -478,10 +501,10 @@ public class AdminTaskControlController {
     }
 
     //----------------------------------------------------Other---------------------------------------------------//
-    private void ShowPopup(String message, String title) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    public static void ShowPopup(Alert.AlertType alertType, String title, String header, String message) {
+        Alert alert = new Alert(alertType);
         alert.setTitle(title);
-        alert.setHeaderText(null);
+        alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
     }

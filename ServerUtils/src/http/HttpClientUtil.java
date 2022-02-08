@@ -1,9 +1,6 @@
 package http;
 
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.*;
 
 public class HttpClientUtil {
 
@@ -15,6 +12,14 @@ public class HttpClientUtil {
     public static void runAsync(String finalUrl, String method, RequestBody body, Callback callback) {
         Request request = new Request.Builder()
                 .url(finalUrl).method(method, body)
+                .build();
+
+        HttpClientUtil.HTTP_CLIENT.newCall(request).enqueue(callback);
+    }
+
+    public static void runAsyncWithEmptyBody(String finalUrl, String method, Callback callback) {
+        Request request = new Request.Builder()
+                .url(finalUrl).method(method, RequestBody.create("Empty body", MediaType.parse("Empty body")))
                 .build();
 
         HttpClientUtil.HTTP_CLIENT.newCall(request).enqueue(callback);
