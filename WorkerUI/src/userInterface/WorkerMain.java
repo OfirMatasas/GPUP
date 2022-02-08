@@ -12,10 +12,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.HttpUrl;
-import okhttp3.Response;
+import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
 import patterns.Patterns;
@@ -23,12 +20,15 @@ import patterns.Patterns;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class WorkerMain extends Application
 {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         primaryStage.setTitle("G.P.U.P Login");
         FXMLLoader loader = new FXMLLoader(getClass().getResource(BodyComponentsPaths.LOGIN));
         Parent root = loader.load();

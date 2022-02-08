@@ -2,6 +2,7 @@ package servlets.task;
 
 import com.google.gson.Gson;
 import dtos.TaskCurrentInfoDTO;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +17,8 @@ import java.util.Set;
 @WebServlet(name = "TaskUpdateServlet", urlPatterns = "/task-update")
 public class TaskUpdateServlet extends HttpServlet {
 
-    public Gson gson = new Gson();
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Gson gson = new Gson();
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName;
@@ -31,7 +30,7 @@ public class TaskUpdateServlet extends HttpServlet {
             if(tasksManager.isTaskExists(taskName)) //Returning task current information to admin
             {
                 TaskCurrentInfoDTO updatedInfo = tasksManager.getTaskCurrentInfo(taskName);
-                String infoAsString = this.gson.toJson(updatedInfo, TaskCurrentInfoDTO.class);
+                String infoAsString = gson.toJson(updatedInfo, TaskCurrentInfoDTO.class);
                 resp.getWriter().write(infoAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             }
@@ -97,7 +96,7 @@ public class TaskUpdateServlet extends HttpServlet {
             if(workerName != null && userManager.isUserExists(workerName)) //Invalid worker name
             {
                 Set<String> registeredTasks = tasksManager.getWorkerRegisteredTasks(workerName);
-                String registeredTasksAsString = this.gson.toJson(registeredTasks, Set.class);
+                String registeredTasksAsString = gson.toJson(registeredTasks, Set.class);
                 resp.getWriter().write(registeredTasksAsString);
 
                 resp.addHeader("message", "Successfully pulled worker's registered tasks!");
@@ -126,6 +125,31 @@ public class TaskUpdateServlet extends HttpServlet {
             }
         }
         else //Invalid request
+        {
+            resp.addHeader("message", "Invalid request!");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String taskName, userName;
+        TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+
+        if(req.getParameter("start-task") != null) //Requesting to start a task
+        {
+            taskName = req.getParameter("start-task");
+
+            if(tasksManager.isTaskExists(taskName))
+            {
+                tasksManager.startTask(taskName);
+            }
+            else
+            {
+                resp.addHeader("message", "The task " + taskName + " doesn't exist in the system!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        }
+        else
         {
             resp.addHeader("message", "Invalid request!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

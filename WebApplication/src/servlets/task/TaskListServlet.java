@@ -10,39 +10,38 @@ import managers.TasksManager;
 import utils.ServletUtils;
 
 import java.io.IOException;
-import java.util.Set;
 
 @WebServlet(name = "TaskListServlet", urlPatterns = "/tasks-list")
 public class TaskListServlet extends HttpServlet {
 
     private static final Object dummy = new Object();
-    private static final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
+        Gson gson = new Gson();
         TasksManager tasksManager;
-        String listAsString;
 
-        synchronized (dummy)
+        tasksManager = ServletUtils.getTasksManager(getServletContext());
+
+        if(req.getParameter("all-tasks-list") != null) //Returning all tasks list (for admins)
         {
-            tasksManager = ServletUtils.getTasksManager(getServletContext());
-        }
-
-        if(req.getParameter("all-tasks-list") == null && req.getParameter("my-tasks-list") == null)
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        else
-        {
-            Set<String> tasksList;
-            if(req.getParameter("all-tasks-list") != null)
-                tasksList = tasksManager.getAllTaskList();
-            else //(req.getParameter("my-tasks-list") != null)
-                tasksList = tasksManager.getUserTaskList(req.getParameter("username"));
-
-            listAsString = gson.toJson(tasksList);
-
-            resp.getWriter().println(listAsString);
+            resp.getWriter().println(gson.toJson(tasksManager.getAllTasksList()));
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
+        else if(req.getParameter("my-tasks-list") != null) //Returning admins tasks list
+        {
+            resp.getWriter().println(gson.toJson(tasksManager.getUserTaskList(req.getParameter("username"))));
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
+        else if(req.getParameter("active-tasks-list") != null) //Returning all active tasks list (for workers)
+        {
+            resp.getWriter().println(gson.toJson(tasksManager.getActiveTasksList()));
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Invalid request
+        {
+            resp.addHeader("message", "Invalid request!");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 }

@@ -13,10 +13,11 @@ import java.util.*;
 
 public class TasksManager {
 
-    private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>();
-    private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>();
-    private final Map<String, Set<String>> adminsTasks = new HashMap<>();
-    private final Set<String> listOfAllTasks = new HashSet<>();
+    private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>(); //Static info
+    private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>(); //Static info
+    private final Map<String, Set<String>> adminsTasks = new HashMap<>(); //Holds all tasks of every admin
+    private final Set<String> listOfAllTasks = new HashSet<>(); //Holds all tasks names
+    private final Set<String> listOfActiveTasks = new HashSet<>(); //Holds all active tasks names (for workers)
     private final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
     private final Map<String, TaskCurrentInfoDTO> taskInfoMap = new HashMap<>();
     private final Map<String, Integer> workersCredits = new HashMap<>();
@@ -72,10 +73,12 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
-    public synchronized Set<String> getAllTaskList()
+    public synchronized Set<String> getAllTasksList()
     {
         return this.listOfAllTasks;
     }
+
+    public synchronized Set<String> getActiveTasksList() { return this.listOfActiveTasks; }
 
     public synchronized Set<String> getUserTaskList(String userName) {
         return this.adminsTasks.get(userName.toLowerCase());
@@ -161,6 +164,13 @@ public class TasksManager {
     {
         return this.workerRegisteredTasksMap.containsKey(workerName.toLowerCase())
                 && this.workerRegisteredTasksMap.get(workerName.toLowerCase()).contains(taskName);
+    }
+
+    public void startTask(String taskName) {
+
+
+
+        this.listOfActiveTasks.add(taskName);
     }
 
 //    private void updateTaskStatus(String taskName) {

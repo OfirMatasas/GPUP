@@ -162,7 +162,7 @@ public class WorkerDashboardController {
             String finalUrl = HttpUrl
                     .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
                     .newBuilder()
-                    .addQueryParameter("all-tasks-list", "all-tasks-list")
+                    .addQueryParameter("active-tasks-list", "active-tasks-list")
                     .build()
                     .toString();
 
