@@ -123,6 +123,7 @@ public class WorkerPrimaryController {
         try {
             this.TasksPane = loader.load(url.openStream());
             this.workerTasksController = loader.getController();
+            this.workerTasksController.initialize(this.userName);
         } catch (IOException e) {
             e.printStackTrace();
         }

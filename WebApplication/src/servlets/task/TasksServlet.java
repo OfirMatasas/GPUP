@@ -24,7 +24,7 @@ public class TasksServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
-        if(req.getParameter("task-info") != null)
+        if(req.getParameter("task-info") != null) //Requesting for task-info
         {
             String taskInfoName = req.getParameter("task-info");
             String infoAsString;

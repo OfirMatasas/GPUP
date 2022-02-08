@@ -3,8 +3,6 @@ package controllers;
 import com.google.gson.Gson;
 import dtos.DashboardTaskDetailsDTO;
 import http.HttpClientUtil;
-import tableItems.SelectedGraphTableItem;
-import tableItems.WorkerTaskStatusTableItem;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -13,12 +11,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
+import tableItems.SelectedGraphTableItem;
+import tableItems.WorkerTaskStatusTableItem;
 import users.UsersLists;
 
 import java.io.IOException;
@@ -31,11 +30,12 @@ public class WorkerDashboardController {
     private final ObservableList<String> onlineAdminsList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineWorkersList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
-    private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();;
-    private final ObservableList<WorkerTaskStatusTableItem> selectedTaskStatusList = FXCollections.observableArrayList();;
+    private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();
+    private final ObservableList<WorkerTaskStatusTableItem> selectedTaskStatusList = FXCollections.observableArrayList();
     private WorkerPrimaryController workerPrimaryController;
     private String username;
-    private PullerThread pullerThread;
+    private DashboardPullerThread dashboardPullerThread;
+    private String chosenTask = null;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
     @FXML private SplitPane SplitPane;
@@ -74,8 +74,13 @@ public class WorkerDashboardController {
         initializeTaskDetailsTable();
         setupListeners();
         createPullingThread();
+        applyUserName(userName);
 
         this.workerPrimaryController = workerPrimaryController;
+    }
+
+    private void applyUserName(String userName) {
+        this.username = userName;
         this.UserNameTextField.setText(userName);
     }
 
@@ -109,7 +114,7 @@ public class WorkerDashboardController {
     }
 
     //--------------------------------------------- Puller Thread ------------------------------------------//
-    public class PullerThread extends Thread
+    public class DashboardPullerThread extends Thread
     {
         @Override public void run()
         {
@@ -122,6 +127,9 @@ public class WorkerDashboardController {
                 }
                 getOnlineUsersFromServer();
                 getOnlineTasksFromServer();
+
+                if(WorkerDashboardController.this.chosenTask != null)
+                    TaskSelectedFromTaskListView();
             }
         }
         //------------------------ Tasks List ------------------------//
@@ -208,13 +216,13 @@ public class WorkerDashboardController {
     }
 
     private void createPullingThread() {
-        this.pullerThread = new PullerThread();
+        this.dashboardPullerThread = new DashboardPullerThread();
 
         this.onlineAdminsListView.setItems(this.onlineAdminsList);
         this.onlineWorkersListView.setItems(this.onlineWorkersList);
 
-        this.pullerThread.setDaemon(true);
-        this.pullerThread.start();
+        this.dashboardPullerThread.setDaemon(true);
+        this.dashboardPullerThread.start();
     }
 
     //----------------------------------------- Task Registration  --------------------------------------------//
@@ -225,9 +233,10 @@ public class WorkerDashboardController {
             return;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
                 .newBuilder()
                 .addQueryParameter("register", selectedTaskName)
+                .addQueryParameter("username", this.username)
                 .build()
                 .toString();
 
@@ -238,7 +247,7 @@ public class WorkerDashboardController {
                         ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
             }
 
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 if (response.code() >= 200 && response.code() < 300) //Success
                         Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Registration Successfully!", null, response.header("message")));
                 else //Failed
@@ -248,13 +257,14 @@ public class WorkerDashboardController {
     }
 
     //------------------------------------------- Task Information  ---------------------------------------------//
-    @FXML void TaskSelectedFromTaskListView(MouseEvent mouseEvent) {
+    @FXML void TaskSelectedFromTaskListView() {
         String selectedTaskName = this.TasksListView.getSelectionModel().getSelectedItem();
 
         if(selectedTaskName == null)
             return;
 
         this.RegisterToTaskButton.setDisable(false);
+        this.chosenTask = selectedTaskName;
 
         String finalUrl = HttpUrl
                 .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
@@ -268,7 +278,7 @@ public class WorkerDashboardController {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
             }
 
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     Platform.runLater(() ->

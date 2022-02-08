@@ -83,6 +83,7 @@ public class AdminDashboardController {
     private String username;
     private PullerThread pullerThread;
     private Thread usersListsRefreshThread;
+    private String chosenTask = null;
 
     public void initialize(AdminPrimaryController primaryController, String username)
     {
@@ -194,15 +195,17 @@ public class AdminDashboardController {
         });
     }
 
-    public void AddNewGraphButtonPressed(MouseEvent mouseEvent) throws IOException {
+    public void AddNewGraphButtonPressed() throws IOException {
         this.primaryController.loadXMLButtonPressed(new ActionEvent());
     }
 
-    public void TaskSelectedFromAllListView(MouseEvent mouseEvent) {
+    public void TaskSelectedFromAllListView() {
         String selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
 
         if(selectedTaskName == null)
             return;
+
+        this.chosenTask = selectedTaskName;
 
         String finalUrl = HttpUrl
                 .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
@@ -295,6 +298,9 @@ public class AdminDashboardController {
                 refreshGraphList();
                 refreshAllTasksList();
                 refreshMyTasksList();
+
+                if(chosenTask != null)
+                    TaskSelectedFromAllListView();
             }
         }
 

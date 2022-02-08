@@ -30,6 +30,7 @@ public class WorkerTasksController {
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> taskInfoList = FXCollections.observableArrayList();
     private String userName;
+    private TasksPullerThread tasksPullerThread;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
     @FXML private SplitPane SplitPane;
@@ -66,6 +67,13 @@ public class WorkerTasksController {
         initializeChosenTargetTaskTable();
         initializeChosenTaskTable();
         setupListeners();
+        createTaskPullerThread();
+    }
+
+    private void createTaskPullerThread() {
+        this.tasksPullerThread = new TasksPullerThread();
+        this.tasksPullerThread.setDaemon(true);
+        this.tasksPullerThread.start();
     }
 
     private void setUserName(String userName) { this.userName = userName; }

@@ -15,11 +15,12 @@ public class TasksManager {
 
     private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>();
     private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>();
-    private final Map<String, Set<String>> usersTasks = new HashMap<>();
+    private final Map<String, Set<String>> adminsTasks = new HashMap<>();
     private final Set<String> listOfAllTasks = new HashSet<>();
     private final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
     private final Map<String, TaskCurrentInfoDTO> taskInfoMap = new HashMap<>();
     private final Map<String, Integer> workersCredits = new HashMap<>();
+    private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>();
     private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
     public synchronized boolean isTaskExists(String taskName) {
@@ -53,20 +54,22 @@ public class TasksManager {
     }
 
     public synchronized void addUserTask(String taskCreator, String taskName) {
-        if(!this.usersTasks.containsKey(taskCreator))
-            this.usersTasks.put(taskCreator, new HashSet<>());
+        if(!this.adminsTasks.containsKey(taskCreator))
+            this.adminsTasks.put(taskCreator, new HashSet<>());
 
-        this.usersTasks.get(taskCreator).add(taskName);
+        this.adminsTasks.get(taskCreator).add(taskName);
     }
 
     public synchronized void registerWorkerToTask(String taskName, String workerName) {
         this.taskDetailsDTOMap.get(taskName.toLowerCase()).addWorker(workerName);
         this.taskInfoMap.get(taskName.toLowerCase()).workerRegisteredToTask();
+        addRegisteredTaskToWorker(workerName, taskName);
     }
 
     public synchronized void removeWorkerRegistrationFromTask(String taskName, String workerName) {
         this.taskDetailsDTOMap.get(taskName.toLowerCase()).removeWorker(workerName);
         this.taskInfoMap.get(taskName.toLowerCase()).workerLeftTask();
+        removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
     public synchronized Set<String> getAllTaskList()
@@ -75,7 +78,7 @@ public class TasksManager {
     }
 
     public synchronized Set<String> getUserTaskList(String userName) {
-        return this.usersTasks.get(userName.toLowerCase());
+        return this.adminsTasks.get(userName.toLowerCase());
     }
 
     public synchronized void addTaskDetailsDTO(String taskName, String creatorName, String taskType, Set<String> targetsToExecute, Graph graph) {
@@ -125,6 +128,31 @@ public class TasksManager {
         }
 
 //        updateTaskStatus(taskName);
+    }
+
+    public synchronized Set<String> getWorkerRegisteredTasks(String workerName)
+    {
+        return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
+    }
+
+    public synchronized void addRegisteredTaskToWorker(String workerName, String taskName)
+    {
+        //Creating new set of tasks if it's the first time the worker register
+        if(this.workerRegisteredTasksMap.get(workerName.toLowerCase()) == null)
+            this.workerRegisteredTasksMap.put(workerName.toLowerCase(), new HashSet<>());
+
+        this.workerRegisteredTasksMap.get(workerName.toLowerCase()).add(taskName);
+    }
+
+    public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName)
+    {
+        this.workerRegisteredTasksMap.get(workerName.toLowerCase()).remove(taskName);
+    }
+
+    public synchronized boolean isWorkerRegisteredToTask(String workerName, String taskName)
+    {
+        return this.workerRegisteredTasksMap.containsKey(workerName.toLowerCase())
+                && this.workerRegisteredTasksMap.get(workerName.toLowerCase()).contains(taskName);
     }
 
 //    private void updateTaskStatus(String taskName) {
