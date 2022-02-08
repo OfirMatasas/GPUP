@@ -127,10 +127,35 @@ public class WorkerDashboardController {
                 }
                 getOnlineUsersFromServer();
                 getOnlineTasksFromServer();
+                getWorkerCreditsFromServer();
 
                 if(WorkerDashboardController.this.chosenTask != null)
                     TaskSelectedFromTaskListView();
             }
+        }
+
+        //-------------------------- Credits -------------------------//
+        private void getWorkerCreditsFromServer() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("credits", WorkerDashboardController.this.username)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for worker's credits!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                        Platform.runLater(() ->
+                                WorkerDashboardController.this.TotalCreditsTextField.setText(response.header("credits")));
+                    else //Failed
+                        Platform.runLater(() -> System.out.println("couldn't pull worker's credits from server!"));
+                }
+            });
         }
         //------------------------ Tasks List ------------------------//
         private void getOnlineTasksFromServer() {

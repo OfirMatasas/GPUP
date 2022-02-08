@@ -94,7 +94,7 @@ public class TaskUpdateServlet extends HttpServlet {
         {
             String workerName = req.getParameter("registered-tasks");
 
-            if(workerName != null && userManager.isUserExists(workerName)) //Invalid task name
+            if(workerName != null && userManager.isUserExists(workerName)) //Invalid worker name
             {
                 Set<String> registeredTasks = tasksManager.getWorkerRegisteredTasks(workerName);
                 String registeredTasksAsString = this.gson.toJson(registeredTasks, Set.class);
@@ -106,6 +106,22 @@ public class TaskUpdateServlet extends HttpServlet {
             else //Valid removing registration from task
             {
                 resp.addHeader("message", "Invalid task name!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        }
+        else if(req.getParameter("credits") != null) //Returning worker's credits
+        {
+            String workerName = req.getParameter("credits");
+
+            if(workerName != null && userManager.isUserExists(workerName)) //Valid credit request
+            {
+                resp.addHeader("credits", tasksManager.getWorkerCredits(workerName).toString());
+                resp.addHeader("message", "Successfully pulled worker's credits!");
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+            }
+            else //Invalid request
+            {
+                resp.addHeader("message", "Invalid username!");
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
         }

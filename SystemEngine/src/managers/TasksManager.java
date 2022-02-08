@@ -135,6 +135,14 @@ public class TasksManager {
         return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
     }
 
+    public synchronized Integer getWorkerCredits(String workerName)
+    {
+        if(!this.workersCredits.containsKey(workerName.toLowerCase()))
+            this.workersCredits.put(workerName.toLowerCase(), 0);
+
+        return this.workersCredits.get(workerName.toLowerCase());
+    }
+
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName)
     {
         //Creating new set of tasks if it's the first time the worker register
