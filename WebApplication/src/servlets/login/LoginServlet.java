@@ -32,7 +32,12 @@ public class LoginServlet extends HttpServlet {
 
         if(userManager.isUserExists(userName)){
             resp.getWriter().println("The chosen user name is taken");
-            resp.setStatus(400);
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
+        else if(!userManager.isValidLogin(userName, this.isAdmin))
+        {
+            resp.getWriter().println("This user name is already taken by " + (this.isAdmin ? "a worker" : "an admin") + "!");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         else {
             req.getSession(true).setAttribute("username", userName);
@@ -42,7 +47,7 @@ public class LoginServlet extends HttpServlet {
                 userManager.addWorker(userName);
             resp.getWriter().println("Logged in successfully");
             resp.addHeader("username", userName);
-            resp.setStatus(200);
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
     }
 }
