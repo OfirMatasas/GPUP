@@ -18,6 +18,7 @@ public class DashboardTaskDetailsDTO {
     private Integer middles = 0;
     private Integer leaves = 0;
     private Integer independents = 0;
+    private final Integer singlePayment;
     private final Integer totalPayment;
     private final Set<String> registeredWorkers;
     private String taskStatus;
@@ -61,8 +62,9 @@ public class DashboardTaskDetailsDTO {
         this.targets = this.roots + this.middles + this.leaves + this.independents;
 
         Map<Graph.TaskType, Integer> taskPrices = graph.getTasksPricesMap();
-        this.totalPayment = taskPrices.get(Graph.TaskType.Simulation) != null ?
-                taskPrices.get(Graph.TaskType.Simulation) * this.targets : taskPrices.get(Graph.TaskType.Compilation) * this.targets;
+        this.singlePayment = taskType.equals(Graph.TaskType.Simulation.toString()) ?
+                taskPrices.get(Graph.TaskType.Simulation) : taskPrices.get(Graph.TaskType.Compilation);
+        this.totalPayment = this.singlePayment * this.targets;
     }
 
     public void addWorker(String workerName) {
@@ -109,6 +111,10 @@ public class DashboardTaskDetailsDTO {
 
     public Integer getTargets() {
         return this.targets;
+    }
+
+    public Integer getSinglePayment() {
+        return this.singlePayment;
     }
 
     public Integer getTotalPayment() {

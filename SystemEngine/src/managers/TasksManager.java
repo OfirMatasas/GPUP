@@ -1,10 +1,12 @@
-package task;
+package managers;
 
 import dtos.DashboardTaskDetailsDTO;
 import dtos.TaskCurrentInfoDTO;
 import tableItems.TaskTargetCurrentInfoTableItem;
 import summaries.TargetSummary;
 import target.Graph;
+import task.CompilationTaskInformation;
+import task.SimulationTaskInformation;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -17,6 +19,7 @@ public class TasksManager {
     private final Set<String> listOfAllTasks = new HashSet<>();
     private final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
     private final Map<String, TaskCurrentInfoDTO> taskInfoMap = new HashMap<>();
+    private final Map<String, Integer> workersCredits = new HashMap<>();
     private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
     public synchronized boolean isTaskExists(String taskName) {
@@ -56,28 +59,34 @@ public class TasksManager {
         this.usersTasks.get(taskCreator).add(taskName);
     }
 
+    public synchronized void registerWorkerToTask(String taskName, String workerName) {
+        this.taskDetailsDTOMap.get(taskName.toLowerCase()).addWorker(workerName);
+        this.taskInfoMap.get(taskName.toLowerCase()).workerRegisteredToTask();
+    }
+
+    public synchronized void removeWorkerRegistrationFromTask(String taskName, String workerName) {
+        this.taskDetailsDTOMap.get(taskName.toLowerCase()).removeWorker(workerName);
+        this.taskInfoMap.get(taskName.toLowerCase()).workerLeftTask();
+    }
+
     public synchronized Set<String> getAllTaskList()
     {
         return this.listOfAllTasks;
     }
 
-    public synchronized Set<String> getUserTaskList(String userName)
-    {
+    public synchronized Set<String> getUserTaskList(String userName) {
         return this.usersTasks.get(userName.toLowerCase());
     }
 
-    public synchronized void addTaskDetailsDTO(String taskName, String creatorName, String taskType, Set<String> targetsToExecute, Graph graph)
-    {
+    public synchronized void addTaskDetailsDTO(String taskName, String creatorName, String taskType, Set<String> targetsToExecute, Graph graph) {
         this.taskDetailsDTOMap.put(taskName.toLowerCase(), new DashboardTaskDetailsDTO(taskName, creatorName, targetsToExecute, taskType, graph));
     }
 
-    public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName)
-    {
+    public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName) {
         return this.taskDetailsDTOMap.get(taskName.toLowerCase());
     }
 
-    public synchronized void createNewTaskInfo(String taskName, String taskCreator, Set<String> targets)
-    {
+    public synchronized void createNewTaskInfo(String taskName, String taskCreator, Set<String> targets) {
         Set<TaskTargetCurrentInfoTableItem> infoSet = new HashSet<>();
         int i = 1;
 
@@ -94,13 +103,16 @@ public class TasksManager {
         this.taskInfoMap.put(taskName.toLowerCase(), newInfo);
     }
 
-    public synchronized TaskCurrentInfoDTO getTaskCurrentInfo(String taskName)
-    {
+    public synchronized TaskCurrentInfoDTO getTaskCurrentInfo(String taskName) {
         return this.taskInfoMap.get(taskName.toLowerCase());
     }
 
-    public synchronized void updateTargetInfoOnTask(String taskName, String targetName, TaskTargetCurrentInfoTableItem targetUpdate)
-    {
+    public synchronized void addCreditsToWorker(String workerName, String taskName) {
+        this.workersCredits.put(workerName, this.workersCredits.get(workerName) +
+                this.taskDetailsDTOMap.get(taskName.toLowerCase()).getSinglePayment());
+    }
+
+    public synchronized void updateTargetInfoOnTask(String taskName, String targetName, TaskTargetCurrentInfoTableItem targetUpdate) {
         TaskCurrentInfoDTO currTargetInfo = this.taskInfoMap.get(taskName.toLowerCase());
 
         for(TaskTargetCurrentInfoTableItem curr : currTargetInfo.getTargetStatusSet())
@@ -114,7 +126,7 @@ public class TasksManager {
 
 //        updateTaskStatus(taskName);
     }
-//
+
 //    private void updateTaskStatus(String taskName) {
 //        boolean isTaskOver = true;
 //

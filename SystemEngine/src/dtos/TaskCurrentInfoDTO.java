@@ -5,10 +5,10 @@ import tableItems.TaskTargetCurrentInfoTableItem;
 import java.util.Set;
 
 public class TaskCurrentInfoDTO {
-    private final String taskStatus;
+    private String taskStatus;
     private final Set<TaskTargetCurrentInfoTableItem> targetStatusSet;
-    private final Integer currentWorkers;
-    private final String logHistory;
+    private Integer currentWorkers;
+    private String logHistory;
 
     public TaskCurrentInfoDTO(String taskStatus, Set<TaskTargetCurrentInfoTableItem> targetStatusSet, Integer currentWorkers, String logHistory) {
         this.taskStatus = taskStatus;
@@ -32,4 +32,12 @@ public class TaskCurrentInfoDTO {
     public String getLogHistory() {
         return this.logHistory;
     }
+
+    public void changeTaskStatus(String newStatus) { this.taskStatus = newStatus; }
+
+    public void addToLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n"; }
+
+    public synchronized void workerRegisteredToTask() { ++this.currentWorkers; }
+
+    public synchronized void workerLeftTask() { --this.currentWorkers;}
 }

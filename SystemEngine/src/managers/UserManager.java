@@ -1,15 +1,15 @@
-package users;
+package managers;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import users.UsersLists;
+
+import java.util.*;
 
 
 public class UserManager {
 
     private final UsersLists usersLists;
     private final Set<String> adminsNames = new HashSet<>();
-    private final Set<String> workersNames = new HashSet<>();;
+    private final Set<String> workersNames = new HashSet<>();
 
     public UserManager() {
         this.usersLists = new UsersLists(); }

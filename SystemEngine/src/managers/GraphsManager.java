@@ -1,4 +1,6 @@
-package target;
+package managers;
+
+import target.Graph;
 
 import java.io.File;
 import java.io.IOException;

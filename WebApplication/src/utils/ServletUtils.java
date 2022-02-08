@@ -1,9 +1,9 @@
 package utils;
 
 import jakarta.servlet.ServletContext;
-import target.GraphsManager;
-import task.TasksManager;
-import users.UserManager;
+import managers.GraphsManager;
+import managers.TasksManager;
+import managers.UserManager;
 
 public class ServletUtils {
 

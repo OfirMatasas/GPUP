@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import resources.checker.ResourceChecker;
 import target.Graph;
-import target.GraphsManager;
+import managers.GraphsManager;
 import utils.ServletUtils;
 
 import java.io.File;

@@ -6,7 +6,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import task.TasksManager;
+import managers.TasksManager;
+import managers.UserManager;
 import utils.ServletUtils;
 
 import java.io.IOException;
@@ -18,11 +19,12 @@ public class TaskUpdateServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String taskName = req.getParameter("task-update");
+        TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+        String taskName;
 
-        if(taskName != null)
+        if(req.getParameter("task-update") != null)
         {
-            TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+            taskName = req.getParameter("task-update");
 
             if(tasksManager.isTaskExists(taskName)) //Returning task current information to admin
             {
@@ -35,6 +37,29 @@ public class TaskUpdateServlet extends HttpServlet {
             {
                 resp.addHeader("message", "The task " + taskName + " doesn't exist in the system!");
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        }
+        else if(req.getParameter("task-register") != null)
+        {
+            UserManager userManager = ServletUtils.getUserManager(getServletContext());
+            String workerName = req.getParameter("username");
+            taskName = req.getParameter("task-register");
+
+            if(taskName == null || !tasksManager.isTaskExists(taskName)) //Invalid task name
+            {
+                resp.addHeader("message", "Invalid task name!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            else if(workerName == null || !userManager.isUserExists(workerName)) //Invalid username
+            {
+                resp.addHeader("message", "Invalid user name!");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            else //Valid registration to task
+            {
+                tasksManager.registerWorkerToTask(taskName, workerName);
+                resp.addHeader("message", "Registered successfully to " + taskName + "!");
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             }
         }
         else //Invalid request

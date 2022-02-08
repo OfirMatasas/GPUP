@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
-import task.TasksManager;
+import managers.TasksManager;
 import utils.ServletUtils;
 
 import java.io.IOException;
