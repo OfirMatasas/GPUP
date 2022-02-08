@@ -31,8 +31,8 @@ public class WorkerDashboardController {
     private final ObservableList<String> onlineAdminsList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineWorkersList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
-    private ObservableList<SelectedGraphTableItem> selectedTaskTargetsList;
-    private ObservableList<WorkerTaskStatusTableItem> selectedTaskStatusList;
+    private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();;
+    private final ObservableList<WorkerTaskStatusTableItem> selectedTaskStatusList = FXCollections.observableArrayList();;
     private WorkerPrimaryController workerPrimaryController;
     private String username;
     private PullerThread pullerThread;
