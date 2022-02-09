@@ -13,16 +13,14 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "TasksServlet", urlPatterns = "/tasks")
+@WebServlet(name = "TasksServlet", urlPatterns = "/task")
 public class TasksServlet extends HttpServlet {
-    //---------------------------------------------------Members---------------------------------------//
-    private Gson gson = new Gson();
+    //------------------------------------------------Members------------------------------------------------//
 
-    //----------------------------------------------------doGet----------------------------------------//
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    //------------------------------------------------- Get -------------------------------------------------//
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+        Gson gson = new Gson();
 
         if(req.getParameter("task-info") != null) //Requesting for task-info
         {
@@ -32,7 +30,7 @@ public class TasksServlet extends HttpServlet {
             if(tasksManager.isTaskExists(taskInfoName))
             {
                 DashboardTaskDetailsDTO taskInfo = tasksManager.getTaskDetailsDTO(taskInfoName);
-                infoAsString = this.gson.toJson(taskInfo, DashboardTaskDetailsDTO.class);
+                infoAsString = gson.toJson(taskInfo, DashboardTaskDetailsDTO.class);
 
                 resp.getWriter().write(infoAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
@@ -54,14 +52,14 @@ public class TasksServlet extends HttpServlet {
                 if(tasksManager.isSimulationTask(taskName)) //Requesting for simulation task
                 {
                     SimulationTaskInformation simulationInfo = tasksManager.getSimulationTaskInformation(taskName);
-                    infoAsString = this.gson.toJson(simulationInfo, SimulationTaskInformation.class);
+                    infoAsString = gson.toJson(simulationInfo, SimulationTaskInformation.class);
 
                     resp.addHeader("task-type", "simulation");
                 }
                 else  //Requesting for compilation task
                 {
                     CompilationTaskInformation compilationInfo = tasksManager.getCompilationTaskInformation(taskName);
-                    infoAsString = this.gson.toJson(compilationInfo, CompilationTaskInformation.class);
+                    infoAsString = gson.toJson(compilationInfo, CompilationTaskInformation.class);
 
                     resp.addHeader("task-type", "compilation");
                 }
@@ -82,14 +80,14 @@ public class TasksServlet extends HttpServlet {
         }
     }
 
-    //----------------------------------------------------doPost----------------------------------------//
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    //------------------------------------------------- Post -------------------------------------------------//
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+        Gson gson = new Gson();
 
         if(req.getHeader("simulation") != null) //Uploaded simulation task
         {
-            SimulationTaskInformation newTaskInfo = this.gson.fromJson(req.getReader(), SimulationTaskInformation.class);
+            SimulationTaskInformation newTaskInfo = gson.fromJson(req.getReader(), SimulationTaskInformation.class);
             if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
             {
                 tasksManager.addSimulationTask(newTaskInfo);
@@ -108,7 +106,7 @@ public class TasksServlet extends HttpServlet {
         }
         else if(req.getHeader("compilation") != null) //Uploaded compilation task
         {
-            CompilationTaskInformation newTaskInfo = this.gson.fromJson(req.getReader(), CompilationTaskInformation.class);
+            CompilationTaskInformation newTaskInfo = gson.fromJson(req.getReader(), CompilationTaskInformation.class);
             if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
             {
                 tasksManager.addCompilationTask(newTaskInfo);

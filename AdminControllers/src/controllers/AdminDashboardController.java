@@ -134,7 +134,7 @@ public class AdminDashboardController {
         this.LoadGraphButton.setDisable(false);
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.GRAPHS)
+                .parse(Patterns.GRAPH)
                 .newBuilder()
                 .addQueryParameter("graph-details-DTO", selectedGraphName)
                 .build()
@@ -208,7 +208,7 @@ public class AdminDashboardController {
         this.chosenTask = selectedTaskName;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .parse(Patterns.TASK)
                 .newBuilder()
                 .addQueryParameter("task-info", selectedTaskName)
                 .build()
@@ -306,7 +306,7 @@ public class AdminDashboardController {
 
         private void refreshGraphList() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.GRAPH_LIST)
+                    .parse(Patterns.GRAPH_LIST)
                     .newBuilder()
                     .addQueryParameter("graph-list", "graph-list")
                     .build()
@@ -330,7 +330,6 @@ public class AdminDashboardController {
                                     if (responseBody != null) {
                                         Set graphList = gson.fromJson(responseBody.string(), Set.class);
                                         refreshGraphList(graphList);
-                                        responseBody.close();
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -357,7 +356,7 @@ public class AdminDashboardController {
 
         private void refreshAllTasksList() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
+                    .parse(Patterns.TASK_LIST)
                     .newBuilder()
                     .addQueryParameter("all-tasks-list", "all-tasks-list")
                     .build()
@@ -408,7 +407,7 @@ public class AdminDashboardController {
 
         private void refreshMyTasksList() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
+                    .parse(Patterns.TASK_LIST)
                     .newBuilder()
                     .addQueryParameter("my-tasks-list", "my-tasks-list")
                     .addQueryParameter("username", AdminDashboardController.this.username)
@@ -460,7 +459,7 @@ public class AdminDashboardController {
 
         private void refreshUsersLists() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.USERS_LISTS)
+                    .parse(Patterns.USER_LIST)
                     .newBuilder()
                     .build()
                     .toString();
@@ -541,7 +540,7 @@ public class AdminDashboardController {
             return;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .parse(Patterns.TASK)
                 .newBuilder()
                 .addQueryParameter("task", selectedTaskName)
                 .build()
@@ -618,7 +617,7 @@ public class AdminDashboardController {
             return;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.GRAPHS)
+                .parse(Patterns.GRAPH)
                 .newBuilder()
                 .addQueryParameter("graph", selectedGraphName)
                 .build()

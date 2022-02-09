@@ -46,7 +46,7 @@ public class AdminLoginController {
         }
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.LOGIN)
+                .parse(Patterns.LOGIN)
                 .newBuilder()
                 .addQueryParameter("adminUsername", userName)
                 .build()

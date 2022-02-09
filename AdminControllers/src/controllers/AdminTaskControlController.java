@@ -35,6 +35,7 @@ public class AdminTaskControlController {
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
     private int finishedTargets;
     private String taskName = null;
+    private String userName;
 
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
@@ -88,7 +89,7 @@ public class AdminTaskControlController {
 
         public void getTargetCurrentInfo() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                    .parse(Patterns.TASK_UPDATE)
                     .newBuilder()
                     .addQueryParameter("task-update", AdminTaskControlController.this.taskName)
                     .build()
@@ -151,8 +152,9 @@ public class AdminTaskControlController {
     }
 
     //-------------------------------------------------Initialize-----------------------------------------------//
-    public void initialize(String taskName) {
+    public void initialize(String taskName, String userName) {
         this.taskName = taskName;
+        this.userName = userName;
         createTaskControlPullerThread();
         initializeTaskDetailsTableView();
     }
@@ -426,9 +428,10 @@ public class AdminTaskControlController {
 
     private void sendRequestToStartTask() {
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                .parse(Patterns.TASK_UPDATE)
                 .newBuilder()
                 .addQueryParameter("start-task", AdminTaskControlController.this.taskName)
+                .addQueryParameter("username", this.userName)
                 .build()
                 .toString();
 

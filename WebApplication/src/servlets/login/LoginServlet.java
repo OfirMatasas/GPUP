@@ -8,7 +8,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "LoginServlet" , urlPatterns = "/login")
+@WebServlet(name = "LoginServlet" , urlPatterns = "/user/login")
 public class LoginServlet extends HttpServlet {
     boolean isAdmin;
     @Override

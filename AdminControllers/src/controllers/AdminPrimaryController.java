@@ -144,7 +144,7 @@ public class AdminPrimaryController {
         File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
 
         if(selectedFile != null)
-            uploadFileToServer(Patterns.LOCAL_HOST + Patterns.GRAPHS, selectedFile);
+            uploadFileToServer(Patterns.GRAPH, selectedFile);
     }
 
     public void uploadFileToServer(String url, File file) {
@@ -399,7 +399,7 @@ public class AdminPrimaryController {
         try {
             this.taskControlPane = loader.load(url.openStream());
             this.adminTaskControlController = loader.getController();
-            this.adminTaskControlController.initialize(taskName);
+            this.adminTaskControlController.initialize(taskName, this.userName);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
 import utils.ServletUtils;
 
-@WebServlet(name = "LogoutServlet", urlPatterns = "/logout")
+@WebServlet(name = "LogoutServlet", urlPatterns = "/user/logout")
 public class LogoutServlet extends HttpServlet {
 
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) {

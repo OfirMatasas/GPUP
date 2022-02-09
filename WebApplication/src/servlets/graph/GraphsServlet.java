@@ -8,9 +8,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import managers.GraphsManager;
 import resources.checker.ResourceChecker;
 import target.Graph;
-import managers.GraphsManager;
 import utils.ServletUtils;
 
 import java.io.File;
@@ -21,64 +21,63 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
-@WebServlet(name = "GraphsServlet", urlPatterns = "/graphs")
+@WebServlet(name = "GraphsServlet", urlPatterns = "/graph")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
 public class GraphsServlet extends HttpServlet {
-    //---------------------------------------------------Members---------------------------------------//
-
+    //-------------------------------------------- Members ---------------------------------------//
     public Gson gson = new Gson();
     public static Path WORKING_DIRECTORY_PATH = Paths.get("c:\\gpup-working-dir");
     private final Map<String, DashboardGraphDetailsDTO> graphDetailsDTOMap = new HashMap<>();
-    //---------------------------------------------------Dummies---------------------------------------//
+
+    //-------------------------------------------- Dummies ---------------------------------------//
     private static final Object creatingDirectory = new Object();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    //---------------------------------------------- Get -----------------------------------------//
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
 
-        if(req.getParameter("graph-details-DTO") != null)
-        {
-            String graphName = req.getParameter("graph-details-DTO");
-
-            if(graphsManager.isGraphExists(graphName))
-            {
-                DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
-                String dtoAsString = this.gson.toJson(currDTO, DashboardGraphDetailsDTO.class);
-                resp.getWriter().write(dtoAsString);
-
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else
-            {
-                resp.getWriter().println("Graph not exists!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-        }
-        else if (req.getParameter("graph") != null)
-        {
-            String graphName = req.getParameter("graph");
-
-            if(graphsManager.isGraphExists(graphName))
-            {
-                File graphFile = graphsManager.getGraphFile(graphName);
-                String fileAsString = this.gson.toJson(graphFile, File.class);
-                resp.getWriter().write(fileAsString);
-
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else
-            {
-                resp.getWriter().println("Graph not exists!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-        }
+        if(req.getParameter("graph-details-DTO") != null) //Requesting for graph details
+            returnGraphDetails(req, resp, graphsManager);
+        else if (req.getParameter("graph") != null) //Requesting for graph
+            returnGraphFile(req, resp, graphsManager);
+        else
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    private void returnGraphDetails(HttpServletRequest req, HttpServletResponse resp, GraphsManager graphsManager) throws IOException {
+        String graphName = req.getParameter("graph-details-DTO");
+
+        if(graphsManager.isGraphExists(graphName))
+        {
+            DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
+            String dtoAsString = this.gson.toJson(currDTO, DashboardGraphDetailsDTO.class);
+            resp.getWriter().write(dtoAsString);
+
+            responseMessageAndCode(resp, graphName + " information pulled successfully from the server!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else
+            responseMessageAndCode(resp, "The graph" + graphName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnGraphFile(HttpServletRequest req, HttpServletResponse resp, GraphsManager graphsManager) throws IOException {
+        String graphName = req.getParameter("graph");
+
+        if(graphsManager.isGraphExists(graphName))
+        {
+            File graphFile = graphsManager.getGraphFile(graphName);
+            String fileAsString = this.gson.toJson(graphFile, File.class);
+            resp.getWriter().write(fileAsString);
+
+            responseMessageAndCode(resp, graphName + " file pulled successfully from the server!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else
+            responseMessageAndCode(resp, "The graph" + graphName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    //---------------------------------------------- Post -----------------------------------------//
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         try {
             synchronized (creatingDirectory)
             {
@@ -92,7 +91,6 @@ public class GraphsServlet extends HttpServlet {
                 Files.delete(filePath);
 
             Files.createFile(filePath);
-            System.out.println("in graphs servlet post - created graph file on server");
 
             Part filePart = req.getPart("fileToUpload");
             InputStream fileInputStream = filePart.getInputStream();
@@ -102,31 +100,24 @@ public class GraphsServlet extends HttpServlet {
             Graph graph = rc.extractFromXMLToGraph(filePath);
             GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
 
-            System.out.println("in graphs servlet post - graph created from xml file");
-
-            if(graphsManager.isGraphExists(graph.getGraphName().toLowerCase(Locale.ROOT)))
-            {
-                resp.addHeader("message", "The graph " + graph.getGraphName() +" already exists in the system!");
-
-                resp.getWriter().println("The graph " + graph.getGraphName() +" already exists in the system!");
-                resp.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-            }
+            if(graphsManager.isGraphExists(graph.getGraphName()))
+                responseMessageAndCode(resp, "The graph " + graph.getGraphName() +" already exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
             else
             {
                 graph.setUploader(req.getHeader("username"));
                 graphsManager.addGraph(graph.getGraphName(), filePath.toFile(), graph);
                 this.graphDetailsDTOMap.put(graph.getGraphName(), new DashboardGraphDetailsDTO(graph));
 
-                resp.addHeader("message", "The graph " + graph.getGraphName() +" loaded successfully!");
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.addHeader("graphname", graph.getGraphName());
+                responseMessageAndCode(resp, "The graph " + graph.getGraphName() +" loaded successfully!", HttpServletResponse.SC_ACCEPTED);
             }
-        } catch (Exception e) {
-            System.out.println("in graphs servlet post - failed in creating graph from xml");
-            System.out.println(e.getMessage());
-            resp.addHeader("message", e.getMessage());
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+        } catch (Exception e) {responseMessageAndCode(resp, e.getMessage(), HttpServletResponse.SC_BAD_REQUEST);}
+    }
+
+    //------------------------------------------------- General -------------------------------------------------//
+    private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {
+        resp.addHeader("message", message);
+        resp.setStatus(code);
     }
 
     private void createWorkingDirectory() throws IOException {

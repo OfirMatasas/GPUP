@@ -2,7 +2,6 @@ package servlets.task;
 
 import com.google.gson.Gson;
 import dtos.TaskCurrentInfoDTO;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,145 +13,92 @@ import utils.ServletUtils;
 import java.io.IOException;
 import java.util.Set;
 
-@WebServlet(name = "TaskUpdateServlet", urlPatterns = "/task-update")
+@WebServlet(name = "TaskUpdateServlet", urlPatterns = "/task/update")
 public class TaskUpdateServlet extends HttpServlet {
 
+    //------------------------------------------------- Get -------------------------------------------------//
     @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Gson gson = new Gson();
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
-        String taskName;
 
-        if(req.getParameter("task-update") != null)
-        {
-            taskName = req.getParameter("task-update");
-
-            if(tasksManager.isTaskExists(taskName)) //Returning task current information to admin
-            {
-                TaskCurrentInfoDTO updatedInfo = tasksManager.getTaskCurrentInfo(taskName);
-                String infoAsString = gson.toJson(updatedInfo, TaskCurrentInfoDTO.class);
-                resp.getWriter().write(infoAsString);
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else //Task not exists
-            {
-                resp.addHeader("message", "The task " + taskName + " doesn't exist in the system!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-        }
-        else if(req.getParameter("register") != null) //Adding worker to task
-        {
-            String workerName = req.getParameter("username");
-            taskName = req.getParameter("register");
-
-            if(taskName == null || !tasksManager.isTaskExists(taskName)) //Invalid task name
-            {
-                resp.addHeader("message", "Invalid task name!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            else if(workerName == null || !userManager.isUserExists(workerName)) //Invalid username
-            {
-                resp.addHeader("message", "Invalid username!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            else if(tasksManager.isWorkerRegisteredToTask(workerName, taskName)) //Worker is already registered to task
-            {
-                resp.addHeader("message", "You're already registered to " + taskName +"!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            else //Valid registration to task
-            {
-                tasksManager.registerWorkerToTask(taskName, workerName);
-                resp.addHeader("message", "Registered successfully to " + taskName + "!");
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-        }
-        else if(req.getParameter("unregister") != null) //Removing worker from task
-        {
-            String workerName = req.getParameter("username");
-            taskName = req.getParameter("task-register");
-
-            if(taskName == null || !tasksManager.isTaskExists(taskName)) //Invalid task name
-            {
-                resp.addHeader("message", "Invalid task name!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            else if(workerName == null || !userManager.isUserExists(workerName)) //Invalid username
-            {
-                resp.addHeader("message", "Invalid user name!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            else //Valid removing registration from task
-            {
-                tasksManager.removeWorkerRegistrationFromTask(taskName, workerName);
-                resp.addHeader("message", "unregistered successfully to " + taskName + "!");
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-        }
-        else if(req.getParameter("registered-tasks") != null) //Returning all worker's registered tasks
-        {
-            String workerName = req.getParameter("registered-tasks");
-
-            if(workerName != null && userManager.isUserExists(workerName)) //Invalid worker name
-            {
-                Set<String> registeredTasks = tasksManager.getWorkerRegisteredTasks(workerName);
-                String registeredTasksAsString = gson.toJson(registeredTasks, Set.class);
-                resp.getWriter().write(registeredTasksAsString);
-
-                resp.addHeader("message", "Successfully pulled worker's registered tasks!");
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else //Valid removing registration from task
-            {
-                resp.addHeader("message", "Invalid task name!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-        }
+        if(req.getParameter("task-update") != null) //Returning task current information to admin
+            returnTaskCurrentInfoToAdmin(req, resp, tasksManager);
+        else if(req.getParameter("registered-tasks") != null) //Returning worker's registered tasks
+            returnWorkerRegisteredTasks(req, resp, tasksManager, userManager);
         else if(req.getParameter("credits") != null) //Returning worker's credits
-        {
-            String workerName = req.getParameter("credits");
-
-            if(workerName != null && userManager.isUserExists(workerName)) //Valid credit request
-            {
-                resp.addHeader("credits", tasksManager.getWorkerCredits(workerName).toString());
-                resp.addHeader("message", "Successfully pulled worker's credits!");
-                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else //Invalid request
-            {
-                resp.addHeader("message", "Invalid username!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-        }
+            returnWorkerCurrentCredits(req, resp, tasksManager, userManager);
         else //Invalid request
-        {
-            resp.addHeader("message", "Invalid request!");
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void returnWorkerCurrentCredits(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) {
+        String workerName = req.getParameter("credits");
+
+        if(workerName != null && userManager.isUserExists(workerName)) //Valid credit request
+        {
+            resp.addHeader("credits", tasksManager.getWorkerCredits(workerName).toString());
+            responseMessageAndCode(resp, "Successfully pulled worker's credits!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Invalid request
+            responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnWorkerRegisteredTasks(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
+        String workerName = req.getParameter("registered-tasks");
+        Gson gson = new Gson();
+
+        if(workerName != null && userManager.isUserExists(workerName)) //Worker exists in the system
+        {
+            Set<String> registeredTasks = tasksManager.getWorkerRegisteredTasks(workerName);
+            String registeredTasksAsString = gson.toJson(registeredTasks, Set.class);
+            resp.getWriter().write(registeredTasksAsString);
+
+            responseMessageAndCode(resp, "Successfully pulled worker's registered tasks!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Invalid worker name
+            responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnTaskCurrentInfoToAdmin(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+        String taskName = req.getParameter("task-update");
+        Gson gson = new Gson();
+
+        if(tasksManager.isTaskExists(taskName)) //Task exists
+        {
+            TaskCurrentInfoDTO updatedInfo = tasksManager.getTaskCurrentInfo(taskName);
+            String infoAsString = gson.toJson(updatedInfo, TaskCurrentInfoDTO.class);
+            resp.getWriter().write(infoAsString);
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Task not exists
+            responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    //------------------------------------------------- Post -------------------------------------------------//
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         String taskName, userName;
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
         if(req.getParameter("start-task") != null) //Requesting to start a task
         {
             taskName = req.getParameter("start-task");
+            userName = req.getParameter("username");
 
             if(tasksManager.isTaskExists(taskName))
             {
-                tasksManager.startTask(taskName);
+                tasksManager.startTask(taskName, userName);
+                responseMessageAndCode(resp, "The task " + taskName + " started successfully!", HttpServletResponse.SC_ACCEPTED);
             }
             else
-            {
-                resp.addHeader("message", "The task " + taskName + " doesn't exist in the system!");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
+                responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
         }
         else
-        {
-            resp.addHeader("message", "Invalid request!");
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    //------------------------------------------------- General -------------------------------------------------//
+    private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {
+        resp.addHeader("message", message);
+        resp.setStatus(code);
     }
 }

@@ -166,9 +166,12 @@ public class TasksManager {
                 && this.workerRegisteredTasksMap.get(workerName.toLowerCase()).contains(taskName);
     }
 
-    public void startTask(String taskName) {
+    public void startTask(String taskName, String userName) {
 
+        TaskCurrentInfoDTO taskInfo = this.taskInfoMap.get(taskName.toLowerCase());
 
+        taskInfo.changeTaskStatus("Started");
+        taskInfo.addToLogHistory(userName + " started the task on " + this.formatter.format(new Date()) + "!");
 
         this.listOfActiveTasks.add(taskName);
     }

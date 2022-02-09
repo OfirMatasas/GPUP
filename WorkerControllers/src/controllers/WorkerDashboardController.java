@@ -36,6 +36,7 @@ public class WorkerDashboardController {
     private String username;
     private DashboardPullerThread dashboardPullerThread;
     private String chosenTask = null;
+    private boolean register = true;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
     @FXML private SplitPane SplitPane;
@@ -137,7 +138,7 @@ public class WorkerDashboardController {
         //-------------------------- Credits -------------------------//
         private void getWorkerCreditsFromServer() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                    .parse(Patterns.TASK_UPDATE)
                     .newBuilder()
                     .addQueryParameter("credits", WorkerDashboardController.this.username)
                     .build()
@@ -160,7 +161,7 @@ public class WorkerDashboardController {
         //------------------------ Tasks List ------------------------//
         private void getOnlineTasksFromServer() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_LIST)
+                    .parse(Patterns.TASK_LIST)
                     .newBuilder()
                     .addQueryParameter("active-tasks-list", "active-tasks-list")
                     .build()
@@ -210,7 +211,7 @@ public class WorkerDashboardController {
         //------------------------ Users List ------------------------//
         private void getOnlineUsersFromServer() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.USERS_LISTS)
+                    .parse(Patterns.USER_LIST)
                     .newBuilder()
                     .build()
                     .toString();
@@ -257,15 +258,20 @@ public class WorkerDashboardController {
         if(selectedTaskName == null)
             return;
 
+        String registerRequest = this.register ? "register" : "unregister";
+        sendRegisterRequestToServer(registerRequest, selectedTaskName);
+    }
+
+    private void sendRegisterRequestToServer(String registerRequest, String selectedTaskName) {
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                .parse(Patterns.TASK_REGISTER)
                 .newBuilder()
-                .addQueryParameter("register", selectedTaskName)
+                .addQueryParameter(registerRequest, selectedTaskName)
                 .addQueryParameter("username", this.username)
                 .build()
                 .toString();
 
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
 
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() ->
@@ -274,7 +280,7 @@ public class WorkerDashboardController {
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 if (response.code() >= 200 && response.code() < 300) //Success
-                        Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Registration Successfully!", null, response.header("message")));
+                    Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Registration Successfully!", null, response.header("message")));
                 else //Failed
                     Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Registration Failed!", null, response.header("message")));
             }
@@ -292,7 +298,7 @@ public class WorkerDashboardController {
         this.chosenTask = selectedTaskName;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .parse(Patterns.TASK)
                 .newBuilder()
                 .addQueryParameter("task-info", selectedTaskName)
                 .build()
@@ -355,6 +361,17 @@ public class WorkerDashboardController {
                 WorkerDashboardController.this.selectedTaskStatusList.add(taskStatusTableItem);
 
                 WorkerDashboardController.this.TaskStatusTableView.setItems(WorkerDashboardController.this.selectedTaskStatusList);
+
+                if(taskDetailsDTO.getRegisteredWorkers().contains(WorkerDashboardController.this.username))
+                {
+                    WorkerDashboardController.this.RegisterToTaskButton.setText("Unregister From Task");
+                    WorkerDashboardController.this.register = false;
+                }
+                else
+                {
+                    WorkerDashboardController.this.RegisterToTaskButton.setText("Register To Task");
+                    WorkerDashboardController.this.register = true;
+                }
             }
         });
     }

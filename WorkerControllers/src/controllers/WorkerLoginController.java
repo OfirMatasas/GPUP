@@ -51,7 +51,7 @@ public class WorkerLoginController {
         }
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.LOGIN)
+                .parse(Patterns.LOGIN)
                 .newBuilder()
                 .addQueryParameter("workerUsername", userName)
                 .build()

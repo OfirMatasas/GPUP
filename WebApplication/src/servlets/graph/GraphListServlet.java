@@ -2,7 +2,6 @@ package servlets.graph;
 
 
 import com.google.gson.Gson;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,15 +12,13 @@ import utils.ServletUtils;
 import java.io.IOException;
 import java.util.Set;
 
-@WebServlet(name = "GraphListServlet", urlPatterns = "/graph-list")
+@WebServlet(name = "GraphListServlet", urlPatterns = "/graph/list")
 public class GraphListServlet extends HttpServlet {
 
     private static final Object dummy = new Object();
 
-    private Gson gson = new Gson();
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Gson gson = new Gson();
 
         if(req.getParameter("graph-list") != null)
         {
@@ -36,7 +33,7 @@ public class GraphListServlet extends HttpServlet {
 
             if(!graphNamesSet.isEmpty())
             {
-                listAsString = this.gson.toJson(graphsManager.getGraphNames());
+                listAsString = gson.toJson(graphsManager.getGraphNames());
 
                 resp.getWriter().println(listAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
@@ -48,10 +45,5 @@ public class GraphListServlet extends HttpServlet {
         {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
     }
 }

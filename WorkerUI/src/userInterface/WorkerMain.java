@@ -66,7 +66,7 @@ public class WorkerMain extends Application
             return;
 
         String finalUrl = HttpUrl
-                .parse(Patterns.LOCAL_HOST + Patterns.LOGOUT)
+                .parse(Patterns.LOGOUT)
                 .newBuilder()
                 .addQueryParameter("username",userName)
                 .build()

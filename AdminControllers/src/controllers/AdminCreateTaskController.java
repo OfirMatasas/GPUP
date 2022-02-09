@@ -148,7 +148,7 @@ public class AdminCreateTaskController implements Initializable{
         RequestBody body = RequestBody.create(stringObject, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(Patterns.LOCAL_HOST + Patterns.TASKS)
+                .url(Patterns.TASK)
                 .post(body).addHeader(taskTypeRequest, taskTypeRequest)
                 .build();
 

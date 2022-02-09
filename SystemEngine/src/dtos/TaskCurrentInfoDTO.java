@@ -14,7 +14,7 @@ public class TaskCurrentInfoDTO {
         this.taskStatus = taskStatus;
         this.targetStatusSet = targetStatusSet;
         this.currentWorkers = currentWorkers;
-        this.logHistory = logHistory;
+        this.logHistory = logHistory + "\n\n";
     }
 
     public String getTaskStatus() {
@@ -35,7 +35,7 @@ public class TaskCurrentInfoDTO {
 
     public void changeTaskStatus(String newStatus) { this.taskStatus = newStatus; }
 
-    public void addToLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n"; }
+    public void addToLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n\n"; }
 
     public synchronized void workerRegisteredToTask() { ++this.currentWorkers; }
 

@@ -150,7 +150,7 @@ public class WorkerTasksController {
 
         public void getRegisteredTasksFromServer() {
             String finalUrl = HttpUrl
-                    .parse(Patterns.LOCAL_HOST + Patterns.TASK_UPDATE)
+                    .parse(Patterns.TASK_UPDATE)
                     .newBuilder()
                     .addQueryParameter("registered-tasks", WorkerTasksController.this.userName)
                     .build()

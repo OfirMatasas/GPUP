@@ -11,7 +11,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "TaskListServlet", urlPatterns = "/tasks-list")
+@WebServlet(name = "TaskListServlet", urlPatterns = "/task/list")
 public class TaskListServlet extends HttpServlet {
 
     private static final Object dummy = new Object();

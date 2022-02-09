@@ -11,7 +11,7 @@ import utils.ServletUtils;
 
 import java.io.IOException;
 
-@WebServlet(name = "UsersListServlet", urlPatterns = "/userslists")
+@WebServlet(name = "UsersListServlet", urlPatterns = "/user/list")
 public class UsersListServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -23,5 +23,6 @@ public class UsersListServlet extends HttpServlet {
 
         resp.getWriter().write(usersListsJson);
         resp.setContentType("application/json");
+        resp.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 }

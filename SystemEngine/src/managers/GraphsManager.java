@@ -14,10 +14,10 @@ public class GraphsManager {
     private static final Map<String, Graph> actualGraphsMap = new HashMap<>();
     private static final Set<String> listOfGraphs = new HashSet<>();
 
-    public boolean isGraphExists(String graphName) { return actualGraphsMap.containsKey(graphName.toLowerCase(Locale.ROOT)); }
+    public boolean isGraphExists(String graphName) { return actualGraphsMap.containsKey(graphName.toLowerCase()); }
 
     public synchronized File getGraphFile(String graphName) {
-        return graphsFileMap.get(graphName.toLowerCase(Locale.ROOT));
+        return graphsFileMap.get(graphName.toLowerCase());
     }
 
     public synchronized Graph getGraph(String graphName) {
@@ -31,8 +31,8 @@ public class GraphsManager {
             Files.deleteIfExists(filePath.resolveSibling(newFileName));
             filePath = Files.move(filePath, filePath.resolveSibling(newFileName));
 
-            graphsFileMap.put(graphName.toLowerCase(Locale.ROOT), filePath.toFile());
-            actualGraphsMap.put(graphName.toLowerCase(Locale.ROOT), graph);
+            graphsFileMap.put(graphName.toLowerCase(), filePath.toFile());
+            actualGraphsMap.put(graphName.toLowerCase(), graph);
             listOfGraphs.add(graphName);
         } catch (IOException e) {
             e.printStackTrace();
