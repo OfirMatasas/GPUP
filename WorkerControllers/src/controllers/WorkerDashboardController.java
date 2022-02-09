@@ -297,82 +297,84 @@ public class WorkerDashboardController {
         this.RegisterToTaskButton.setDisable(false);
         this.chosenTask = selectedTaskName;
 
+        sendTaskUpdateRequestToServer();
+    }
+
+    private void sendTaskUpdateRequestToServer() {
         String finalUrl = HttpUrl
                 .parse(Patterns.TASK)
                 .newBuilder()
-                .addQueryParameter("task-info", selectedTaskName)
+                .addQueryParameter("task-info", this.chosenTask)
                 .build()
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
             }
 
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     Platform.runLater(() ->
-                            {
-                                Gson gson = new Gson();
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        {
-                                            DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
-                                            refreshWorkerTaskDetailsDTO(taskDetailsDTO);
-                                            responseBody.close();
-                                        }
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                        {
+                            Gson gson = new Gson();
+                            ResponseBody responseBody = response.body();
+                            try {
+                                if (responseBody != null) {
+                                    DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
+                                    refreshWorkerTaskDetailsDTO(taskDetailsDTO);
+                                    responseBody.close();
                                 }
-                            }
+                            } catch (IOException e) { e.printStackTrace(); }
+                        }
                     );
                 } else //Failed
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
             }
-
-            private void refreshWorkerTaskDetailsDTO(DashboardTaskDetailsDTO taskDetailsDTO) {
-                WorkerDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
-                WorkerDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
-
-                updateTaskTargetDetailsTable(taskDetailsDTO);
-                updateTaskStatusTable(taskDetailsDTO);
-            }
-
-            private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
-
-                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
-                        taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
-
-                WorkerDashboardController.this.selectedTaskTargetsList.clear();
-                WorkerDashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
-
-                WorkerDashboardController.this.TaskTargetsTableView.setItems(WorkerDashboardController.this.selectedTaskTargetsList);
-            }
-
-            private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
-
-                WorkerTaskStatusTableItem taskStatusTableItem = new WorkerTaskStatusTableItem(taskDetailsDTO.getTaskType(), taskDetailsDTO.getTaskStatus(),
-                        taskDetailsDTO.getRegisteredWorkers(), taskDetailsDTO.getTotalPayment(), WorkerDashboardController.this.username);
-
-                WorkerDashboardController.this.selectedTaskStatusList.clear();
-                WorkerDashboardController.this.selectedTaskStatusList.add(taskStatusTableItem);
-
-                WorkerDashboardController.this.TaskStatusTableView.setItems(WorkerDashboardController.this.selectedTaskStatusList);
-
-                if(taskDetailsDTO.getRegisteredWorkers().contains(WorkerDashboardController.this.username))
-                {
-                    WorkerDashboardController.this.RegisterToTaskButton.setText("Unregister From Task");
-                    WorkerDashboardController.this.register = false;
-                }
-                else
-                {
-                    WorkerDashboardController.this.RegisterToTaskButton.setText("Register To Task");
-                    WorkerDashboardController.this.register = true;
-                }
-            }
         });
+    }
+
+    public void refreshWorkerTaskDetailsDTO(DashboardTaskDetailsDTO taskDetailsDTO) {
+        WorkerDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
+        WorkerDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
+
+        updateTaskTargetDetailsTable(taskDetailsDTO);
+        updateTaskStatusTable(taskDetailsDTO);
+    }
+
+    private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+
+        SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
+                taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
+
+        WorkerDashboardController.this.selectedTaskTargetsList.clear();
+        WorkerDashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
+
+        WorkerDashboardController.this.TaskTargetsTableView.setItems(WorkerDashboardController.this.selectedTaskTargetsList);
+    }
+
+    private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+
+        WorkerTaskStatusTableItem taskStatusTableItem = new WorkerTaskStatusTableItem(taskDetailsDTO.getTaskType(), taskDetailsDTO.getTaskStatus(),
+                taskDetailsDTO.getRegisteredWorkers(), taskDetailsDTO.getTotalPayment(), WorkerDashboardController.this.username);
+
+        WorkerDashboardController.this.selectedTaskStatusList.clear();
+        WorkerDashboardController.this.selectedTaskStatusList.add(taskStatusTableItem);
+
+        WorkerDashboardController.this.TaskStatusTableView.setItems(WorkerDashboardController.this.selectedTaskStatusList);
+
+        if(taskDetailsDTO.getRegisteredWorkers().contains(WorkerDashboardController.this.username))
+        {
+            WorkerDashboardController.this.RegisterToTaskButton.setText("Unregister From Task");
+            WorkerDashboardController.this.register = false;
+        }
+        else
+        {
+            WorkerDashboardController.this.RegisterToTaskButton.setText("Register To Task");
+            WorkerDashboardController.this.register = true;
+        }
     }
 }

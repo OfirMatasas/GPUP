@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.gson.Gson;
+import dtos.DashboardTaskDetailsDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -30,6 +31,7 @@ public class WorkerTasksController {
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> taskInfoList = FXCollections.observableArrayList();
     private String userName;
+    private String chosenTask;
     private TasksPullerThread tasksPullerThread;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
@@ -117,14 +119,61 @@ public class WorkerTasksController {
             }
         });
     }
-
-    public void TaskSelectedFromAllListView(MouseEvent mouseEvent) {
-    }
+    
 
     public void PauseButtonPressed(ActionEvent actionEvent) {
     }
 
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
+    }
+
+    public void SelectedFromTaskListView(MouseEvent mouseEvent) {
+        String selectedTaskName =  this.TasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTaskName == null)
+            return;
+
+
+    }
+
+    private void sendTaskUpdateRequestToServer() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK)
+                .newBuilder()
+                .addQueryParameter("task-info", this.chosenTask)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    Platform.runLater(() ->
+                            {
+                                Gson gson = new Gson();
+                                ResponseBody responseBody = response.body();
+                                try {
+                                    if (responseBody != null) {
+                                        DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
+                                        refreshWorkerTaskDetailsDTO(taskDetailsDTO);
+                                        responseBody.close();
+                                    }
+                                } catch (IOException e) { e.printStackTrace(); }
+                            }
+                    );
+                } else //Failed
+                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+            }
+        });
+    }
+
+    public void SelectedFromTargetListView(MouseEvent mouseEvent) {
     }
 
     //----------------------------------------------- Puller Thread --------------------------------------------//

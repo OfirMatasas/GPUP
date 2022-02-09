@@ -118,36 +118,26 @@ public class TasksManager {
                 this.taskDetailsDTOMap.get(taskName.toLowerCase()).getSinglePayment());
     }
 
-    public synchronized void updateTargetInfoOnTask(String taskName, String targetName, TaskTargetCurrentInfoTableItem targetUpdate) {
-        TaskCurrentInfoDTO currTargetInfo = this.taskInfoMap.get(taskName.toLowerCase());
-
-        for(TaskTargetCurrentInfoTableItem curr : currTargetInfo.getTargetStatusSet())
-        {
-            if(curr.getTargetName().equalsIgnoreCase(targetName))
-            {
-                curr.updateItem(targetUpdate);
-                break;
-            }
-        }
-
-//        updateTaskStatus(taskName);
+    public synchronized void updateTargetInfoOnTask(String taskName, String targetName, String runtimeStatus, String resultStatus) {
+        this.taskInfoMap.get(taskName.toLowerCase()).updateTargetStatus(targetName, runtimeStatus, resultStatus);
     }
 
-    public synchronized Set<String> getWorkerRegisteredTasks(String workerName)
-    {
+    public synchronized Integer getTaskFinishedTargets(String taskName) {
+        return this.taskInfoMap.get(taskName.toLowerCase()).getFinishedTargets();
+    }
+
+    public synchronized Set<String> getWorkerRegisteredTasks(String workerName) {
         return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
     }
 
-    public synchronized Integer getWorkerCredits(String workerName)
-    {
+    public synchronized Integer getWorkerCredits(String workerName) {
         if(!this.workersCredits.containsKey(workerName.toLowerCase()))
             this.workersCredits.put(workerName.toLowerCase(), 0);
 
         return this.workersCredits.get(workerName.toLowerCase());
     }
 
-    public synchronized void addRegisteredTaskToWorker(String workerName, String taskName)
-    {
+    public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
         //Creating new set of tasks if it's the first time the worker register
         if(this.workerRegisteredTasksMap.get(workerName.toLowerCase()) == null)
             this.workerRegisteredTasksMap.put(workerName.toLowerCase(), new HashSet<>());
@@ -155,13 +145,11 @@ public class TasksManager {
         this.workerRegisteredTasksMap.get(workerName.toLowerCase()).add(taskName);
     }
 
-    public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName)
-    {
+    public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName) {
         this.workerRegisteredTasksMap.get(workerName.toLowerCase()).remove(taskName);
     }
 
-    public synchronized boolean isWorkerRegisteredToTask(String workerName, String taskName)
-    {
+    public synchronized boolean isWorkerRegisteredToTask(String workerName, String taskName) {
         return this.workerRegisteredTasksMap.containsKey(workerName.toLowerCase())
                 && this.workerRegisteredTasksMap.get(workerName.toLowerCase()).contains(taskName);
     }

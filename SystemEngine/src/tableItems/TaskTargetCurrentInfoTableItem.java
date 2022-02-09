@@ -29,17 +29,16 @@ public class TaskTargetCurrentInfoTableItem {
         return this.resultStatus;
     }
 
-    public void updateItem(TaskTargetCurrentInfoTableItem newInfo)
-    {
-        this.runtimeStatus = newInfo.getRuntimeStatus();
-        this.resultStatus = newInfo.getResultStatus();
-    }
-
     public void setRuntimeStatus(String runtimeStatus) {
         this.runtimeStatus = runtimeStatus;
     }
 
     public void setResultStatus(String resultStatus) {
+        this.resultStatus = resultStatus;
+    }
+
+    public void updateItem(String runtimeStatus, String resultStatus) {
+        this.resultStatus = runtimeStatus;
         this.resultStatus = resultStatus;
     }
 }

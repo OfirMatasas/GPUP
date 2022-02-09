@@ -9,6 +9,7 @@ public class TaskCurrentInfoDTO {
     private final Set<TaskTargetCurrentInfoTableItem> targetStatusSet;
     private Integer currentWorkers;
     private String logHistory;
+    private Integer finishedTargets;
 
     public TaskCurrentInfoDTO(String taskStatus, Set<TaskTargetCurrentInfoTableItem> targetStatusSet, Integer currentWorkers, String logHistory) {
         this.taskStatus = taskStatus;
@@ -40,4 +41,21 @@ public class TaskCurrentInfoDTO {
     public synchronized void workerRegisteredToTask() { ++this.currentWorkers; }
 
     public synchronized void workerLeftTask() { --this.currentWorkers;}
+
+    public synchronized void updateTargetStatus(String targetName, String runtimeStatus, String resultStatus)
+    {
+        for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
+        {
+            if(targetName.equalsIgnoreCase(curr.getTargetName()))
+            {
+                curr.updateItem(runtimeStatus, resultStatus);
+                break;
+            }
+        }
+
+        if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
+            ++this.finishedTargets;
+    }
+
+    public synchronized Integer getFinishedTargets() { return this.finishedTargets; }
 }

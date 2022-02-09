@@ -29,7 +29,7 @@
                            <content>
                               <VBox spacing="5.0" styleClass="primaryBackground">
                                  <children>
-                                    <ListView fx:id="TargetsListView" onMouseClicked="#TaskSelectedFromAllListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <ListView fx:id="TargetsListView" onMouseClicked="#SelectedFromTargetListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -41,7 +41,7 @@
                            <content>
                               <VBox spacing="5.0" styleClass="primaryBackground">
                                  <children>
-                                    <ListView fx:id="TasksListView" onMouseClicked="#TaskSelectedFromAllListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <ListView fx:id="TasksListView" onMouseClicked="#SelectedFromTaskListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.TasksManager;
 import managers.UserManager;
+import tableItems.WorkerChosenTaskInformationTableItem;
 import utils.ServletUtils;
 
 import java.io.IOException;
@@ -27,8 +28,30 @@ public class TaskUpdateServlet extends HttpServlet {
             returnWorkerRegisteredTasks(req, resp, tasksManager, userManager);
         else if(req.getParameter("credits") != null) //Returning worker's credits
             returnWorkerCurrentCredits(req, resp, tasksManager, userManager);
+        else if(req.getParameter("chosen-task") != null)
+            returnWorkerChosenTask(req, resp, tasksManager, userManager);
         else //Invalid request
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnWorkerChosenTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
+        String workerName = req.getParameter("username");
+        String taskName = req.getParameter("chosen-task");
+
+        if(workerName == null || !userManager.isUserExists(workerName))
+            responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(taskName == null || !tasksManager.isTaskExists(taskName))
+            responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
+        else //Valid request
+        {
+            TaskCurrentInfoDTO currInfo = tasksManager.getTaskCurrentInfo(taskName);
+
+            WorkerChosenTaskInformationTableItem returnedInfo = new WorkerChosenTaskInformationTableItem(taskName,
+                    currInfo.getTaskStatus(), currInfo.getCurrentWorkers(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
+
+            resp.getWriter().write(new Gson().toJson(returnedInfo, WorkerChosenTaskInformationTableItem.class));
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
     }
 
     private void returnWorkerCurrentCredits(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) {
