@@ -40,6 +40,17 @@ public class TargetSummary implements Serializable
         this.totalPausingTime = Duration.ZERO;
     }
 
+    public TargetSummary(TargetSummary curr) {
+        this.targetName = curr.getTargetName();
+        this.extraInformation = curr.extraInformation;
+        this.resultStatus = curr.getResultStatus();
+        this.runtimeStatus = curr.getRuntimeStatus();
+        this.isSkipped = curr.isSkipped;
+        this.actualTime = Duration.ZERO;
+        this.predictedTime = Duration.ZERO;
+        this.totalPausingTime = Duration.ZERO;
+    }
+
     //--------------------------------------------------Getters-----------------------------------------------------//
     public String getTargetName() {
         return this.targetName;

@@ -1,5 +1,6 @@
 package dtos;
 
+import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
 import target.Target;
 
@@ -8,11 +9,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class DashboardTaskDetailsDTO {
-
     private final String taskType;
     private final String taskName;
     private final String graphName;
     private final String uploader;
+    private String taskStatus;
     private final Integer targets;
     private Integer roots = 0;
     private Integer middles = 0;
@@ -21,15 +22,22 @@ public class DashboardTaskDetailsDTO {
     private final Integer singlePayment;
     private final Integer totalPayment;
     private final Set<String> registeredWorkers;
-    private String taskStatus;
+    private final Set<TaskTargetCurrentInfoTableItem> targetStatusSet;
+    private String logHistory;
+    private Integer finishedTargets;
 
-    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute, String taskType, Graph graph) {
+    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute,
+                                   Set<TaskTargetCurrentInfoTableItem> targetStatusSet, String taskType,
+                                   Graph graph, String logHistory) {
         this.taskName = taskName;
         this.taskType = taskType;
         this.graphName = graph.getGraphName();
         this.uploader = creatorName;
         this.registeredWorkers = new HashSet<>();
         this.taskStatus = "New";
+        this.finishedTargets = 0;
+        this.logHistory = logHistory;
+        this.targetStatusSet = targetStatusSet;
 
         if(targetsToExecute.size() == graph.getGraphTargets().size())
         {
@@ -128,4 +136,37 @@ public class DashboardTaskDetailsDTO {
     public String getTaskStatus() {
         return this.taskStatus;
     }
+
+    public Set<TaskTargetCurrentInfoTableItem> getTargetStatusSet() {
+        return this.targetStatusSet;
+    }
+
+    public Integer getRegisteredWorkersNumber() {
+        return this.registeredWorkers.size();
+    }
+
+    public String getLogHistory() {
+        return this.logHistory;
+    }
+
+    public Integer getFinishedTargets() {
+        return this.finishedTargets;
+    }
+
+    public synchronized void updateTargetStatus(String targetName, String runtimeStatus, String resultStatus)
+    {
+        for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
+        {
+            if(targetName.equalsIgnoreCase(curr.getTargetName()))
+            {
+                curr.updateItem(runtimeStatus, resultStatus);
+                break;
+            }
+        }
+
+        if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
+            ++this.finishedTargets;
+    }
+
+    public void addToTaskLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n\n"; }
 }

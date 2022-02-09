@@ -1,7 +1,7 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dtos.TaskCurrentInfoDTO;
+import dtos.DashboardTaskDetailsDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -110,7 +110,7 @@ public class AdminTaskControlController {
                                 ResponseBody responseBody = response.body();
                                 try {
                                     if (responseBody != null) {
-                                        TaskCurrentInfoDTO updatedInfo = new Gson().fromJson(responseBody.string(), TaskCurrentInfoDTO.class);
+                                        DashboardTaskDetailsDTO updatedInfo = new Gson().fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
                                         refreshInfo(updatedInfo);
                                         responseBody.close();
                                     }
@@ -123,17 +123,17 @@ public class AdminTaskControlController {
                         Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
                 }
 
-                private void refreshInfo(TaskCurrentInfoDTO updatedInfo) {
+                private void refreshInfo(DashboardTaskDetailsDTO updatedInfo) {
                     updateTargetStatusesTable(updatedInfo);
                     updateNumberOfWorkers(updatedInfo);
                     updateTaskLogHistory(updatedInfo);
                 }
 
-                private void updateNumberOfWorkers(TaskCurrentInfoDTO updatedInfo) {
-                    AdminTaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getCurrentWorkers().toString());
+                private void updateNumberOfWorkers(DashboardTaskDetailsDTO updatedInfo) {
+                    AdminTaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getRegisteredWorkersNumber().toString());
                 }
 
-                private void updateTaskLogHistory(TaskCurrentInfoDTO updatedInfo) {
+                private void updateTaskLogHistory(DashboardTaskDetailsDTO updatedInfo) {
                     if(updatedInfo.getLogHistory() != null)
                     {
                         AdminTaskControlController.this.logTextArea.clear();
@@ -141,7 +141,7 @@ public class AdminTaskControlController {
                     }
                 }
 
-                private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
+                private void updateTargetStatusesTable(DashboardTaskDetailsDTO updatedInfo) {
                     AdminTaskControlController.this.taskTargetStatusesList.clear();
                     AdminTaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
 

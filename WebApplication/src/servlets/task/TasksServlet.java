@@ -6,9 +6,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import managers.GraphsManager;
+import managers.TasksManager;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
-import managers.TasksManager;
 import utils.ServletUtils;
 
 import java.io.IOException;
@@ -83,6 +84,7 @@ public class TasksServlet extends HttpServlet {
     //------------------------------------------------- Post -------------------------------------------------//
     @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+        GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
         Gson gson = new Gson();
 
         if(req.getHeader("simulation") != null) //Uploaded simulation task
@@ -90,13 +92,10 @@ public class TasksServlet extends HttpServlet {
             SimulationTaskInformation newTaskInfo = gson.fromJson(req.getReader(), SimulationTaskInformation.class);
             if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
             {
-                tasksManager.addSimulationTask(newTaskInfo);
+                tasksManager.addSimulationTask(newTaskInfo, graphsManager);
 
                 resp.addHeader("message", "The task " + newTaskInfo.getTaskName() + " uploaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-
-                tasksManager.addTaskDetailsDTO(newTaskInfo.getTaskName(), newTaskInfo.getTaskCreator(), "Simulation", newTaskInfo.getTargetsToExecute(),
-                        ServletUtils.getGraphsManager(getServletContext()).getGraph(newTaskInfo.getGraphName()));
             }
             else //A task with the same name already exists in the system
             {
@@ -109,13 +108,12 @@ public class TasksServlet extends HttpServlet {
             CompilationTaskInformation newTaskInfo = gson.fromJson(req.getReader(), CompilationTaskInformation.class);
             if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
             {
-                tasksManager.addCompilationTask(newTaskInfo);
+                tasksManager.addCompilationTask(newTaskInfo, graphsManager);
 
                 resp.addHeader("message", "The task " + newTaskInfo.getTaskName() + " uploaded successfully!");
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
 
-                tasksManager.addTaskDetailsDTO(newTaskInfo.getTaskName(), newTaskInfo.getTaskCreator(), "Compilation", newTaskInfo.getTargetsToExecute(),
-                        ServletUtils.getGraphsManager(getServletContext()).getGraph(newTaskInfo.getGraphName()));            }
+           }
             else //A task with the same name already exists in the system
             {
                 resp.addHeader("message", "The task " + newTaskInfo.getTaskName() + " already exists in the system!");

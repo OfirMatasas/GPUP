@@ -1,23 +1,16 @@
 package task;
 
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import myExceptions.FileNotFound;
-import myExceptions.OpeningFileCrash;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class TaskThread extends Thread {
+
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum TaskType { Simulation, Compilation }
 
@@ -25,65 +18,79 @@ public class TaskThread extends Thread {
     //Getting from UI
     private final Graph graph;
     private final TaskType taskType;
-    private final Map<String, SimulationParameters> taskParametersMap;
-    private final CompilationParameters compilationParameters;
+    private final SimulationTaskInformation simulationTask;
+    private final CompilationTaskInformation compilationTask;
     private final GraphSummary graphSummary;
     private final Set<String> targetsSet;
-    private ExecutorService executor;
-    private final TaskOutput taskOutput;
+    private final String creator;
     private final Boolean incremental;
-    private int numOfThreads;
+    private final String taskName;
 
     //Local use
     private final LinkedList<String> targetsList;
+    private final LinkedList<String> waitingTargetsList;
+    private final LinkedList<String> sentTargetsList;
+    private final LinkedList<String> finishedTargets;
     private Boolean paused;
     private Boolean stopped;
     private Boolean pausedBefore;
     private Boolean statusChanged;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
-    public TaskThread(Graph graph, TaskType taskType, Map<String, SimulationParameters> taskParametersMap, CompilationParameters compilationParameters,
-                      GraphSummary graphSummary, Set<String> targetsSet, int numOfThreads, TaskOutput taskOutput, Boolean incremental) {
+    public TaskThread(String taskName, Graph graph, GraphSummary graphSummary, SimulationTaskInformation simulationTask,
+                      CompilationTaskInformation compilationTask, Boolean incremental) {
+        this.taskName = taskName;
         this.graph = graph;
-        this.taskType = taskType;
-        this.taskParametersMap = taskParametersMap;
-        this.compilationParameters = compilationParameters;
+        this.simulationTask = simulationTask;
+        this.compilationTask = compilationTask;
         this.graphSummary = graphSummary;
-        this.targetsSet = targetsSet;
-        this.numOfThreads = numOfThreads;
-        this.executor = Executors.newFixedThreadPool(numOfThreads);
-        this.targetsList = new LinkedList<>();
+        this.incremental = incremental;
+
+        if(simulationTask != null) //Simulation task
+        {
+            this.taskType = TaskType.Simulation;
+            this.targetsSet = new HashSet<>(simulationTask.getTargetsToExecute());
+            this.creator = simulationTask.getTaskCreator();
+        }
+        else //Compilation task
+        {
+            this.taskType = TaskType.Compilation;
+            this.targetsSet = new HashSet<>(compilationTask.getTargetsToExecute());
+            this.creator = compilationTask.getTaskCreator();
+        }
+
         this.paused = false;
         this.stopped = false;
         this.statusChanged = false;
-        this.incremental = incremental;
         this.pausedBefore = false;
-        this.taskOutput = taskOutput;
+        this.targetsList = new LinkedList<>();
+        this.waitingTargetsList = new LinkedList<>();
+        this.sentTargetsList = new LinkedList<>();
+        this.finishedTargets = new LinkedList<>();
 
-        try {
-            this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
-        } catch (OpeningFileCrash e) {
-            e.printStackTrace();
-        }
+//        try {
+//            this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
+//        } catch (OpeningFileCrash e) {
+//            e.printStackTrace();
+//        }
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
     @Override
     public void run()
     {
+        Thread.currentThread().setName(this.taskName);
         String currTargetName = null;
         Target currTarget;
         taskPreparations();
-        Boolean currentlyPaused = false;
-        LinkedList<Future<?>> futures = new LinkedList<>();
-        LinkedList<String> submitted = new LinkedList<>();
+        Boolean currentlyPaused = false, finished = false;
 
         //Starting task on graph
-        this.taskOutput.printStartOfTaskOnGraph(this.taskType);
+//        this.taskOutput.printStartOfTaskOnGraph(this.taskType);
         this.graphSummary.startTheClock();
 
         //Continuing polling targets while there are some left, and the "Stop" button didn't hit
-        while(!getStopped() && (currentlyPaused || ((currTargetName = this.targetsList.poll()) != null)))
+        while(!finished && !getStopped())
         {
             //If the task is on "pause"
             if(currentlyPaused)
@@ -91,17 +98,6 @@ public class TaskThread extends Thread {
                 //Pausing the clock if the "Pause" button just hit
                 if(!this.pausedBefore)
                 {
-                    this.executor.shutdownNow();
-                    while(!this.executor.isTerminated()) {}
-
-                    for(int i = 0 ; i < submitted.size() ; ++i)
-                    {
-                        if(!futures.get(i).isDone())
-                            this.targetsList.addLast(submitted.get(i));
-                    }
-                    futures.clear();
-                    submitted.clear();
-
                     this.pausedBefore = true;
                     this.graphSummary.pauseTheClock();
                 }
@@ -110,54 +106,36 @@ public class TaskThread extends Thread {
                 continue;
             }
 
+            //If the task is waiting for updates from workers
+            if(this.targetsList.isEmpty())
+            {
+                finished = this.targetsSet.size() == this.finishedTargets.size();
+                continue;
+            }
+
+            currTargetName = this.targetsList.poll();
             currTarget = this.graph.getTarget(currTargetName);
 
-            try {
-                //Continuing the clock if the "Resume" button just hit
-                if(this.pausedBefore)
-                {
-                    this.executor = Executors.newFixedThreadPool(this.numOfThreads);
-
-                    this.pausedBefore = false;
-                    this.graphSummary.continueTheClock();
-                }
-
-                if(this.graphSummary.isSkipped(currTargetName))
-                    continue;
-                else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet))
-                { //The target is ready to run!
-                    if(this.taskType.equals(TaskType.Simulation))
-                        futures.add(this.executor.submit(new SimulationThread(this.taskParametersMap.get(currTargetName), currTarget, this.graphSummary, this.taskOutput)));
-                    else
-                        futures.add(this.executor.submit(new CompilationThread(currTarget, this.graphSummary, this.compilationParameters, this.taskOutput)));
-                    submitted.add(currTargetName);
-                }
-                else //The target is not ready to run yet, but not skipped either
-                    this.targetsList.addLast(currTargetName);
-
-                currentlyPaused = getPaused();
-
-            } catch (FileNotFound | IOException | OpeningFileCrash e) {
-                String finalCurrTarget = currTargetName;
-                Platform.runLater(() -> ShowPopUp(e.getMessage(), "Error with " + finalCurrTarget + " file.", Alert.AlertType.ERROR));
+            //Continuing the clock if the "Resume" button just hit
+            if(this.pausedBefore)
+            {
+                this.pausedBefore = false;
+                this.graphSummary.continueTheClock();
             }
+
+            if(this.graphSummary.isSkipped(currTargetName)) //The target is skipped
+                continue;
+            else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet)) //The target is ready to run!
+                this.waitingTargetsList.add(currTargetName);
+            else //The target is not ready to run yet, but not skipped either
+                this.targetsList.addLast(currTargetName);
+
+            currentlyPaused = getPaused();
+            finished = this.targetsSet.size() == this.finishedTargets.size();
         }
 
-        this.executor.shutdown();
-        while (!this.executor.isTerminated()) { }
-
         this.graphSummary.stopTheClock();
-        this.taskOutput.outputGraphSummary();
-        Platform.runLater(() -> ShowPopUp("Task completed!\nCheck \"Task\" for more information.", "Task completed!", Alert.AlertType.INFORMATION));
-    }
-
-    private void ShowPopUp(String message, String title, Alert.AlertType alertType)
-    {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+//        this.taskOutput.outputGraphSummary();
     }
 
     private void taskPreparations()
@@ -207,7 +185,7 @@ public class TaskThread extends Thread {
                     }
                     targetFrozen = true;
                     this.targetsList.addLast(currentTargetName);
-                    this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen, true);
+                    this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen);
 
                     break;
                 }
@@ -215,13 +193,11 @@ public class TaskThread extends Thread {
             if(!targetFrozen)
             {
                 this.targetsList.addFirst(currentTargetName);
-                this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting, true);
+                this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
             }
         }
         //Finished initializing graph summary
     }
-
-    public void setNumOfThreads(int numOfThreads) { this.numOfThreads = numOfThreads; }
 
     public Boolean getPaused() { return this.paused; }
 
@@ -229,14 +205,9 @@ public class TaskThread extends Thread {
 
     public Boolean getStatusChanged() { return this.statusChanged; }
 
-    public ExecutorService getExecutor() {
-        return this.executor;
-    }
-
     public void stopTheTask()
     {
         this.stopped = this.statusChanged = true;
-        this.executor.shutdownNow();
     }
 
     public void pauseTheTask() { this.paused = this.statusChanged = true; }
@@ -247,4 +218,20 @@ public class TaskThread extends Thread {
     }
 
     public void resetStatusChanged() { this.statusChanged = false; }
+
+    public String getCreator() { return this.creator; }
+
+    public LinkedList<String> getWaitingTargetsList() { return this.targetsList; }
+
+    public void taskOnTargetFinished(String targetName, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus) {
+        this.sentTargetsList.remove(targetName);
+        this.finishedTargets.add(targetName);
+        this.graphSummary.UpdateTargetSummary(this.graph.getTarget(targetName), resultStatus, runtimeStatus);
+    }
+
+    public void returnTargetToWaitingList(String targetName)
+    {
+        this.sentTargetsList.remove(targetName);
+        this.waitingTargetsList.add(targetName);
+    }
 }

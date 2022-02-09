@@ -1,7 +1,7 @@
 package servlets.task;
 
 import com.google.gson.Gson;
-import dtos.TaskCurrentInfoDTO;
+import dtos.DashboardTaskDetailsDTO;
 import dtos.WorkerChosenTaskDTO;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -45,10 +45,10 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
         else //Valid request
         {
-            TaskCurrentInfoDTO currInfo = tasksManager.getTaskCurrentInfo(taskName);
+            DashboardTaskDetailsDTO currInfo = tasksManager.getTaskDetailsDTO(taskName);
 
             WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
-                    currInfo.getTaskStatus(), currInfo.getCurrentWorkers(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
+                    currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
 
             WorkerChosenTaskDTO returnedDTO = new WorkerChosenTaskDTO(tableItem, currInfo.getTargetStatusSet().size(), currInfo.getFinishedTargets());
 
@@ -91,8 +91,8 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(tasksManager.isTaskExists(taskName)) //Task exists
         {
-            TaskCurrentInfoDTO updatedInfo = tasksManager.getTaskCurrentInfo(taskName);
-            String infoAsString = gson.toJson(updatedInfo, TaskCurrentInfoDTO.class);
+            DashboardTaskDetailsDTO updatedInfo = tasksManager.getTaskDetailsDTO(taskName);
+            String infoAsString = gson.toJson(updatedInfo, DashboardTaskDetailsDTO.class);
             resp.getWriter().write(infoAsString);
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
@@ -106,20 +106,24 @@ public class TaskUpdateServlet extends HttpServlet {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
         if(req.getParameter("start-task") != null) //Requesting to start a task
-        {
-            taskName = req.getParameter("start-task");
-            userName = req.getParameter("username");
-
-            if(tasksManager.isTaskExists(taskName))
-            {
-                tasksManager.startTask(taskName, userName);
-                responseMessageAndCode(resp, "The task " + taskName + " started successfully!", HttpServletResponse.SC_ACCEPTED);
-            }
-            else
-                responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
-        }
+            startTask(req, resp, tasksManager);
         else
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+        String taskName;
+        String userName;
+        taskName = req.getParameter("start-task");
+        userName = req.getParameter("username");
+
+        if(tasksManager.isTaskExists(taskName))
+        {
+            tasksManager.startTask(taskName, userName, ServletUtils.getGraphsManager(getServletContext()));
+            responseMessageAndCode(resp, "The task " + taskName + " started successfully!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else
+            responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     //------------------------------------------------- General -------------------------------------------------//
