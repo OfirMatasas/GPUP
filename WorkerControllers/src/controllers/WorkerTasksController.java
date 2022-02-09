@@ -24,6 +24,8 @@ import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
 
 import java.io.IOException;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 
 public class WorkerTasksController {
@@ -39,6 +41,7 @@ public class WorkerTasksController {
     private TasksPullerThread tasksPullerThread;
     private Integer totalTargets = 1;
     private Integer finishedTargets = 0;
+    private final Random random = new Random();
 
     //---------------------------------------------- FXML Members -------------------------------------------//
     @FXML private SplitPane SplitPane;
@@ -76,7 +79,6 @@ public class WorkerTasksController {
         initializeChosenTaskTable();
         setupListeners();
         createTaskPullerThread();
-        createNewProgressBar();
     }
 
     private void setUserName(String userName) { this.userName = userName; }
@@ -133,53 +135,6 @@ public class WorkerTasksController {
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
     }
 
-    public void SelectedFromTaskListView() {
-        String selectedTaskName =  this.TasksListView.getSelectionModel().getSelectedItem();
-
-        if(selectedTaskName == null)
-            return;
-
-        this.chosenTask = selectedTaskName;
-        sendChosenTaskUpdateRequestToServer();
-    }
-
-    private void sendChosenTaskUpdateRequestToServer() {
-        String finalUrl = HttpUrl
-                .parse(Patterns.TASK_UPDATE)
-                .newBuilder()
-                .addQueryParameter("chosen-task", this.chosenTask)
-                .addQueryParameter("username", this.userName)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-task!"));
-            }
-
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-                if (response.code() >= 200 && response.code() < 300) //Success
-                {
-                    Platform.runLater(() ->
-                        {
-                            ResponseBody responseBody = response.body();
-                            try {
-                                if (responseBody != null) {
-
-                                    WorkerChosenTaskDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTaskDTO.class);
-                                    refreshChosenTaskTable(dto.getItem());
-                                    refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
-                                    responseBody.close();
-                                }
-                            } catch (IOException e) { e.printStackTrace(); }
-                        }
-                    );
-                } else //Failed
-                    Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
-            }
-        });
-    }
-
     private void refreshProgressBar(Integer totalTargets, Integer finishedTargets) {
         this.totalTargets = totalTargets;
         this.finishedTargets = finishedTargets;
@@ -206,11 +161,13 @@ public class WorkerTasksController {
             while(true)
             {
                 sendingThreadToSleep();
-                getRegisteredTasksFromServer();
-                SelectedFromTaskListView();
+                getRegisteredTasks();
+                getInfoAboutSelectedTaskFromListView();
+                getTargetsToExecute();
             }
         }
 
+        //----------------------- Sleep --------------------------//
         private void sendingThreadToSleep() {
             try {
                 sleep(1000);
@@ -219,7 +176,8 @@ public class WorkerTasksController {
             }
         }
 
-        public void getRegisteredTasksFromServer() {
+        //------------------- Registered Tasks -------------------//
+        public void getRegisteredTasks() {
             String finalUrl = HttpUrl
                     .parse(Patterns.TASK_UPDATE)
                     .newBuilder()
@@ -228,13 +186,11 @@ public class WorkerTasksController {
                     .toString();
 
             HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for registered-tasks!"));
                 }
 
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
                         Platform.runLater(() ->
@@ -275,14 +231,113 @@ public class WorkerTasksController {
             });
         }
 
+        //------------------- Chosen Task Info -------------------//
+        private void getInfoAboutSelectedTaskFromListView() {
+            String selectedTaskName = WorkerTasksController.this.TasksListView.getSelectionModel().getSelectedItem();
+
+            if(selectedTaskName == null)
+                return;
+
+            WorkerTasksController.this.chosenTask = selectedTaskName;
+            sendChosenTaskUpdateRequestToServer();
+        }
+
         private void refreshTasksListView(Set<String> registered) {
             if (registered == null)
                 return;
 
             WorkerTasksController.this.registeredTasksList.addAll(registered);
         }
+
+        private void sendChosenTaskUpdateRequestToServer() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("chosen-task", WorkerTasksController.this.chosenTask)
+                    .addQueryParameter("username", WorkerTasksController.this.userName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-task!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                                {
+                                    ResponseBody responseBody = response.body();
+                                    try {
+                                        if (responseBody != null) {
+                                            WorkerChosenTaskDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTaskDTO.class);
+                                            refreshChosenTaskTable(dto.getItem());
+                                            refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
+                                            responseBody.close();
+                                        }
+                                    } catch (IOException e) { e.printStackTrace(); }
+                                }
+                        );
+                    } else Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
+                }
+            });
+        }
+
+        //------------------- Executing Targets -------------------//
+        private void getTargetsToExecute() {
+
+
+        }
+
+        private void sendTargetsToExecuteRequestToServer() {
+            int index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
+            String taskName = WorkerTasksController.this.registeredTasksList.get(index);
+
+            String finalUrl = HttpUrl
+                    .parse(Patterns.TASK)
+                    .newBuilder()
+                    .addQueryParameter("execute", taskName)
+                    .addQueryParameter("username", WorkerTasksController.this.userName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for executing targets!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                            {
+                                ResponseBody responseBody = response.body();
+                                if (responseBody != null) {
+                                    if(Objects.equals(response.header("task-type"), "Simulation"))
+                                        executeSimulationTarget(response);
+                                    else //Compilation
+                                        executeCompilationTarget(response);
+                                }
+                            }
+                        );
+                    } else Platform.runLater(() -> System.out.println("couldn't pull executable targets from server!"));
+                }
+            });
+        }
+
+        private void executeSimulationTarget(Response response) {
+
+        }
+
+        private void executeCompilationTarget(Response response) {
+        }
+
+
     }
 
+
+    //--------------------------------------------- Progress Bar ---------------------------------------------//
     private void createNewProgressBar()
     {
         javafx.concurrent.Task<Void> task = new Task<Void>() {
@@ -303,8 +358,6 @@ public class WorkerTasksController {
         progressBarThread.start();
     }
 }
-
-
 
 //
 //public class WorkerTasksController {
