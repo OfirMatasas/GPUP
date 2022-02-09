@@ -16,8 +16,7 @@ public class TaskListServlet extends HttpServlet {
 
     private static final Object dummy = new Object();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Gson gson = new Gson();
         TasksManager tasksManager;
 

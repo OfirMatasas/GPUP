@@ -10,7 +10,7 @@ import utils.ServletUtils;
 @WebServlet(name = "LogoutServlet", urlPatterns = "/user/logout")
 public class LogoutServlet extends HttpServlet {
 
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
+    @Override protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
         String username = request.getParameter("username");
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
 

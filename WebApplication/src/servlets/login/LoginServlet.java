@@ -11,8 +11,8 @@ import java.io.IOException;
 @WebServlet(name = "LoginServlet" , urlPatterns = "/user/login")
 public class LoginServlet extends HttpServlet {
     boolean isAdmin;
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String userName;
 
         if(req.getParameter("adminUsername") != null)

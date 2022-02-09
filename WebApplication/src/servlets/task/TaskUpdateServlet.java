@@ -2,6 +2,7 @@ package servlets.task;
 
 import com.google.gson.Gson;
 import dtos.TaskCurrentInfoDTO;
+import dtos.WorkerChosenTaskDTO;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,10 +47,12 @@ public class TaskUpdateServlet extends HttpServlet {
         {
             TaskCurrentInfoDTO currInfo = tasksManager.getTaskCurrentInfo(taskName);
 
-            WorkerChosenTaskInformationTableItem returnedInfo = new WorkerChosenTaskInformationTableItem(taskName,
+            WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
                     currInfo.getTaskStatus(), currInfo.getCurrentWorkers(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
 
-            resp.getWriter().write(new Gson().toJson(returnedInfo, WorkerChosenTaskInformationTableItem.class));
+            WorkerChosenTaskDTO returnedDTO = new WorkerChosenTaskDTO(tableItem, currInfo.getTargetStatusSet().size(), currInfo.getFinishedTargets());
+
+            resp.getWriter().write(new Gson().toJson(returnedDTO, WorkerChosenTaskDTO.class));
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
     }

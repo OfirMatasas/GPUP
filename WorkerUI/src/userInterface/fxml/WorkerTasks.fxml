@@ -71,10 +71,13 @@
                            <textFill>
                               <Color blue="0.624" green="0.624" red="0.624" fx:id="x21" />
                            </textFill>
+                           <padding>
+                              <Insets top="10.0" />
+                           </padding>
                         </Label>
                         <VBox prefHeight="200.0" prefWidth="100.0">
                            <children>
-                              <TableView fx:id="TargetTableView" prefHeight="200.0" prefWidth="200.0">
+                              <TableView fx:id="TargetTableView" minHeight="90.0" prefHeight="200.0" prefWidth="200.0">
                                 <columns>
                                   <TableColumn fx:id="Target" prefWidth="118.0" text="Target" />
                                   <TableColumn fx:id="Task" prefWidth="119.0" text="Task" />
@@ -127,15 +130,15 @@
                               <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
                            </textFill>
                            <VBox.margin>
-                              <Insets bottom="20.0" />
+                              <Insets />
                            </VBox.margin>
                         </Label>
                         <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" styleClass="trans" VBox.vgrow="ALWAYS">
                            <children>
                               <VBox spacing="5.0" />
-                              <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="60.0" styleClass="primaryBackground" vbarPolicy="NEVER" VBox.vgrow="NEVER">
+                              <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="80.0" styleClass="primaryBackground" vbarPolicy="NEVER" VBox.vgrow="NEVER">
                                  <content>
-                                    <TableView fx:id="TaskTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="70.0" minWidth="-Infinity" prefHeight="109.0" prefWidth="633.0">
+                                    <TableView fx:id="TaskTableView" maxHeight="120.0" maxWidth="1.7976931348623157E308" minHeight="90.0" minWidth="-Infinity" prefHeight="109.0" prefWidth="633.0">
                                        <columns>
                                           <TableColumn fx:id="Name" minWidth="30.0" prefWidth="-1.0" text="Name" />
                                           <TableColumn fx:id="SelectedTaskStatus" minWidth="40.0" prefWidth="127.0" text="Status" />
@@ -155,7 +158,28 @@
                                     <Button fx:id="LeaveTaskButton" mnemonicParsing="false" onAction="#LeaveTaskButtonPressed" prefWidth="95.0" text="Leave Task" />
                                  </children>
                               </VBox>
-                              <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0" VBox.vgrow="ALWAYS" />
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox alignment="CENTER" maxHeight="10.0" prefHeight="100.0" prefWidth="200.0">
+                                       <children>
+                                          <Label alignment="CENTER" minWidth="60.0" style="&#10;" styleClass="headLines" text="Progress Bar" textAlignment="CENTER">
+                                             <font>
+                                                <Font size="18.0" fx:id="x12" />
+                                             </font>
+                                             <textFill>
+                                                <Color blue="0.624" green="0.624" red="0.624" fx:id="x22" />
+                                             </textFill>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <HBox prefHeight="100.0" prefWidth="200.0">
+                                       <children>
+                                          <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="ProgressPercentageLabel" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" text="0%" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
                            </children>
                            <VBox.margin>
                               <Insets />

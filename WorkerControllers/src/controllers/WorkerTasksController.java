@@ -1,11 +1,14 @@
 package controllers;
 
 import com.google.gson.Gson;
+import dtos.WorkerChosenTaskDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -29,9 +32,13 @@ public class WorkerTasksController {
     private final ObservableList<String> registeredTasksList = FXCollections.observableArrayList();
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> chosenTaskInfoList = FXCollections.observableArrayList();
+    public ProgressBar progressBar;
+    public Label ProgressPercentageLabel;
     private String userName;
     private String chosenTask;
     private TasksPullerThread tasksPullerThread;
+    private Integer totalTargets = 1;
+    private Integer finishedTargets = 0;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
     @FXML private SplitPane SplitPane;
@@ -69,6 +76,7 @@ public class WorkerTasksController {
         initializeChosenTaskTable();
         setupListeners();
         createTaskPullerThread();
+        createNewProgressBar();
     }
 
     private void setUserName(String userName) { this.userName = userName; }
@@ -145,13 +153,11 @@ public class WorkerTasksController {
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-task!"));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     Platform.runLater(() ->
@@ -159,8 +165,10 @@ public class WorkerTasksController {
                             ResponseBody responseBody = response.body();
                             try {
                                 if (responseBody != null) {
-                                    WorkerChosenTaskInformationTableItem item = new Gson().fromJson(responseBody.string(), WorkerChosenTaskInformationTableItem.class);
-                                    refreshChosenTaskTable(item);
+
+                                    WorkerChosenTaskDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTaskDTO.class);
+                                    refreshChosenTaskTable(dto.getItem());
+                                    refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
                                     responseBody.close();
                                 }
                             } catch (IOException e) { e.printStackTrace(); }
@@ -170,6 +178,11 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
             }
         });
+    }
+
+    private void refreshProgressBar(Integer totalTargets, Integer finishedTargets) {
+        this.totalTargets = totalTargets;
+        this.finishedTargets = finishedTargets;
     }
 
     private void refreshChosenTaskTable(WorkerChosenTaskInformationTableItem item) {
@@ -188,6 +201,8 @@ public class WorkerTasksController {
         @Override
         public void run()
         {
+            createNewProgressBar();
+
             while(true)
             {
                 sendingThreadToSleep();
@@ -223,31 +238,18 @@ public class WorkerTasksController {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
                         Platform.runLater(() ->
-                                {
-                                    Gson gson = new Gson();
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            {
-                                                Set registeredTasks = gson.fromJson(responseBody.string(), Set.class);
-                                                refreshTasksListView(registeredTasks);
-                                                responseBody.close();
-                                            }
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
+                        {
+                            ResponseBody responseBody = response.body();
+                            try {
+                                if (responseBody != null) {
+                                    Set registeredTasks = new Gson().fromJson(responseBody.string(), Set.class);
+                                    refreshTasksListView(registeredTasks);
+                                    responseBody.close();
                                 }
-                        );
+                            } catch (IOException e) { e.printStackTrace(); }
+                        });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull registered tasks from server!"));
-                }
-
-                private void refreshTasksListView(Set<String> registered) {
-                    if (registered == null)
-                        return;
-
-                    WorkerTasksController.this.registeredTasksList.addAll(registered);
                 }
 
 //                private void refreshInfo(TaskCurrentInfoDTO updatedInfo) {
@@ -273,23 +275,33 @@ public class WorkerTasksController {
             });
         }
 
+        private void refreshTasksListView(Set<String> registered) {
+            if (registered == null)
+                return;
 
+            WorkerTasksController.this.registeredTasksList.addAll(registered);
+        }
+    }
 
-                @FXML
-                void LeaveTaskButtonPressed(ActionEvent event) {
-
-                }
-
-                @FXML
-                void PauseButtonPressed(ActionEvent event) {
-
-                }
-
-                @FXML
-                void TaskSelectedFromAllListView(MouseEvent event) {
-
+    private void createNewProgressBar()
+    {
+        javafx.concurrent.Task<Void> task = new Task<Void>() {
+            @Override protected Void call() {
+                while (true) {
+                    updateProgress(WorkerTasksController.this.finishedTargets, WorkerTasksController.this.totalTargets);
                 }
             }
+        };
+
+        WorkerTasksController.this.progressBar.setStyle("-fx-accent: #00FF00;");
+        WorkerTasksController.this.progressBar.progressProperty().bind(task.progressProperty());
+        WorkerTasksController.this.ProgressPercentageLabel.textProperty().bind
+                (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
+
+        Thread progressBarThread = new Thread(task);
+        progressBarThread.setDaemon(true);
+        progressBarThread.start();
+    }
 }
 
 

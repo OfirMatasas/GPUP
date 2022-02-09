@@ -12,8 +12,7 @@ import utils.ServletUtils;
 public class TaskRegisterServlet extends HttpServlet {
 
     //----------------------------------------------- Post -----------------------------------------------//
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
 
