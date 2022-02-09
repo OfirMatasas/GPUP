@@ -1,7 +1,6 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dtos.DashboardTaskDetailsDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -29,7 +28,7 @@ public class WorkerTasksController {
     private final ObservableList<String> historyOfTargetsList = FXCollections.observableArrayList();
     private final ObservableList<String> registeredTasksList = FXCollections.observableArrayList();
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
-    private final ObservableList<WorkerChosenTaskInformationTableItem> taskInfoList = FXCollections.observableArrayList();
+    private final ObservableList<WorkerChosenTaskInformationTableItem> chosenTaskInfoList = FXCollections.observableArrayList();
     private String userName;
     private String chosenTask;
     private TasksPullerThread tasksPullerThread;
@@ -72,13 +71,13 @@ public class WorkerTasksController {
         createTaskPullerThread();
     }
 
+    private void setUserName(String userName) { this.userName = userName; }
+
     private void createTaskPullerThread() {
         this.tasksPullerThread = new TasksPullerThread();
         this.tasksPullerThread.setDaemon(true);
         this.tasksPullerThread.start();
     }
-
-    private void setUserName(String userName) { this.userName = userName; }
 
     public void initializeChosenTargetTaskTable() {
         this.Target.setCellValueFactory(new PropertyValueFactory<WorkerChosenTargetInformationTableItem, String>("targetName"));
@@ -119,7 +118,6 @@ public class WorkerTasksController {
             }
         });
     }
-    
 
     public void PauseButtonPressed(ActionEvent actionEvent) {
     }
@@ -127,27 +125,29 @@ public class WorkerTasksController {
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
     }
 
-    public void SelectedFromTaskListView(MouseEvent mouseEvent) {
+    public void SelectedFromTaskListView() {
         String selectedTaskName =  this.TasksListView.getSelectionModel().getSelectedItem();
 
         if(selectedTaskName == null)
             return;
 
-
+        this.chosenTask = selectedTaskName;
+        sendChosenTaskUpdateRequestToServer();
     }
 
-    private void sendTaskUpdateRequestToServer() {
+    private void sendChosenTaskUpdateRequestToServer() {
         String finalUrl = HttpUrl
-                .parse(Patterns.TASK)
+                .parse(Patterns.TASK_UPDATE)
                 .newBuilder()
-                .addQueryParameter("task-info", this.chosenTask)
+                .addQueryParameter("chosen-task", this.chosenTask)
+                .addQueryParameter("username", this.userName)
                 .build()
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-task!"));
             }
 
             @Override
@@ -155,22 +155,28 @@ public class WorkerTasksController {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     Platform.runLater(() ->
-                            {
-                                Gson gson = new Gson();
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
-                                        refreshWorkerTaskDetailsDTO(taskDetailsDTO);
-                                        responseBody.close();
-                                    }
-                                } catch (IOException e) { e.printStackTrace(); }
-                            }
+                        {
+                            ResponseBody responseBody = response.body();
+                            try {
+                                if (responseBody != null) {
+                                    WorkerChosenTaskInformationTableItem item = new Gson().fromJson(responseBody.string(), WorkerChosenTaskInformationTableItem.class);
+                                    refreshChosenTaskTable(item);
+                                    responseBody.close();
+                                }
+                            } catch (IOException e) { e.printStackTrace(); }
+                        }
                     );
                 } else //Failed
-                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+                    Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
             }
         });
+    }
+
+    private void refreshChosenTaskTable(WorkerChosenTaskInformationTableItem item) {
+        this.chosenTaskInfoList.clear();
+        this.chosenTaskInfoList.add(item);
+
+        this.TaskTableView.setItems(this.chosenTaskInfoList);
     }
 
     public void SelectedFromTargetListView(MouseEvent mouseEvent) {
@@ -186,6 +192,7 @@ public class WorkerTasksController {
             {
                 sendingThreadToSleep();
                 getRegisteredTasksFromServer();
+                SelectedFromTaskListView();
             }
         }
 
