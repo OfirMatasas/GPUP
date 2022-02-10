@@ -3,14 +3,15 @@ package task;
 import java.time.Duration;
 import java.time.Instant;
 
-public class ExecutedTargetResults {
+public class ExecutedTargetUpdates {
     private final String targetName;
     private String runtimeStatus;
     private String resultStatus;
     private Instant timeStarted;
     private Duration totalTimeSlept;
+    private String taskLog;
 
-    public ExecutedTargetResults(String targetName) {
+    public ExecutedTargetUpdates(String targetName) {
         this.targetName = targetName;
         this.runtimeStatus = "In process";
         this.resultStatus = "Undefined";

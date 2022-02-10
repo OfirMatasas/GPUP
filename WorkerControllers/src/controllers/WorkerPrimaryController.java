@@ -24,6 +24,7 @@ public class WorkerPrimaryController {
     private SplitPane DashboardPane = null;
     private SplitPane TasksPane = null;
     private String userName;
+    private Integer numOfThreads;
 
     @FXML private ToggleGroup templates;
     @FXML private BorderPane mainBorderPane;
@@ -48,9 +49,9 @@ public class WorkerPrimaryController {
     @FXML private AnchorPane StatusBar;
 
     //--------------------------------------------------Settings-----------------------------------------------------//
-    public void initialize(Stage primaryStage, String userName)
-    {
+    public void initialize(Stage primaryStage, String userName, Integer numOfThreads) {
         setUserName(userName);
+        setNumOfThreads(numOfThreads);
         setPrimaryStage(primaryStage);
 
         UpdateDashboardControllerAndPane();
@@ -62,6 +63,8 @@ public class WorkerPrimaryController {
     private void setUserName(String userName) {
         this.userName = userName;
     }
+
+    private void setNumOfThreads(Integer numOfThreads) { this.numOfThreads = numOfThreads; }
 
     private void setPrimaryStage(Stage stage){
         this.primaryStage = stage;
@@ -92,8 +95,7 @@ public class WorkerPrimaryController {
         updateThemeOnAllPanes(BodyComponentsPaths.RAINBOW_CENTER_THEME);
     }
 
-    private void updateThemeOnAllPanes(String themePath)
-    {
+    private void updateThemeOnAllPanes(String themePath) {
         this.TasksPane.getStylesheets().clear();
         this.TasksPane.getStylesheets().add(themePath);
 
@@ -101,8 +103,7 @@ public class WorkerPrimaryController {
         this.DashboardPane.getStylesheets().add(themePath);
     }
     //--------------------------------------------------Sidebar-----------------------------------------------------//
-    private void UpdateDashboardControllerAndPane()
-    {
+    private void UpdateDashboardControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
         loader.setLocation(url);
@@ -115,15 +116,14 @@ public class WorkerPrimaryController {
         }
     }
 
-    private void UpdateTasksControllerAndPane()
-    {
+    private void UpdateTasksControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.TASKS);
         loader.setLocation(url);
         try {
             this.TasksPane = loader.load(url.openStream());
             this.workerTasksController = loader.getController();
-            this.workerTasksController.initialize(this.userName);
+            this.workerTasksController.initialize(this.userName, this.numOfThreads);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -138,8 +138,7 @@ public class WorkerPrimaryController {
     }
 
     //--------------------------------------------------Methods-----------------------------------------------------//
-    public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
-    {
+    public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(header);

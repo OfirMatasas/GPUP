@@ -22,11 +22,15 @@ import patterns.Patterns;
 import tableItems.TaskTargetCurrentInfoTableItem;
 import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
+import task.*;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class WorkerTasksController {
     //----------------------------------------------- My Members --------------------------------------------//
@@ -34,11 +38,13 @@ public class WorkerTasksController {
     private final ObservableList<String> registeredTasksList = FXCollections.observableArrayList();
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> chosenTaskInfoList = FXCollections.observableArrayList();
+    private TasksPullerThread tasksPullerThread;
     public ProgressBar progressBar;
     public Label ProgressPercentageLabel;
     private String userName;
     private String chosenTask;
-    private TasksPullerThread tasksPullerThread;
+    private Integer numOfThreads;
+    private ThreadPoolExecutor executor;
     private Integer totalTargets = 1;
     private Integer finishedTargets = 0;
     private final Random random = new Random();
@@ -71,22 +77,30 @@ public class WorkerTasksController {
     @FXML private Button PauseButton;
     @FXML private Button LeaveTaskButton;
 
-    //------------------------------------------------ Initialize ---------------------------------------------//
-    public void initialize(String userName)
-    {
+    //------------------------------------------------- Settings ----------------------------------------------------//
+    public void initialize(String userName, Integer numOfThreads) {
         setUserName(userName);
+        setNumOfThreads(numOfThreads);
         initializeChosenTargetTaskTable();
         initializeChosenTaskTable();
         setupListeners();
         createTaskPullerThread();
+        createThreadPool();
     }
 
     private void setUserName(String userName) { this.userName = userName; }
+
+    private void setNumOfThreads(Integer numOfThreads) { this.numOfThreads = numOfThreads; }
 
     private void createTaskPullerThread() {
         this.tasksPullerThread = new TasksPullerThread();
         this.tasksPullerThread.setDaemon(true);
         this.tasksPullerThread.start();
+    }
+
+    private void createThreadPool() {
+        this.executor = new ThreadPoolExecutor(this.numOfThreads, this.numOfThreads, 1000000,
+                TimeUnit.MINUTES, new LinkedBlockingDeque<>());
     }
 
     public void initializeChosenTargetTaskTable() {
@@ -150,15 +164,14 @@ public class WorkerTasksController {
     public void SelectedFromTargetListView(MouseEvent mouseEvent) {
     }
 
-    //----------------------------------------------- Puller Thread --------------------------------------------//
+    //----------------------------------------------- Puller Thread -------------------------------------------------//
     public class TasksPullerThread extends Thread
     {
-        @Override
-        public void run()
+        @Override public void run()
         {
             createNewProgressBar();
 
-            while(true)
+            while(this.isAlive())
             {
                 sendingThreadToSleep();
                 getRegisteredTasks();
@@ -167,7 +180,7 @@ public class WorkerTasksController {
             }
         }
 
-        //----------------------- Sleep --------------------------//
+        //--------------------------- Sleep -----------------------------//
         private void sendingThreadToSleep() {
             try {
                 sleep(1000);
@@ -176,7 +189,7 @@ public class WorkerTasksController {
             }
         }
 
-        //------------------- Registered Tasks -------------------//
+        //----------------------- Registered Tasks ----------------------//
         public void getRegisteredTasks() {
             String finalUrl = HttpUrl
                     .parse(Patterns.TASK_UPDATE)
@@ -231,7 +244,7 @@ public class WorkerTasksController {
             });
         }
 
-        //------------------- Chosen Task Info -------------------//
+        //----------------------- Chosen Task Info ----------------------//
         private void getInfoAboutSelectedTaskFromListView() {
             String selectedTaskName = WorkerTasksController.this.TasksListView.getSelectionModel().getSelectedItem();
 
@@ -284,10 +297,14 @@ public class WorkerTasksController {
             });
         }
 
-        //------------------- Executing Targets -------------------//
+        //---------------------- Executing Targets ----------------------//
         private void getTargetsToExecute() {
+            if(!isThreadPoolFull() && !WorkerTasksController.this.registeredTasksList.isEmpty())
+                sendTargetsToExecuteRequestToServer();
+        }
 
-
+        private Boolean isThreadPoolFull() {
+            return WorkerTasksController.this.executor.getActiveCount() == WorkerTasksController.this.numOfThreads;
         }
 
         private void sendTargetsToExecuteRequestToServer() {
@@ -311,26 +328,31 @@ public class WorkerTasksController {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
                         Platform.runLater(() ->
-                            {
-                                ResponseBody responseBody = response.body();
-                                if (responseBody != null) {
-                                    if(Objects.equals(response.header("task-type"), "Simulation"))
-                                        executeSimulationTarget(response);
-                                    else //Compilation
-                                        executeCompilationTarget(response);
-                                }
-                            }
-                        );
-                    } else Platform.runLater(() -> System.out.println("couldn't pull executable targets from server!"));
+                        {
+                            try {
+                                if(Objects.equals(response.header("task-type"), "Simulation"))
+                                    executeSimulationTarget(response);
+                                else //Compilation
+                                    executeCompilationTarget(response);
+                            } catch (Exception e) {System.out.println("Error in pulling task:" + e.getMessage()); }
+                        });
+                    }else Platform.runLater(() -> System.out.println("couldn't pull executable targets from server!"));
                 }
             });
         }
 
-        private void executeSimulationTarget(Response response) {
+        private void executeSimulationTarget(Response response) throws IOException {
+            ResponseBody responseBody = response.body();
+            SimulationParameters parameters = new Gson().fromJson(responseBody.string(), SimulationParameters.class);
 
+            WorkerTasksController.this.executor.execute(new SimulationThread(parameters));
         }
 
-        private void executeCompilationTarget(Response response) {
+        private void executeCompilationTarget(Response response) throws IOException {
+            ResponseBody responseBody = response.body();
+            CompilationParameters parameters = new Gson().fromJson(responseBody.string(), CompilationParameters.class);
+
+//            WorkerTasksController.this.executor.execute(new CompilationThread(parameters));
         }
 
 
@@ -356,6 +378,15 @@ public class WorkerTasksController {
         Thread progressBarThread = new Thread(task);
         progressBarThread.setDaemon(true);
         progressBarThread.start();
+    }
+}
+
+    public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
 

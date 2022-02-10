@@ -25,8 +25,7 @@ import java.util.logging.Logger;
 
 public class WorkerMain extends Application
 {
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    @Override public void start(Stage primaryStage) throws Exception {
 
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         primaryStage.setTitle("G.P.U.P Login");
@@ -40,8 +39,7 @@ public class WorkerMain extends Application
         loginController.initialize(primaryStage);
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
+            @Override public void handle(WindowEvent event) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Close confirmation");
                 alert.setHeaderText("Are you sure you want to exit?");
@@ -73,13 +71,11 @@ public class WorkerMain extends Application
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "DELETE", null, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 System.out.println("failed to logout user");
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 System.out.println("user logged out");
             }
         });

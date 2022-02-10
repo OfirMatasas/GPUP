@@ -23,23 +23,31 @@ import java.net.URL;
 import java.util.Objects;
 
 public class WorkerLoginController {
+    //------------------------------------------------- Members ----------------------------------------------------//
     private Stage primaryStage;
     private WorkerPrimaryController workerPrimaryController;
     private String username;
-
+    private Integer numOfThreads;
+    //----------------------------------------------- FXML Members -------------------------------------------------//
     @FXML private Button loginButton;
     @FXML private Spinner ThreadSpinner;
     @FXML private TextField userNameTextField;
     @FXML private Label errorMessageLabel;
 
+    //------------------------------------------------- Settings ----------------------------------------------------//
     @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         initializeThreadSpinner();
     }
 
-    private void initializeThreadSpinner()
-    {
+    private void initializeThreadSpinner() {
         this.ThreadSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 1));
+    }
+
+    //------------------------------------------------ Logging in ---------------------------------------------------//
+    @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
+        if(keyEvent.getCode()== KeyCode.ENTER)
+            loginButtonClicked(new ActionEvent());
     }
 
     @FXML private void loginButtonClicked(ActionEvent event) {
@@ -79,7 +87,8 @@ public class WorkerLoginController {
 
     private void loggedInAsWorker(Response response) {
         try{
-            WorkerLoginController.this.username = response.header("username");
+            this.username = response.header("username");
+            this.numOfThreads = Integer.parseInt(this.ThreadSpinner.getValue().toString());
 
             URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);
             FXMLLoader fxmlLoader = new FXMLLoader();
@@ -91,7 +100,7 @@ public class WorkerLoginController {
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(BodyComponentsPaths.LIGHT_MAIN_THEME)).toExternalForm());
             WorkerLoginController.this.primaryStage.setTitle("G.P.U.P");
             WorkerLoginController.this.primaryStage.setScene(scene);
-            WorkerLoginController.this.workerPrimaryController.initialize(WorkerLoginController.this.primaryStage, response.header("username"));
+            WorkerLoginController.this.workerPrimaryController.initialize(this.primaryStage, this.username, this.numOfThreads);
         }
         catch (Exception e) { System.out.println("Error uploading app: " + e.getMessage()); }
     }
@@ -108,10 +117,5 @@ public class WorkerLoginController {
 
     public String getCurrentUser() {
         return this.username;
-    }
-
-    @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
-        if(keyEvent.getCode()== KeyCode.ENTER)
-            loginButtonClicked(new ActionEvent());
     }
 }

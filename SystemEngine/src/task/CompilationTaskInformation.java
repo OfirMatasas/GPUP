@@ -6,8 +6,9 @@ public class CompilationTaskInformation {
     private final String taskName;
     private final String taskCreator;
     private final String graphName;
-    private Set<String> targetsToExecute;
-    private Integer pricingForTarget;
+    private final Set<String> targetsToExecute;
+    private final Integer pricingForTarget;
+    private String taskLog;
 
     public CompilationTaskInformation(String taskName, String taskCreator, String graphName, Set<String> targetsToExecute, Integer pricingForTarget) {
         this.taskName = taskName;
@@ -36,4 +37,8 @@ public class CompilationTaskInformation {
     public Integer getPricingForTarget() {
         return this.pricingForTarget;
     }
+
+    public void updateLog(String newInfo) { this.taskLog = newInfo; }
+
+    public String getTaskLog() { return this.taskLog; }
 }

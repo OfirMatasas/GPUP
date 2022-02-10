@@ -9,6 +9,7 @@ public class SimulationTaskInformation {
     private final Set<String> targetsToExecute;
     private final Integer pricingForTarget;
     private final SimulationParameters simulationParameters;
+    private String taskLog;
 
     public SimulationTaskInformation(String taskName, String taskCreator, String graphName, Set<String> targetsToExecute, Integer pricingForTarget, SimulationParameters simulationParameters) {
         this.taskName = taskName;
@@ -42,4 +43,8 @@ public class SimulationTaskInformation {
     public SimulationParameters getSimulationParameters() {
         return this.simulationParameters;
     }
+
+    public void updateLog(String newInfo) { this.taskLog = newInfo; }
+
+    public String getTaskLog() { return this.taskLog; }
 }
