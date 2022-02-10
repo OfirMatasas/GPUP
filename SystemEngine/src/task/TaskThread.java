@@ -235,10 +235,9 @@ public class TaskThread extends Thread {
         return targetName;
     }
 
-    public void taskOnTargetFinished(String targetName, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus) {
+    public void taskOnTargetFinished(String targetName) {
         this.sentTargetsList.remove(targetName);
         this.finishedTargets.add(targetName);
-        this.graphSummary.UpdateTargetSummary(this.graph.getTarget(targetName), resultStatus, runtimeStatus);
     }
 
     public void returnTargetToWaitingList(String targetName)

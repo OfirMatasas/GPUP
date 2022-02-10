@@ -6,7 +6,9 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
+import target.Target;
 import task.CompilationTaskInformation;
+import task.ExecutedTargetUpdates;
 import task.SimulationTaskInformation;
 import task.TaskThread;
 
@@ -24,26 +26,11 @@ public class TasksManager {
     private final Map<String, Integer> workersCredits = new HashMap<>();
     private final Map<String, Map<String, WorkerWorkOnTask>> workersWorksHistoryMap = new HashMap<>();
     private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>();
-    private static final Map<String, GraphSummary> graphSummaryMap = new HashMap<>();
+    private final Map<String, GraphSummary> graphSummaryMap = new HashMap<>();
     private final Map<String, TaskThread> taskThreadMap = new HashMap<>();
     private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
-    public synchronized boolean isTaskExists(String taskName) {
-        return this.simulationTasksMap.containsKey(taskName.toLowerCase()) || this.compilationTasksMap.containsKey(taskName.toLowerCase());
-    }
-
-    public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
-
-    public synchronized boolean isCompilationTask(String taskName) { return this.compilationTasksMap.containsKey(taskName.toLowerCase()); }
-
-    public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {
-        return this.compilationTasksMap.get(taskName.toLowerCase());
-    }
-
-    public synchronized SimulationTaskInformation getSimulationTaskInformation(String taskName) {
-        return this.simulationTasksMap.get(taskName.toLowerCase());
-    }
-
+    //--------------------------------------------------- New Tasks ----------------------------------------------//
     public synchronized void addSimulationTask(SimulationTaskInformation newTask, GraphsManager graphsManager) {
         this.simulationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
         this.listOfAllTasks.add(newTask.getTaskName());
@@ -71,7 +58,7 @@ public class TasksManager {
     private void createNewGraphSummary(String taskName, String graphName, GraphsManager graphsManager) {
         Graph graph = graphsManager.getGraph(graphName.toLowerCase());
 
-        graphSummaryMap.put(taskName.toLowerCase(), new GraphSummary(graph));
+        this.graphSummaryMap.put(taskName.toLowerCase(), new GraphSummary(graph));
     }
 
     private synchronized void createNewTaskDetailsDTO(String taskName, String graphName, String creatorName,
@@ -91,7 +78,7 @@ public class TasksManager {
                 creatorName, targets, infoSet, taskType, graphsManager.getGraph(graphName),
                 "Task created by " + creatorName + " on " + this.formatter.format(new Date())));
     }
-
+    //---------------------------------------------------- Admins -----------------------------------------------//
     public synchronized void addUserTask(String taskCreator, String taskName) {
         if(!this.adminsTasks.containsKey(taskCreator))
             this.adminsTasks.put(taskCreator, new HashSet<>());
@@ -99,6 +86,7 @@ public class TasksManager {
         this.adminsTasks.get(taskCreator).add(taskName);
     }
 
+    //---------------------------------------------------- Workers ----------------------------------------------//
     public synchronized void registerWorkerToTask(String taskName, String workerName) {
         this.taskDetailsDTOMap.get(taskName.toLowerCase()).addWorker(workerName);
         addRegisteredTaskToWorker(workerName, taskName);
@@ -109,43 +97,9 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
-    public synchronized Set<String> getAllTasksList()
-    {
-        return this.listOfAllTasks;
-    }
-
-    public synchronized Set<String> getActiveTasksList() { return this.listOfActiveTasks; }
-
-    public synchronized Set<String> getUserTaskList(String userName) {
-        return this.adminsTasks.get(userName.toLowerCase());
-    }
-
-    public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName) {
-        return this.taskDetailsDTOMap.get(taskName.toLowerCase());
-    }
-
     public synchronized void addCreditsToWorker(String workerName, String taskName) {
-        this.workersCredits.put(workerName, this.workersCredits.get(workerName) +
+        this.workersCredits.put(workerName.toLowerCase(), this.workersCredits.get(workerName.toLowerCase()) +
                 this.taskDetailsDTOMap.get(taskName.toLowerCase()).getSinglePayment());
-    }
-
-    public synchronized void updateTargetInfoOnTask(String taskName, String targetName, String runtimeStatus, String resultStatus) {
-        this.taskDetailsDTOMap.get(taskName.toLowerCase()).updateTargetStatus(targetName, runtimeStatus, resultStatus);
-    }
-
-    public synchronized Integer getTaskFinishedTargets(String taskName) {
-        return this.taskDetailsDTOMap.get(taskName.toLowerCase()).getFinishedTargets();
-    }
-
-    public synchronized Set<String> getWorkerRegisteredTasks(String workerName) {
-        return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
-    }
-
-    public synchronized Integer getWorkerCredits(String workerName) {
-        if(!this.workersCredits.containsKey(workerName.toLowerCase()))
-            this.workersCredits.put(workerName.toLowerCase(), 0);
-
-        return this.workersCredits.get(workerName.toLowerCase());
     }
 
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
@@ -165,6 +119,7 @@ public class TasksManager {
                 && this.workerRegisteredTasksMap.get(workerName.toLowerCase()).contains(taskName);
     }
 
+    //-------------------------------------------------- Update Tasks --------------------------------------------//
     public void startTask(String taskName, String userName, GraphsManager graphsManager) {
         DashboardTaskDetailsDTO taskDetails = this.taskDetailsDTOMap.get(taskName.toLowerCase());
         TaskThread taskThread;
@@ -178,17 +133,104 @@ public class TasksManager {
 
         if(this.taskDetailsDTOMap.get(taskName.toLowerCase()).getTaskType().equals("Simulation")) //Simulation task
             taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName),
-                    graphSummaryMap.get(taskName.toLowerCase()), this.simulationTasksMap.get(taskName.toLowerCase()), null, false);
+                    this.graphSummaryMap.get(taskName.toLowerCase()), this.simulationTasksMap.get(taskName.toLowerCase()), null, false);
         else //Compilation task
-            taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName), graphSummaryMap.get(taskName.toLowerCase()),
+            taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName), this.graphSummaryMap.get(taskName.toLowerCase()),
                     null, this.compilationTasksMap.get(taskName.toLowerCase()), false);
 
         taskThread.start();
         this.taskThreadMap.put(taskName.toLowerCase(), taskThread);
     }
 
+    public synchronized void updateTargetInfoOnTask(ExecutedTargetUpdates updates, GraphsManager graphsManager) {
+        //Updating task details dto
+        String targetName = updates.getTargetName();
+        String taskName = updates.getTaskName();
+        String runtimeStatus = updates.getRuntimeStatus();
+        String resultStatus = updates.getResultStatus();
+        String log = updates.getTaskLog();
+        DashboardTaskDetailsDTO taskDetails = this.taskDetailsDTOMap.get(taskName.toLowerCase());
+
+        taskDetails.updateTargetStatus(targetName, runtimeStatus, resultStatus, log);
+
+        //Updating graph summary
+        TargetSummary.RuntimeStatus runtime = convertRuntimeStatus(runtimeStatus);
+        TargetSummary.ResultStatus result = convertResultStatus(resultStatus);
+        String graphName = taskDetails.getGraphName();
+        Target target = graphsManager.getGraph(graphName).getTarget(taskName);
+
+        this.graphSummaryMap.get(taskName.toLowerCase()).UpdateTargetSummary(target, result, runtime);
+    }
+
+    public TargetSummary.RuntimeStatus convertRuntimeStatus(String runtimeStatus) {
+        if(runtimeStatus.equalsIgnoreCase("In process"))
+            return TargetSummary.RuntimeStatus.InProcess;
+        else if(runtimeStatus.equalsIgnoreCase("Finished"))
+            return TargetSummary.RuntimeStatus.Finished;
+
+        return TargetSummary.RuntimeStatus.Undefined;
+    }
+
+    public TargetSummary.ResultStatus convertResultStatus(String resultStatus) {
+        if(resultStatus.equalsIgnoreCase("Success"))
+            return TargetSummary.ResultStatus.Success;
+        else if(resultStatus.equalsIgnoreCase("Warning"))
+            return TargetSummary.ResultStatus.Warning;
+        else if(resultStatus.equalsIgnoreCase("Failure"))
+            return TargetSummary.ResultStatus.Failure;
+
+        return TargetSummary.ResultStatus.Undefined;
+    }
+
+    //----------------------------------------------------- Checks -----------------------------------------------//
+    public synchronized boolean isTaskExists(String taskName) {
+        return this.simulationTasksMap.containsKey(taskName.toLowerCase()) || this.compilationTasksMap.containsKey(taskName.toLowerCase());
+    }
+
+    public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
+
+    public synchronized boolean isCompilationTask(String taskName) { return this.compilationTasksMap.containsKey(taskName.toLowerCase()); }
+
+    //----------------------------------------------------- Getters -----------------------------------------------//
+    public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {
+        return this.compilationTasksMap.get(taskName.toLowerCase());
+    }
+
+    public synchronized SimulationTaskInformation getSimulationTaskInformation(String taskName) {
+        return this.simulationTasksMap.get(taskName.toLowerCase());
+    }
+
+    public synchronized Set<String> getAllTasksList() {
+        return this.listOfAllTasks;
+    }
+
+    public synchronized Set<String> getActiveTasksList() { return this.listOfActiveTasks; }
+
+    public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName) {
+        return this.taskDetailsDTOMap.get(taskName.toLowerCase());
+    }
+
+    public synchronized Integer getTaskFinishedTargets(String taskName) {
+        return this.taskDetailsDTOMap.get(taskName.toLowerCase()).getFinishedTargets();
+    }
+
+    public synchronized Set<String> getWorkerRegisteredTasks(String workerName) {
+        return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
+    }
+
+    public synchronized Integer getWorkerCredits(String workerName) {
+        if(!this.workersCredits.containsKey(workerName.toLowerCase()))
+            this.workersCredits.put(workerName.toLowerCase(), 0);
+
+        return this.workersCredits.get(workerName.toLowerCase());
+    }
+
+    public synchronized Set<String> getUserTaskList(String userName) {
+        return this.adminsTasks.get(userName.toLowerCase());
+    }
+
     public TaskThread getTaskThread(String taskName) {
-        return taskThreadMap.get(taskName.toLowerCase());
+        return this.taskThreadMap.get(taskName.toLowerCase());
     }
 
 //    private void updateTaskStatus(String taskName) {

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import managers.TasksManager;
 import managers.UserManager;
 import tableItems.WorkerChosenTaskInformationTableItem;
+import task.ExecutedTargetUpdates;
 import utils.ServletUtils;
 
 import java.io.IOException;
@@ -101,12 +102,13 @@ public class TaskUpdateServlet extends HttpServlet {
     }
 
     //------------------------------------------------- Post -------------------------------------------------//
-    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-        String taskName, userName;
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
         if(req.getParameter("start-task") != null) //Requesting to start a task
             startTask(req, resp, tasksManager);
+        else if(req.getHeader("executed-task-update") != null)
+            updateTask(req, resp, tasksManager);
         else
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -125,6 +127,23 @@ public class TaskUpdateServlet extends HttpServlet {
         else
             responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
+
+    private void updateTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+        ExecutedTargetUpdates updates = new Gson().fromJson(req.getReader(), ExecutedTargetUpdates.class);
+        if(updates != null)
+        {
+            tasksManager.updateTargetInfoOnTask(updates, ServletUtils.getGraphsManager(getServletContext()));
+
+            if(updates.getRuntimeStatus().equalsIgnoreCase("Finished"))
+            {
+                tasksManager.addCreditsToWorker(updates.getUsername(), updates.getTaskName());
+                tasksManager.getTaskThread(updates.getTaskName()).taskOnTargetFinished(updates.getTargetName());
+            }
+        }
+        else
+            responseMessageAndCode(resp, "Invalid upload of updates!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
 
     //------------------------------------------------- General -------------------------------------------------//
     private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {

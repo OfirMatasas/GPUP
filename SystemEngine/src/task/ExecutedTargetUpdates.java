@@ -7,8 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 
 public class ExecutedTargetUpdates {
     private final String taskName;
@@ -16,10 +14,8 @@ public class ExecutedTargetUpdates {
     private final String targetName;
     private String runtimeStatus;
     private String resultStatus;
-    private Instant timeStarted;
-    private Duration totalTimeSlept;
+    private long sleepingTime;
     private String taskLog;
-    private final Gson gson;
 
     public ExecutedTargetUpdates(String taskName, String targetName, String username) {
         this.targetName = targetName;
@@ -27,8 +23,6 @@ public class ExecutedTargetUpdates {
         this.username = username;
         this.runtimeStatus = "In process";
         this.resultStatus = "Undefined";
-        this.totalTimeSlept = Duration.ZERO;
-        this.gson = new Gson();
     }
 
     //------------------------------------------------- Getters -------------------------------------------------//
@@ -44,16 +38,20 @@ public class ExecutedTargetUpdates {
         return this.resultStatus;
     }
 
-    public Instant getTimeStarted() {
-        return this.timeStarted;
-    }
-
-    public Duration getTimeSlept() {
-        return this.totalTimeSlept;
-    }
-
     public String getTaskLog() {
         return this.taskLog;
+    }
+
+    public String getTaskName() {
+        return this.taskName;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public long getTotalTimeSlept() {
+        return this.sleepingTime;
     }
 
     //------------------------------------------------- Setters -------------------------------------------------//
@@ -66,15 +64,15 @@ public class ExecutedTargetUpdates {
         this.resultStatus = resultStatus;
     }
 
+    public void setSleepingTime(long sleepingTime) { this.sleepingTime = sleepingTime; }
+
     //------------------------------------------------- Methods -------------------------------------------------//
-    public void startTheClock() {
-        this.timeStarted = Instant.now();
+    public void taskStarted() {
         this.taskLog = "The worker " + this.username + " just started working on target " + this.targetName + "!";
         setRuntimeStatus("In process");
     }
 
-    public void stopTheClock(String resultStatus) {
-        this.totalTimeSlept = Duration.between(this.timeStarted, Instant.now());
+    public void taskFinished(String resultStatus) {
         this.taskLog = "The worker " + this.username + " just finished working on target " + this.targetName + "!\n";
         this.taskLog += "The result: " + resultStatus;
 
@@ -83,12 +81,12 @@ public class ExecutedTargetUpdates {
     }
 
     private void updateServerOnUpdate() {
-        String updatesAsString = this.gson.toJson(this, ExecutedTargetUpdates.class);
+        String updatesAsString = new Gson().toJson(this, ExecutedTargetUpdates.class);
         RequestBody body = RequestBody.create(updatesAsString, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
                 .url(Patterns.TASK_UPDATE)
-                .post(body).addHeader("task-update", this.taskName)
+                .post(body).addHeader("executed-task-update", this.taskName)
                 .addHeader("target", this.targetName)
                 .addHeader("username", this.username)
                 .build();
@@ -104,7 +102,11 @@ public class ExecutedTargetUpdates {
                 if(response.code() >= 200 && response.code() < 300)
                     System.out.println("Updated server on " + ExecutedTargetUpdates.this.taskName + " - " + ExecutedTargetUpdates.this.targetName + "!");
                 else
+                {
                     System.out.println("Error on updating server on " + ExecutedTargetUpdates.this.taskName + " - " + ExecutedTargetUpdates.this.targetName + "!");
+                    System.out.println("Message: " + response.header("message"));
+                }
+
             }
         });
     }

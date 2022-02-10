@@ -36,7 +36,7 @@ public class DashboardTaskDetailsDTO {
         this.registeredWorkers = new HashSet<>();
         this.taskStatus = "New";
         this.finishedTargets = 0;
-        this.logHistory = logHistory;
+        this.logHistory = logHistory + "\n\n";
         this.targetStatusSet = targetStatusSet;
 
         if(targetsToExecute.size() == graph.getGraphTargets().size())
@@ -153,7 +153,7 @@ public class DashboardTaskDetailsDTO {
         return this.finishedTargets;
     }
 
-    public synchronized void updateTargetStatus(String targetName, String runtimeStatus, String resultStatus)
+    public synchronized void updateTargetStatus(String targetName, String runtimeStatus, String resultStatus, String log)
     {
         for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
         {
@@ -166,6 +166,8 @@ public class DashboardTaskDetailsDTO {
 
         if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
             ++this.finishedTargets;
+
+        this.logHistory += log + "\n\n";
     }
 
     public void addToTaskLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n\n"; }

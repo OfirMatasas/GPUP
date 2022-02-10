@@ -30,23 +30,25 @@ public class SimulationThread implements Runnable
     @Override public void run() {
         Thread.currentThread().setName(this.targetName + " Thread");
         long sleepingTime = this.targetParameters.getProcessingTime().toMillis();
+        Instant timeStarted;
 
         //Starting the clock
-        this.updates.startTheClock();
+        this.updates.taskStarted();
+        timeStarted = Instant.now();
 
         //Going to sleep
         try {
             Thread.sleep(this.predictedTime.toMillis());
         } catch (InterruptedException e) {
             try {
-                Thread.sleep(sleepingTime - Duration.between(this.updates.getTimeStarted(), Instant.now()).toMillis());
+                Thread.sleep(sleepingTime - Duration.between(timeStarted, Instant.now()).toMillis());
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
         finally
         {
-            checkForSuccess();
+            checkForSuccess(timeStarted);
         }
     }
 
@@ -61,7 +63,7 @@ public class SimulationThread implements Runnable
         }
     }
 
-    private void checkForSuccess() {
+    private void checkForSuccess(Instant timeStarted) {
         String resultStatus;
         double result = Math.random();
         if(Math.random() <= this.targetParameters.getSuccessRate())
@@ -70,6 +72,9 @@ public class SimulationThread implements Runnable
         else
             resultStatus = TargetSummary.ResultStatus.Failure.toString();
 
-        this.updates.stopTheClock(resultStatus);
+        Duration sleepingTime = Duration.between(timeStarted, Instant.now());
+
+        this.updates.taskFinished(resultStatus);
+        this.updates.setSleepingTime(sleepingTime.toMillis());
     }
 }

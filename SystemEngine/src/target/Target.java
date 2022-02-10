@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Target implements Serializable
+public class Target
 {
     //--------------------------------------------------Enums-------------------------------------------------------//
     public enum TargetPosition { LEAF, MIDDLE, ROOT, INDEPENDENT }

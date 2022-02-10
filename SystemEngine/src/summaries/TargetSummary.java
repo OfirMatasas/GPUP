@@ -101,8 +101,7 @@ public class TargetSummary implements Serializable
         this.isSkipped = skipped;
     }
 
-    public void setResultStatus(ResultStatus resultStatus) { this.resultStatus = resultStatus; }
-
+    public void setResultStatus(ResultStatus resultStatus) {this.resultStatus = resultStatus; }
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void startTheClock()
     {
