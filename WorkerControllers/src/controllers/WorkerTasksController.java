@@ -164,6 +164,16 @@ public class WorkerTasksController {
     public void SelectedFromTargetListView(MouseEvent mouseEvent) {
     }
 
+    public void getInfoAboutSelectedTaskFromListView() {
+        String selectedTaskName = WorkerTasksController.this.TasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTaskName == null)
+            return;
+
+        WorkerTasksController.this.chosenTask = selectedTaskName;
+        this.tasksPullerThread.sendChosenTaskUpdateRequestToServer();
+    }
+
     //----------------------------------------------- Puller Thread -------------------------------------------------//
     public class TasksPullerThread extends Thread
     {
@@ -245,16 +255,6 @@ public class WorkerTasksController {
         }
 
         //----------------------- Chosen Task Info ----------------------//
-        private void getInfoAboutSelectedTaskFromListView() {
-            String selectedTaskName = WorkerTasksController.this.TasksListView.getSelectionModel().getSelectedItem();
-
-            if(selectedTaskName == null)
-                return;
-
-            WorkerTasksController.this.chosenTask = selectedTaskName;
-            sendChosenTaskUpdateRequestToServer();
-        }
-
         private void refreshTasksListView(Set<String> registered) {
             if (registered == null)
                 return;
@@ -329,6 +329,7 @@ public class WorkerTasksController {
                     {
                         Platform.runLater(() ->
                         {
+                            System.out.println("Just got target to execute from server!!");
                             try {
                                 if(Objects.equals(response.header("task-type"), "Simulation"))
                                     executeSimulationTarget(response);

@@ -1,6 +1,5 @@
 package task;
 
-import java.util.LinkedList;
 import java.util.Set;
 
 public class SimulationTaskInformation {
@@ -11,7 +10,6 @@ public class SimulationTaskInformation {
     private final Integer pricingForTarget;
     private final SimulationParameters parameters;
     private String taskLog;
-    private final LinkedList<String> waitingTargets;
 
     public SimulationTaskInformation(String taskName, String taskCreator, String graphName, Set<String> allTargets, Integer pricingForTarget, SimulationParameters parameters) {
         this.taskName = taskName;
@@ -20,7 +18,6 @@ public class SimulationTaskInformation {
         this.allTargets = allTargets;
         this.pricingForTarget = pricingForTarget;
         this.parameters = parameters;
-        this.waitingTargets = new LinkedList<>();
     }
 
     public String getTaskName() {
@@ -50,8 +47,4 @@ public class SimulationTaskInformation {
     public synchronized void updateLog(String newInfo) { this.taskLog = newInfo; }
 
     public synchronized String getTaskLog() { return this.taskLog; }
-
-    public synchronized void addTargetToWaitingList(String waitingTarget) { this.waitingTargets.addLast(waitingTarget); }
-
-    public synchronized String getTargetToExecute() { return this.waitingTargets.poll(); }
 }

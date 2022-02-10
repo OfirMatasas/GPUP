@@ -187,6 +187,10 @@ public class TasksManager {
         this.taskThreadMap.put(taskName.toLowerCase(), taskThread);
     }
 
+    public TaskThread getTaskThread(String taskName) {
+        return taskThreadMap.get(taskName.toLowerCase());
+    }
+
 //    private void updateTaskStatus(String taskName) {
 //        boolean isTaskOver = true;
 //

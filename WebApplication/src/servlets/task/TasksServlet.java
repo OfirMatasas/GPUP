@@ -83,9 +83,9 @@ public class TasksServlet extends HttpServlet {
             String taskName = req.getParameter("execute");
             String workerName = req.getParameter("username");
 
-            if(taskName == null || tasksManager.isTaskExists(taskName)) //Invalid task name
+            if(taskName == null || !tasksManager.isTaskExists(taskName)) //Invalid task name
                 responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
-            else if(workerName == null || userManager.isUserExists(workerName)) //Invalid username
+            else if(workerName == null || !userManager.isUserExists(workerName)) //Invalid username
                 responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
             else if(!tasksManager.isWorkerRegisteredToTask(workerName, taskName)) //Not registered
                 responseMessageAndCode(resp, "Not assigned to the task!", HttpServletResponse.SC_BAD_REQUEST);
@@ -105,7 +105,7 @@ public class TasksServlet extends HttpServlet {
         if(tasksManager.isSimulationTask(taskName))
         {
             SimulationTaskInformation taskInfo = tasksManager.getSimulationTaskInformation(taskName);
-            String targetName = taskInfo.getTargetToExecute();
+            String targetName = tasksManager.getTaskThread(taskName).getWaitingTargetToExecute();
 
             if(targetName != null)
             {
@@ -113,6 +113,7 @@ public class TasksServlet extends HttpServlet {
                         taskInfo.getSimulationParameters());
                 parametersAsString = gson.toJson(parameters, WorkerSimulationParameters.class);
                 resp.getWriter().write(parametersAsString);
+                resp.addHeader("task-type", "Simulation");
                 responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
             }
             else
@@ -130,6 +131,7 @@ public class TasksServlet extends HttpServlet {
                         taskInfo.getCompilationParameters());
                 parametersAsString = gson.toJson(parameters, WorkerCompilationParameters.class);
                 resp.getWriter().write(parametersAsString);
+                resp.addHeader("task-type", "Compilation");
                 responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
             }
             else

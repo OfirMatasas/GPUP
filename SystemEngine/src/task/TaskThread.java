@@ -6,8 +6,9 @@ import target.Graph;
 import target.Target;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class TaskThread extends Thread {
 
@@ -27,10 +28,10 @@ public class TaskThread extends Thread {
     private final String taskName;
 
     //Local use
-    private final LinkedList<String> targetsList;
-    private final LinkedList<String> waitingTargetsList;
-    private final LinkedList<String> sentTargetsList;
-    private final LinkedList<String> finishedTargets;
+    private final BlockingQueue<String> targetsList;
+    private final BlockingQueue<String> waitingTargetsList;
+    private final BlockingQueue<String> sentTargetsList;
+    private final BlockingQueue<String> finishedTargets;
     private Boolean paused;
     private Boolean stopped;
     private Boolean pausedBefore;
@@ -63,10 +64,10 @@ public class TaskThread extends Thread {
         this.stopped = false;
         this.statusChanged = false;
         this.pausedBefore = false;
-        this.targetsList = new LinkedList<>();
-        this.waitingTargetsList = new LinkedList<>();
-        this.sentTargetsList = new LinkedList<>();
-        this.finishedTargets = new LinkedList<>();
+        this.targetsList = new ArrayBlockingQueue<>(this.targetsSet.size());
+        this.waitingTargetsList = new ArrayBlockingQueue<>(this.targetsSet.size());
+        this.sentTargetsList = new ArrayBlockingQueue<>(this.targetsSet.size());
+        this.finishedTargets = new ArrayBlockingQueue<>(this.targetsSet.size());
 
 //        try {
 //            this.taskOutput.createNewDirectoryOfTaskLogs(taskType);
@@ -128,7 +129,7 @@ public class TaskThread extends Thread {
             else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet)) //The target is ready to run!
                 this.waitingTargetsList.add(currTargetName);
             else //The target is not ready to run yet, but not skipped either
-                this.targetsList.addLast(currTargetName);
+                this.targetsList.add(currTargetName);
 
             currentlyPaused = getPaused();
             finished = this.targetsSet.size() == this.finishedTargets.size();
@@ -184,7 +185,7 @@ public class TaskThread extends Thread {
                         continue;
                     }
                     targetFrozen = true;
-                    this.targetsList.addLast(currentTargetName);
+                    this.targetsList.add(currentTargetName);
                     this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Frozen);
 
                     break;
@@ -192,7 +193,7 @@ public class TaskThread extends Thread {
             }
             if(!targetFrozen)
             {
-                this.targetsList.addFirst(currentTargetName);
+                this.targetsList.add(currentTargetName);
                 this.graphSummary.UpdateTargetSummary(currentTarget, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.Waiting);
             }
         }
@@ -221,7 +222,18 @@ public class TaskThread extends Thread {
 
     public String getCreator() { return this.creator; }
 
-    public LinkedList<String> getWaitingTargetsList() { return this.targetsList; }
+    public BlockingQueue<String> getWaitingTargetsList() { return this.targetsList; }
+
+    public synchronized String getWaitingTargetToExecute() {
+        String targetName = null;
+        if(!this.waitingTargetsList.isEmpty())
+        {
+            targetName = this.waitingTargetsList.poll();
+            this.sentTargetsList.add(targetName);
+        }
+
+        return targetName;
+    }
 
     public void taskOnTargetFinished(String targetName, TargetSummary.ResultStatus resultStatus, TargetSummary.RuntimeStatus runtimeStatus) {
         this.sentTargetsList.remove(targetName);
