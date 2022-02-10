@@ -343,7 +343,7 @@ public class WorkerTasksController {
 
         private void executeSimulationTarget(Response response) throws IOException {
             ResponseBody responseBody = response.body();
-            SimulationParameters parameters = new Gson().fromJson(responseBody.string(), SimulationParameters.class);
+            WorkerSimulationParameters parameters = new Gson().fromJson(responseBody.string(), WorkerSimulationParameters.class);
 
             WorkerTasksController.this.executor.execute(new SimulationThread(parameters));
         }
@@ -379,7 +379,6 @@ public class WorkerTasksController {
         progressBarThread.setDaemon(true);
         progressBarThread.start();
     }
-}
 
     public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
