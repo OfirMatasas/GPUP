@@ -8,8 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.GraphsManager;
 import managers.TasksManager;
+import managers.UserManager;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
+import task.WorkerCompilationParameters;
+import task.WorkerSimulationParameters;
 import utils.ServletUtils;
 
 import java.io.IOException;
@@ -21,6 +24,7 @@ public class TasksServlet extends HttpServlet {
     //------------------------------------------------- Get -------------------------------------------------//
     @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
         Gson gson = new Gson();
 
         if(req.getParameter("task-info") != null) //Requesting for task-info
@@ -48,7 +52,7 @@ public class TasksServlet extends HttpServlet {
 
             if(tasksManager.isTaskExists(taskName)) //The task exists in the system
             {
-                String infoAsString = null;
+                String infoAsString;
 
                 if(tasksManager.isSimulationTask(taskName)) //Requesting for simulation task
                 {
@@ -74,11 +78,65 @@ public class TasksServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
         }
+        else if(req.getParameter("execute") != null) //Requesting for target to execute (worker)
+        {
+            String taskName = req.getParameter("execute");
+            String workerName = req.getParameter("username");
+
+            if(taskName == null || tasksManager.isTaskExists(taskName)) //Invalid task name
+                responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
+            else if(workerName == null || userManager.isUserExists(workerName)) //Invalid username
+                responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+            else if(!tasksManager.isWorkerRegisteredToTask(workerName, taskName)) //Not registered
+                responseMessageAndCode(resp, "Not assigned to the task!", HttpServletResponse.SC_BAD_REQUEST);
+            else //Valid request
+                returnTargetToExecuteToWorker(resp, tasksManager, taskName, workerName, gson);
+        }
         else //Invalid request
         {
             resp.getWriter().println("Invalid parameter!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
+    }
+
+    private void returnTargetToExecuteToWorker(HttpServletResponse resp, TasksManager tasksManager, String taskName, String workerName, Gson gson) throws IOException {
+        String parametersAsString;
+
+        if(tasksManager.isSimulationTask(taskName))
+        {
+            SimulationTaskInformation taskInfo = tasksManager.getSimulationTaskInformation(taskName);
+            String targetName = taskInfo.getTargetToExecute();
+
+            if(targetName != null)
+            {
+                WorkerSimulationParameters parameters = new WorkerSimulationParameters(taskName, targetName, workerName,
+                        taskInfo.getSimulationParameters());
+                parametersAsString = gson.toJson(parameters, WorkerSimulationParameters.class);
+                resp.getWriter().write(parametersAsString);
+                responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "No targets to execute at the moment", HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+
+        }
+        else if(tasksManager.isCompilationTask(taskName))
+        {
+            CompilationTaskInformation taskInfo = tasksManager.getCompilationTaskInformation(taskName);
+            String targetName = taskInfo.getTargetToExecute();
+
+            if(targetName != null)
+            {
+                WorkerCompilationParameters parameters = new WorkerCompilationParameters(taskName, targetName, workerName,
+                        taskInfo.getCompilationParameters());
+                parametersAsString = gson.toJson(parameters, WorkerCompilationParameters.class);
+                resp.getWriter().write(parametersAsString);
+                responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "No targets to execute at the moment", HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        }
+        else
+            responseMessageAndCode(resp, "Unknown task type", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     //------------------------------------------------- Post -------------------------------------------------//
@@ -125,5 +183,10 @@ public class TasksServlet extends HttpServlet {
             resp.addHeader("message", "Error in uploading task to server!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
+    }
+
+    private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {
+        resp.addHeader("message", message);
+        resp.setStatus(code);
     }
 }

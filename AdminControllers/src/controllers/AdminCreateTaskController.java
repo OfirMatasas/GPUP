@@ -24,10 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import target.Graph;
 import target.Target;
-import task.CompilationTaskInformation;
-import task.SimulationParameters;
-import task.SimulationTaskInformation;
-import task.TaskThread;
+import task.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,18 +119,19 @@ public class AdminCreateTaskController implements Initializable{
         if(this.taskSelection.getValue().equals("Simulation"))
         {
             Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Simulation);
-            SimulationParameters simulationParameters = this.taskParameters;
+            SimulationParameters parameters = this.taskParameters;
 
             SimulationTaskInformation taskInfo = new SimulationTaskInformation(taskName, uploader,
-                    graphName, targets, pricing, simulationParameters);
+                    graphName, targets, pricing, parameters);
             taskTypeRequest = "Simulation";
             stringObject = this.gson.toJson(taskInfo);
         }
         else if(this.taskSelection.getValue().equals("Compilation"))
         {
             Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Compilation);
+            CompilationParameters parameters = new CompilationParameters(new File("null"), new File("null"));
 
-            CompilationTaskInformation taskInfo = new CompilationTaskInformation(taskName, uploader, graphName, targets, pricing);
+            CompilationTaskInformation taskInfo = new CompilationTaskInformation(taskName, uploader, graphName, targets, pricing, parameters);
             taskTypeRequest = "Simulation";
             stringObject = this.gson.toJson(taskInfo);
         }

@@ -34,6 +34,8 @@ public class TasksManager {
 
     public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
 
+    public synchronized boolean isCompilationTask(String taskName) { return this.compilationTasksMap.containsKey(taskName.toLowerCase()); }
+
     public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {
         return this.compilationTasksMap.get(taskName.toLowerCase());
     }
