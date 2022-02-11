@@ -245,7 +245,7 @@ public class TasksManager {
     }
 
     public synchronized void removeAllWorkersRegistrations(String taskName) {
-        this.workerRegisteredTasksMap.remove(taskName);
+        this.workerRegisteredTasksMap.values().forEach(curr -> curr.remove(taskName));
     }
 
     public synchronized void removeTaskFromActiveList(String taskName) {

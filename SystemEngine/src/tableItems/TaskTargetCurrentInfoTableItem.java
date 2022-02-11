@@ -38,7 +38,7 @@ public class TaskTargetCurrentInfoTableItem {
     }
 
     public void updateItem(String runtimeStatus, String resultStatus) {
-        this.resultStatus = runtimeStatus;
+        this.runtimeStatus = runtimeStatus;
         this.resultStatus = resultStatus;
     }
 }

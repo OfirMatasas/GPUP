@@ -203,15 +203,31 @@ public class WorkerDashboardController {
             if(taskList == null)
                 return;
 
-            WorkerDashboardController.this.onlineTasksList.clear();
-            WorkerDashboardController.this.onlineTasksList.addAll(taskList);
+            for(String curr : taskList) {
+                if (!WorkerDashboardController.this.onlineTasksList.contains(curr))
+                    WorkerDashboardController.this.onlineTasksList.add(curr);
+            }
 
-//            for(String curr : taskList)
-//            {
-//                if(!WorkerDashboardController.this.onlineTasksList.contains(curr))
-//                    WorkerDashboardController.this.onlineTasksList.add(curr);
+            WorkerDashboardController.this.onlineTasksList.removeIf(curr -> !taskList.contains(curr));
+
+            if(!taskList.contains(WorkerDashboardController.this.chosenTask))
+            {
+                WorkerDashboardController.this.chosenTask = null;
+                resetRegisterToTaskButton();
+                resetTableViews();
             }
         }
+    }
+
+    private void resetRegisterToTaskButton() {
+        this.RegisterToTaskButton.setText("Register To Task");
+        this.RegisterToTaskButton.setDisable(true);
+    }
+
+    private void resetTableViews() {
+        this.selectedTaskStatusList.clear();
+        this.selectedTaskTargetsList.clear();
+    }
 
     //------------------------ Users List ------------------------//
     private void getOnlineUsersFromServer() {

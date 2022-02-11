@@ -256,8 +256,22 @@ public class WorkerTasksController {
 
         //----------------------- Chosen Task Info ----------------------//
         private void refreshTasksListView(Set<String> registered) {
-            if (registered == null)
+            if (registered == null) {
+                WorkerTasksController.this.registeredTasksList.clear();
+                chosenTaskRemovedFromListView();
                 return;
+            }
+
+            for(String curr : registered) {
+                if (!WorkerTasksController.this.registeredTasksList.contains(curr))
+                    WorkerTasksController.this.registeredTasksList.add(curr);
+            }
+
+            WorkerTasksController.this.registeredTasksList.removeIf(curr -> !registered.contains(curr));
+
+            if(!registered.contains(WorkerTasksController.this.chosenTask))
+                chosenTaskRemovedFromListView();
+
 
             WorkerTasksController.this.registeredTasksList.addAll(registered);
         }
@@ -359,6 +373,26 @@ public class WorkerTasksController {
 
     }
 
+    private void chosenTaskRemovedFromListView() {
+        WorkerTasksController.this.chosenTask = null;
+        resetTaskControlButtons();
+        resetChosenTaskTableView();
+        resetProgressBar();
+    }
+
+    private void resetTaskControlButtons() {
+        this.LeaveTaskButton.setDisable(true);
+        this.PauseButton.setDisable(true);
+    }
+
+    private void resetChosenTaskTableView() {
+        this.chosenTaskInfoList.clear();
+    }
+
+    private void resetProgressBar() {
+        this.finishedTargets = 0;
+        this.totalTargets = 1;
+    }
 
     //--------------------------------------------- Progress Bar ---------------------------------------------//
     private void createNewProgressBar()
