@@ -1,6 +1,6 @@
-package information;
+package tableItems;
 
-public class TargetDetails {
+public class AdminGraphDetailsTableItem {
     private int num;
     private String targetName;
     private String  position;
@@ -10,8 +10,8 @@ public class TargetDetails {
     private int allRequiredFor;
     private String extraInformation;
 
-    public TargetDetails(int num, String targetName, String position, int directDependsOn, int allDependsOn,
-                         int directRequiredFor, int allRequiredFor, String extraInformation) {
+    public AdminGraphDetailsTableItem(int num, String targetName, String position, int directDependsOn, int allDependsOn,
+                                      int directRequiredFor, int allRequiredFor, String extraInformation) {
         this.num = num;
         this.targetName = targetName;
         this.position = position;

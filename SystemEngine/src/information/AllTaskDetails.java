@@ -1,5 +1,7 @@
-package dtos;
+package information;
 
+import summaries.GraphSummary;
+import summaries.TargetSummary;
 import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
 import target.Target;
@@ -8,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DashboardTaskDetailsDTO {
+public class AllTaskDetails {
     private final String taskType;
     private final String taskName;
     private final String graphName;
@@ -26,9 +28,9 @@ public class DashboardTaskDetailsDTO {
     private String logHistory;
     private Integer finishedTargets;
 
-    public DashboardTaskDetailsDTO(String taskName, String creatorName, Set<String> targetsToExecute,
-                                   Set<TaskTargetCurrentInfoTableItem> targetStatusSet, String taskType,
-                                   Graph graph, String logHistory) {
+    public AllTaskDetails(String taskName, String creatorName, Set<String> targetsToExecute,
+                          Set<TaskTargetCurrentInfoTableItem> targetStatusSet, String taskType,
+                          Graph graph, String logHistory) {
         this.taskName = taskName;
         this.taskType = taskType;
         this.graphName = graph.getGraphName();
@@ -153,21 +155,28 @@ public class DashboardTaskDetailsDTO {
         return this.finishedTargets;
     }
 
-    public synchronized void updateTargetStatus(String targetName, String runtimeStatus, String resultStatus, String log)
+    public synchronized void updateInfo(GraphSummary graphSummary, String log)
     {
+        TargetSummary targetSummary;
+        String runtimeStatus, resultStatus;
+        this.finishedTargets = 0;
+
         for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
         {
-            if(targetName.equalsIgnoreCase(curr.getTargetName()))
-            {
-                curr.updateItem(runtimeStatus, resultStatus);
-                break;
-            }
+            targetSummary = graphSummary.getTargetsSummaryMap().get(curr.getTargetName());
+            runtimeStatus = targetSummary.getRuntimeStatus().toString();
+            resultStatus = targetSummary.getResultStatus().toString();
+
+            curr.updateItem(runtimeStatus, resultStatus);
+
+            if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
+                ++this.finishedTargets;
         }
 
-        if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
-            ++this.finishedTargets;
-
         this.logHistory += log + "\n\n";
+
+        if(this.finishedTargets == this.targetStatusSet.size())
+            this.taskStatus = "Finished";
     }
 
     public void addToTaskLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n\n"; }

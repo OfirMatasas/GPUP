@@ -1,6 +1,6 @@
 package managers;
 
-import dtos.DashboardTaskDetailsDTO;
+import information.AllTaskDetails;
 import information.WorkerWorkOnTask;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
@@ -16,18 +16,20 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class TasksManager {
+    //--------------------------------------------------- Members ------------------------------------------------//
+    private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>(); //Static info about simulation task created (taskName, info)
+    private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>(); //Static info about compilation task created (taskName, info)
+    private final Map<String, Set<String>> adminsTasks = new HashMap<>(); //Tasks of every admin (adminName, tasks made by him)
+    private final Set<String> listOfAllTasks = new HashSet<>(); //Tasks names
+    private final Set<String> listOfActiveTasks = new HashSet<>(); //Active tasks names (for workers)
+    private final Map<String, AllTaskDetails> allTaskDetailsMap = new HashMap<>(); //Info about each task (taskName, info)
+    private final Map<String, Integer> workersCredits = new HashMap<>(); //Workers' credit (name, credit)
+    private final Map<String, Map<String, WorkerWorkOnTask>> workersWorksHistoryMap = new HashMap<>(); //Workers executedTargets (workerName, (taskName, info))
+    private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>(); //Registered workers (taskName, all workers)
+    private final Map<String, GraphSummary> graphSummaryMap = new HashMap<>(); //Graph summary of task (taskName, graph summary)
+    private final Map<String, TaskThread> taskThreadMap = new HashMap<>(); //Task thread of task (taskName, task thread)
 
-    private final Map<String, SimulationTaskInformation> simulationTasksMap = new HashMap<>(); //Static info
-    private final Map<String, CompilationTaskInformation> compilationTasksMap = new HashMap<>(); //Static info
-    private final Map<String, Set<String>> adminsTasks = new HashMap<>(); //Holds all tasks of every admin
-    private final Set<String> listOfAllTasks = new HashSet<>(); //Holds all tasks names
-    private final Set<String> listOfActiveTasks = new HashSet<>(); //Holds all active tasks names (for workers)
-    private final Map<String, DashboardTaskDetailsDTO> taskDetailsDTOMap = new HashMap<>();
-    private final Map<String, Integer> workersCredits = new HashMap<>();
-    private final Map<String, Map<String, WorkerWorkOnTask>> workersWorksHistoryMap = new HashMap<>();
-    private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>();
-    private final Map<String, GraphSummary> graphSummaryMap = new HashMap<>();
-    private final Map<String, TaskThread> taskThreadMap = new HashMap<>();
+    //--------------------------------------------------- Formats ------------------------------------------------//
     private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
     //--------------------------------------------------- New Tasks ----------------------------------------------//
@@ -37,7 +39,7 @@ public class TasksManager {
 
         addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
 
-        createNewTaskDetailsDTO(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
+        createNewAllTaskDetailsItem(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
                 newTask.getTargetsToExecute(), "Simulation", graphsManager);
 
         createNewGraphSummary(newTask.getTaskName(), newTask.getGraphName(), graphsManager);
@@ -49,7 +51,7 @@ public class TasksManager {
 
         addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
 
-        createNewTaskDetailsDTO(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
+        createNewAllTaskDetailsItem(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
                 newTask.getTargetsToExecute(), "Compilation", graphsManager);
 
         createNewGraphSummary(newTask.getTaskName(), newTask.getGraphName(), graphsManager);
@@ -61,8 +63,8 @@ public class TasksManager {
         this.graphSummaryMap.put(taskName.toLowerCase(), new GraphSummary(graph));
     }
 
-    private synchronized void createNewTaskDetailsDTO(String taskName, String graphName, String creatorName,
-                                                      Set<String> targets, String taskType, GraphsManager graphsManager) {
+    private synchronized void createNewAllTaskDetailsItem(String taskName, String graphName, String creatorName,
+                                                          Set<String> targets, String taskType, GraphsManager graphsManager) {
         Set<TaskTargetCurrentInfoTableItem> infoSet = new HashSet<>();
         int i = 1;
 
@@ -74,7 +76,7 @@ public class TasksManager {
         }
         addUserTask(creatorName.toLowerCase(), taskName);
 
-        this.taskDetailsDTOMap.put(taskName.toLowerCase(), new DashboardTaskDetailsDTO(taskName,
+        this.allTaskDetailsMap.put(taskName.toLowerCase(), new AllTaskDetails(taskName,
                 creatorName, targets, infoSet, taskType, graphsManager.getGraph(graphName),
                 "Task created by " + creatorName + " on " + this.formatter.format(new Date())));
     }
@@ -88,18 +90,18 @@ public class TasksManager {
 
     //---------------------------------------------------- Workers ----------------------------------------------//
     public synchronized void registerWorkerToTask(String taskName, String workerName) {
-        this.taskDetailsDTOMap.get(taskName.toLowerCase()).addWorker(workerName);
+        this.allTaskDetailsMap.get(taskName.toLowerCase()).addWorker(workerName);
         addRegisteredTaskToWorker(workerName, taskName);
     }
 
     public synchronized void removeWorkerRegistrationFromTask(String taskName, String workerName) {
-        this.taskDetailsDTOMap.get(taskName.toLowerCase()).removeWorker(workerName);
+        this.allTaskDetailsMap.get(taskName.toLowerCase()).removeWorker(workerName);
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
     public synchronized void addCreditsToWorker(String workerName, String taskName) {
         this.workersCredits.put(workerName.toLowerCase(), this.workersCredits.get(workerName.toLowerCase()) +
-                this.taskDetailsDTOMap.get(taskName.toLowerCase()).getSinglePayment());
+                this.allTaskDetailsMap.get(taskName.toLowerCase()).getSinglePayment());
     }
 
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
@@ -120,18 +122,18 @@ public class TasksManager {
     }
 
     //-------------------------------------------------- Update Tasks --------------------------------------------//
-    public void startTask(String taskName, String userName, GraphsManager graphsManager) {
-        DashboardTaskDetailsDTO taskDetails = this.taskDetailsDTOMap.get(taskName.toLowerCase());
+    public synchronized void startTask(String taskName, String userName, GraphsManager graphsManager) {
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
         TaskThread taskThread;
         String graphName = taskDetails.getGraphName();
 
         taskDetails.setTaskStatus("Running");
         taskDetails.addToTaskLogHistory(userName + " started the task on " + this.formatter.format(new Date()) + "!");
 
-        this.taskDetailsDTOMap.get(taskName.toLowerCase()).setTaskStatus("Running");
+        this.allTaskDetailsMap.get(taskName.toLowerCase()).setTaskStatus("Running");
         this.listOfActiveTasks.add(taskName);
 
-        if(this.taskDetailsDTOMap.get(taskName.toLowerCase()).getTaskType().equals("Simulation")) //Simulation task
+        if(this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskType().equals("Simulation")) //Simulation task
             taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName),
                     this.graphSummaryMap.get(taskName.toLowerCase()), this.simulationTasksMap.get(taskName.toLowerCase()), null, false);
         else //Compilation task
@@ -143,23 +145,24 @@ public class TasksManager {
     }
 
     public synchronized void updateTargetInfoOnTask(ExecutedTargetUpdates updates, GraphsManager graphsManager) {
-        //Updating task details dto
         String targetName = updates.getTargetName();
-        String taskName = updates.getTaskName();
+        String taskName = updates.getTaskName().toLowerCase();
         String runtimeStatus = updates.getRuntimeStatus();
         String resultStatus = updates.getResultStatus();
         String log = updates.getTaskLog();
-        DashboardTaskDetailsDTO taskDetails = this.taskDetailsDTOMap.get(taskName.toLowerCase());
-
-        taskDetails.updateTargetStatus(targetName, runtimeStatus, resultStatus, log);
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName);
 
         //Updating graph summary
         TargetSummary.RuntimeStatus runtime = convertRuntimeStatus(runtimeStatus);
         TargetSummary.ResultStatus result = convertResultStatus(resultStatus);
         String graphName = taskDetails.getGraphName();
-        Target target = graphsManager.getGraph(graphName).getTarget(taskName);
+        Target target = graphsManager.getGraph(graphName).getTarget(targetName);
 
-        this.graphSummaryMap.get(taskName.toLowerCase()).UpdateTargetSummary(target, result, runtime);
+        GraphSummary graphSummary = this.graphSummaryMap.get(taskName);
+        graphSummary.UpdateTargetSummary(target, result, runtime);
+
+        //Updating task details item
+        taskDetails.updateInfo(graphSummary, log);
     }
 
     public TargetSummary.RuntimeStatus convertRuntimeStatus(String runtimeStatus) {
@@ -206,12 +209,12 @@ public class TasksManager {
 
     public synchronized Set<String> getActiveTasksList() { return this.listOfActiveTasks; }
 
-    public synchronized DashboardTaskDetailsDTO getTaskDetailsDTO(String taskName) {
-        return this.taskDetailsDTOMap.get(taskName.toLowerCase());
+    public synchronized AllTaskDetails getTaskDetailsDTO(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase());
     }
 
     public synchronized Integer getTaskFinishedTargets(String taskName) {
-        return this.taskDetailsDTOMap.get(taskName.toLowerCase()).getFinishedTargets();
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getFinishedTargets();
     }
 
     public synchronized Set<String> getWorkerRegisteredTasks(String workerName) {
@@ -229,16 +232,24 @@ public class TasksManager {
         return this.adminsTasks.get(userName.toLowerCase());
     }
 
-    public TaskThread getTaskThread(String taskName) {
+    public synchronized TaskThread getTaskThread(String taskName) {
         return this.taskThreadMap.get(taskName.toLowerCase());
     }
 
-//    private void updateTaskStatus(String taskName) {
-//        boolean isTaskOver = true;
-//
-//        for(TaskTargetCurrentInfoTableItem curr : taskInfoMap.get(taskName).getTargetStatusSet())
-//        {
-//            if(curr.)
-//        }
-//    }
+    public synchronized boolean isTaskFinished(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Finished");
+    }
+
+    public synchronized void removeTaskThread(String taskName) {
+        this.taskThreadMap.remove(taskName.toLowerCase());
+    }
+
+    public synchronized void removeAllWorkersRegistrations(String taskName) {
+        this.workerRegisteredTasksMap.remove(taskName);
+    }
+
+    public synchronized void removeTaskFromActiveList(String taskName) {
+        this.listOfActiveTasks.remove(taskName);
+        removeAllWorkersRegistrations(taskName);
+    }
 }

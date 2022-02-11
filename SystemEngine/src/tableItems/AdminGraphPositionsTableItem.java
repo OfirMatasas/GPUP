@@ -1,12 +1,12 @@
-package information;
+package tableItems;
 
-public class GraphPositionsInformation {
+public class AdminGraphPositionsTableItem {
     private final int roots;
     private final int middles;
     private final int leaves;
     private final int independents;
 
-    public GraphPositionsInformation(int roots, int middles, int leaves, int independents) {
+    public AdminGraphPositionsTableItem(int roots, int middles, int leaves, int independents) {
         this.roots = roots;
         this.middles = middles;
         this.leaves = leaves;

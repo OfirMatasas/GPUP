@@ -2,7 +2,7 @@ package controllers;
 
 import com.google.gson.Gson;
 import http.HttpClientUtil;
-import information.CreateTaskTargetInformation;
+import tableItems.AdminCreateTaskTargetsTableItem;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -46,7 +46,7 @@ public class AdminCreateTaskController implements Initializable{
     private final String DEPENDED = "All depends-on targets";
     private final String SIMULATION ="Simulation";
     private final String COMPILATION ="Compilation";
-    private final ObservableList<CreateTaskTargetInformation> taskTargetDetailsList = FXCollections.observableArrayList();
+    private final ObservableList<AdminCreateTaskTargetsTableItem> taskTargetDetailsList = FXCollections.observableArrayList();
     private ObservableList<String> allTargetsList;
     private File sourceCodeDirectory = null;
     private File outputDirectory = null;
@@ -82,10 +82,10 @@ public class AdminCreateTaskController implements Initializable{
     @FXML private Button compiledOutputButton;
     @FXML private Label sourceCodePathLabel;
     @FXML private Label outputPathLabel;
-    @FXML private TableView<CreateTaskTargetInformation> taskTargetDetailsTableView;
-    @FXML private TableColumn<CreateTaskTargetInformation, Integer> numberColumn;
-    @FXML private TableColumn<CreateTaskTargetInformation, String> targetNameColumn;
-    @FXML private TableColumn<CreateTaskTargetInformation, String> positionColumn;
+    @FXML private TableView<AdminCreateTaskTargetsTableItem> taskTargetDetailsTableView;
+    @FXML private TableColumn<AdminCreateTaskTargetsTableItem, Integer> numberColumn;
+    @FXML private TableColumn<AdminCreateTaskTargetsTableItem, String> targetNameColumn;
+    @FXML private TableColumn<AdminCreateTaskTargetsTableItem, String> positionColumn;
     @FXML private Button removeSelectedButton;
     @FXML private Button clearTableButton;
     @FXML private Button CreateNewTaskButton;
@@ -113,7 +113,7 @@ public class AdminCreateTaskController implements Initializable{
         String taskTypeRequest = null;
         String stringObject = null;
 
-        for (CreateTaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for (AdminCreateTaskTargetsTableItem curr : this.taskTargetDetailsTableView.getItems())
             targets.add(curr.getTargetName());
 
         if(this.taskSelection.getValue().equals("Simulation"))
@@ -187,22 +187,22 @@ public class AdminCreateTaskController implements Initializable{
     {
         int i = this.taskTargetDetailsTableView.getItems().size() + 1;
         String targetPosition, targetRuntimeStatus, targetResultStatus;
-        CreateTaskTargetInformation taskTargetInformation;
-        ObservableList<CreateTaskTargetInformation> tableList = this.taskTargetDetailsTableView.getItems();
+        AdminCreateTaskTargetsTableItem taskTargetInformation;
+        ObservableList<AdminCreateTaskTargetsTableItem> tableList = this.taskTargetDetailsTableView.getItems();
 
         for(String currentTarget : this.currentSelectedTargetListView.getItems())
         {
             if(!targetExistedInTable(tableList, currentTarget)) {
                 targetPosition = this.graph.getTarget(currentTarget).getTargetPosition().toString();
-                taskTargetInformation = new CreateTaskTargetInformation(i++, currentTarget, targetPosition);
+                taskTargetInformation = new AdminCreateTaskTargetsTableItem(i++, currentTarget, targetPosition);
                 this.taskTargetDetailsList.add(taskTargetInformation);
             }
         }
         this.taskTargetDetailsTableView.setItems(this.taskTargetDetailsList);
     }
 
-    private boolean targetExistedInTable(ObservableList<CreateTaskTargetInformation> tableList, String currentTargetName) {
-        for(CreateTaskTargetInformation currInfo : tableList)
+    private boolean targetExistedInTable(ObservableList<AdminCreateTaskTargetsTableItem> tableList, String currentTargetName) {
+        for(AdminCreateTaskTargetsTableItem currInfo : tableList)
         {
             if(currInfo.getTargetName().equals(currentTargetName))
                 return true;
@@ -291,7 +291,7 @@ public class AdminCreateTaskController implements Initializable{
     {
         if(this.taskTargetDetailsTableView.getItems().size()>0)
         {
-            CreateTaskTargetInformation chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            AdminCreateTaskTargetsTableItem chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
             if(chosenTarget!=null) {
                 int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
 
@@ -416,7 +416,7 @@ public class AdminCreateTaskController implements Initializable{
     private Set<String> setCurrentRunTargets() {
         Set<String> currentRunTargets = new HashSet<>();
 
-        for(CreateTaskTargetInformation curr : this.taskTargetDetailsTableView.getItems())
+        for(AdminCreateTaskTargetsTableItem curr : this.taskTargetDetailsTableView.getItems())
             currentRunTargets.add(curr.getTargetName());
 
         return currentRunTargets;
@@ -441,9 +441,9 @@ public class AdminCreateTaskController implements Initializable{
     }
 
     private void initializeGraphDetails() {
-        this.numberColumn.setCellValueFactory(new PropertyValueFactory<CreateTaskTargetInformation, Integer>("number"));
-        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<CreateTaskTargetInformation, String>("targetName"));
-        this.positionColumn.setCellValueFactory(new PropertyValueFactory<CreateTaskTargetInformation, String>("position"));
+        this.numberColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, Integer>("number"));
+        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("targetName"));
+        this.positionColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("position"));
     }
 
     private void addListenersForSelectedTargets() {
@@ -544,9 +544,9 @@ public class AdminCreateTaskController implements Initializable{
 
     private void addListenersToButtons()
     {
-        this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<CreateTaskTargetInformation>() {
+        this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<AdminCreateTaskTargetsTableItem>() {
             @Override
-            public void onChanged(Change<? extends CreateTaskTargetInformation> c) {
+            public void onChanged(Change<? extends AdminCreateTaskTargetsTableItem> c) {
                 AdminCreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
                 // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
             }

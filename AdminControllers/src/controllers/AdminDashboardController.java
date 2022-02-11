@@ -2,7 +2,7 @@ package controllers;
 
 import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
-import dtos.DashboardTaskDetailsDTO;
+import information.AllTaskDetails;
 import http.HttpClientUtil;
 import tableItems.SelectedGraphTableItem;
 import tableItems.SelectedTaskStatusTableItem;
@@ -231,7 +231,7 @@ public class AdminDashboardController {
                                 try {
                                     if (responseBody != null) {
                                         {
-                                            DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
+                                            AllTaskDetails taskDetailsDTO = gson.fromJson(responseBody.string(), AllTaskDetails.class);
                                             refreshTaskDetailsDTO(taskDetailsDTO);
                                             responseBody.close();
                                         }
@@ -245,7 +245,7 @@ public class AdminDashboardController {
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
             }
 
-            private void refreshTaskDetailsDTO(DashboardTaskDetailsDTO taskDetailsDTO) {
+            private void refreshTaskDetailsDTO(AllTaskDetails taskDetailsDTO) {
                 AdminDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
                 AdminDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
                 AdminDashboardController.this.TaskOnGraphTextField.setText(taskDetailsDTO.getGraphName());
@@ -254,7 +254,7 @@ public class AdminDashboardController {
                 updateTaskStatusTable(taskDetailsDTO);
             }
 
-            private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+            private void updateTaskTargetDetailsTable(AllTaskDetails taskDetailsDTO) {
 
                 SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
                         taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
@@ -265,7 +265,7 @@ public class AdminDashboardController {
                 AdminDashboardController.this.TaskTargetsTableView.setItems(AdminDashboardController.this.selectedTaskTargetsList);
             }
 
-            private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+            private void updateTaskStatusTable(AllTaskDetails taskDetailsDTO) {
 
                 SelectedTaskStatusTableItem selectedTaskStatusTableItem = new SelectedTaskStatusTableItem(taskDetailsDTO.getTaskStatus(),
                         taskDetailsDTO.getRegisteredWorkers().size(), taskDetailsDTO.getTotalPayment());

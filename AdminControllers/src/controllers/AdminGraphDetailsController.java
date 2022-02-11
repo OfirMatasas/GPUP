@@ -1,7 +1,7 @@
 package controllers;
 
-import information.GraphPositionsInformation;
-import information.TargetDetails;
+import tableItems.AdminGraphPositionsTableItem;
+import tableItems.AdminGraphDetailsTableItem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -24,8 +24,8 @@ import java.io.*;
 
 public class AdminGraphDetailsController {
     private Graph graph = null;
-    private final ObservableList<TargetDetails> targetDetailsList = FXCollections.observableArrayList();
-    private final ObservableList<GraphPositionsInformation> graphPositionsList = FXCollections.observableArrayList();
+    private final ObservableList<AdminGraphDetailsTableItem> adminGraphDetailsTableItemList = FXCollections.observableArrayList();
+    private final ObservableList<AdminGraphPositionsTableItem> graphPositionsList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsNameList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsInformationList = FXCollections.observableArrayList();
     private String directoryPath;
@@ -38,22 +38,22 @@ public class AdminGraphDetailsController {
     }
 
     private void initializeGraphDetails() {
-        this.TargetNumber.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("num"));
-        this.TargetName.setCellValueFactory(new PropertyValueFactory<TargetDetails, String>("targetName"));
-        this.TargetPosition.setCellValueFactory(new PropertyValueFactory<TargetDetails, String>("position"));
-        this.TargetDirectDependsOn.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("directDependsOn"));
-        this.TargetAllDependsOn.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("allDependsOn"));
-        this.TargetDirectRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("directRequiredFor"));
-        this.TargetAllRequiredFor.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("allRequiredFor"));
-        this.TargetSerialSets.setCellValueFactory(new PropertyValueFactory<TargetDetails, Integer>("serialSets"));
-        this.TargetExtraInformation.setCellValueFactory(new PropertyValueFactory<TargetDetails, String>("extraInformation"));
+        this.TargetNumber.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("num"));
+        this.TargetName.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, String>("targetName"));
+        this.TargetPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, String>("position"));
+        this.TargetDirectDependsOn.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("directDependsOn"));
+        this.TargetAllDependsOn.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("allDependsOn"));
+        this.TargetDirectRequiredFor.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("directRequiredFor"));
+        this.TargetAllRequiredFor.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("allRequiredFor"));
+        this.TargetSerialSets.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, Integer>("serialSets"));
+        this.TargetExtraInformation.setCellValueFactory(new PropertyValueFactory<AdminGraphDetailsTableItem, String>("extraInformation"));
     }
 
     private void initializeGraphPositions() {
-        this.RootsPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("roots"));
-        this.MiddlesPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("middles"));
-        this.LeavesPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("leaves"));
-        this.IndependentsPosition.setCellValueFactory(new PropertyValueFactory<GraphPositionsInformation, Integer>("independents"));
+        this.RootsPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphPositionsTableItem, Integer>("roots"));
+        this.MiddlesPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphPositionsTableItem, Integer>("middles"));
+        this.LeavesPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphPositionsTableItem, Integer>("leaves"));
+        this.IndependentsPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphPositionsTableItem, Integer>("independents"));
     }
 
     private void initializeSerialSetChoiceBox() {
@@ -66,21 +66,21 @@ public class AdminGraphDetailsController {
     @FXML private AnchorPane AnchorPane;
     @FXML private ChoiceBox<String> TargetSerialSetChoiceBox;
     @FXML private ListView<String> SerialSetsListsView;
-    @FXML private TableView<TargetDetails> TargetsDetailsTable;
-    @FXML private TableColumn<TargetDetails, Integer> TargetNumber;
-    @FXML private TableColumn<TargetDetails, String> TargetName;
-    @FXML private TableColumn<TargetDetails, String> TargetPosition;
-    @FXML private TableColumn<TargetDetails, Integer> TargetDirectDependsOn;
-    @FXML private TableColumn<TargetDetails, Integer> TargetAllDependsOn;
-    @FXML private TableColumn<TargetDetails, Integer> TargetDirectRequiredFor;
-    @FXML private TableColumn<TargetDetails, Integer> TargetAllRequiredFor;
-    @FXML private TableColumn<TargetDetails, Integer> TargetSerialSets;
-    @FXML private TableView<GraphPositionsInformation> TargetPositionsTable;
-    @FXML private TableColumn<GraphPositionsInformation, Integer> RootsPosition;
-    @FXML private TableColumn<GraphPositionsInformation, Integer> MiddlesPosition;
-    @FXML private TableColumn<GraphPositionsInformation, Integer> LeavesPosition;
-    @FXML private TableColumn<GraphPositionsInformation, Integer> IndependentsPosition;
-    @FXML private TableColumn<TargetDetails, String> TargetExtraInformation;
+    @FXML private TableView<AdminGraphDetailsTableItem> TargetsDetailsTable;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetNumber;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetName;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetPosition;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectDependsOn;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllDependsOn;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectRequiredFor;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllRequiredFor;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetSerialSets;
+    @FXML private TableView<AdminGraphPositionsTableItem> TargetPositionsTable;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> RootsPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> MiddlesPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> LeavesPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> IndependentsPosition;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetExtraInformation;
     @FXML private Label SerialSetsLabel;
     @FXML private Label GraphPositions;
     @FXML private PieChart PositionsPie;
@@ -126,23 +126,23 @@ public class AdminGraphDetailsController {
     }
 
     private void setTargetDetailsTable() {
-        TargetDetails currentTargetDetails;
+        AdminGraphDetailsTableItem currentAdminGraphDetailsTableItem;
         int i = 1;
 
         for (Target currentTarget : this.graph.getGraphTargets().values()) {
-            currentTargetDetails = new TargetDetails(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
+            currentAdminGraphDetailsTableItem = new AdminGraphDetailsTableItem(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
                     currentTarget.getDependsOnTargets().size(), currentTarget.getAllDependsOnTargets().size(),
                     currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getExtraInformation());
 
-            this.targetDetailsList.add(currentTargetDetails);
+            this.adminGraphDetailsTableItemList.add(currentAdminGraphDetailsTableItem);
             ++i;
         }
 
-        this.TargetsDetailsTable.setItems(this.targetDetailsList);
+        this.TargetsDetailsTable.setItems(this.adminGraphDetailsTableItemList);
     }
 
     private void setGraphPositionsTable() {
-        GraphPositionsInformation graphPositionsInformation = new GraphPositionsInformation(
+        AdminGraphPositionsTableItem adminGraphPositionsTableItem = new AdminGraphPositionsTableItem(
                 this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT),
                 this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE),
                 this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF),
@@ -150,7 +150,7 @@ public class AdminGraphDetailsController {
         );
 
         this.graphPositionsList.clear();
-        this.graphPositionsList.add(graphPositionsInformation);
+        this.graphPositionsList.add(adminGraphPositionsTableItem);
         this.TargetPositionsTable.setItems(this.graphPositionsList);
     }
 

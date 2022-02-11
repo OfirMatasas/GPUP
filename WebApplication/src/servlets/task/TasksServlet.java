@@ -1,7 +1,7 @@
 package servlets.task;
 
 import com.google.gson.Gson;
-import dtos.DashboardTaskDetailsDTO;
+import information.AllTaskDetails;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,8 +34,8 @@ public class TasksServlet extends HttpServlet {
 
             if(tasksManager.isTaskExists(taskInfoName))
             {
-                DashboardTaskDetailsDTO taskInfo = tasksManager.getTaskDetailsDTO(taskInfoName);
-                infoAsString = gson.toJson(taskInfo, DashboardTaskDetailsDTO.class);
+                AllTaskDetails taskInfo = tasksManager.getTaskDetailsDTO(taskInfoName);
+                infoAsString = gson.toJson(taskInfo, AllTaskDetails.class);
 
                 resp.getWriter().write(infoAsString);
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);

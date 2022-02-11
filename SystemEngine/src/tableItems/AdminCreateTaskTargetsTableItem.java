@@ -1,17 +1,17 @@
-package information;
+package tableItems;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class CreateTaskTargetInformation 
+public class AdminCreateTaskTargetsTableItem
 {
     private final SimpleIntegerProperty number;
     private final SimpleStringProperty targetName;
     private final SimpleStringProperty position;
 
-    public CreateTaskTargetInformation(int number, String targetName, String position) {
+    public AdminCreateTaskTargetsTableItem(int number, String targetName, String position) {
         this.number = new SimpleIntegerProperty(number);
         this.targetName = new SimpleStringProperty(targetName);
         this.position = new SimpleStringProperty(position);

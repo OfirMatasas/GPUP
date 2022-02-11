@@ -1,8 +1,8 @@
 package servlets.task;
 
 import com.google.gson.Gson;
-import dtos.DashboardTaskDetailsDTO;
 import dtos.WorkerChosenTaskDTO;
+import information.AllTaskDetails;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +46,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
         else //Valid request
         {
-            DashboardTaskDetailsDTO currInfo = tasksManager.getTaskDetailsDTO(taskName);
+            AllTaskDetails currInfo = tasksManager.getTaskDetailsDTO(taskName);
 
             WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
                     currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
@@ -92,8 +92,8 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(tasksManager.isTaskExists(taskName)) //Task exists
         {
-            DashboardTaskDetailsDTO updatedInfo = tasksManager.getTaskDetailsDTO(taskName);
-            String infoAsString = gson.toJson(updatedInfo, DashboardTaskDetailsDTO.class);
+            AllTaskDetails updatedInfo = tasksManager.getTaskDetailsDTO(taskName);
+            String infoAsString = gson.toJson(updatedInfo, AllTaskDetails.class);
             resp.getWriter().write(infoAsString);
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
@@ -108,7 +108,7 @@ public class TaskUpdateServlet extends HttpServlet {
         if(req.getParameter("start-task") != null) //Requesting to start a task
             startTask(req, resp, tasksManager);
         else if(req.getHeader("executed-task-update") != null)
-            updateTask(req, resp, tasksManager);
+            updateTargetOnTask(req, resp, tasksManager);
         else
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -128,22 +128,35 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void updateTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+    private void updateTargetOnTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
         ExecutedTargetUpdates updates = new Gson().fromJson(req.getReader(), ExecutedTargetUpdates.class);
+        String taskName;
+
         if(updates != null)
         {
             tasksManager.updateTargetInfoOnTask(updates, ServletUtils.getGraphsManager(getServletContext()));
+            taskName = updates.getTaskName();
 
             if(updates.getRuntimeStatus().equalsIgnoreCase("Finished"))
             {
                 tasksManager.addCreditsToWorker(updates.getUsername(), updates.getTaskName());
                 tasksManager.getTaskThread(updates.getTaskName()).taskOnTargetFinished(updates.getTargetName());
             }
+
+            if(tasksManager.isTaskFinished(taskName))
+                taskFinished(taskName, tasksManager);
+
+            responseMessageAndCode(resp, "Update received in server about " + taskName + " - " + updates.getTargetName(), HttpServletResponse.SC_ACCEPTED);
         }
         else
             responseMessageAndCode(resp, "Invalid upload of updates!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
+    private void taskFinished(String taskName, TasksManager tasksManager)
+    {
+        tasksManager.removeTaskThread(taskName);
+        tasksManager.removeTaskFromActiveList(taskName);
+    }
 
     //------------------------------------------------- General -------------------------------------------------//
     private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {

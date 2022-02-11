@@ -1,7 +1,7 @@
 package controllers;
 
 import com.google.gson.Gson;
-import dtos.DashboardTaskDetailsDTO;
+import information.AllTaskDetails;
 import http.HttpClientUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -110,6 +110,8 @@ public class WorkerDashboardController {
                     if(!WorkerDashboardController.this.TasksListView.getItems().contains(curr))
                         WorkerDashboardController.this.TasksListView.getItems().add(curr);
                 }
+
+                WorkerDashboardController.this.TasksListView.getItems().removeIf(curr -> !c.getList().contains(curr));
             }
         });
     }
@@ -201,37 +203,39 @@ public class WorkerDashboardController {
             if(taskList == null)
                 return;
 
-            for(String curr : taskList)
-            {
-                if(!WorkerDashboardController.this.onlineTasksList.contains(curr))
-                    WorkerDashboardController.this.onlineTasksList.add(curr);
+            WorkerDashboardController.this.onlineTasksList.clear();
+            WorkerDashboardController.this.onlineTasksList.addAll(taskList);
+
+//            for(String curr : taskList)
+//            {
+//                if(!WorkerDashboardController.this.onlineTasksList.contains(curr))
+//                    WorkerDashboardController.this.onlineTasksList.add(curr);
             }
         }
 
-        //------------------------ Users List ------------------------//
-        private void getOnlineUsersFromServer() {
-            String finalUrl = HttpUrl
-                    .parse(Patterns.USER_LIST)
-                    .newBuilder()
-                    .build()
-                    .toString();
+    //------------------------ Users List ------------------------//
+    private void getOnlineUsersFromServer() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.USER_LIST)
+                .newBuilder()
+                .build()
+                .toString();
 
-            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
 
-                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                    Platform.runLater(() -> System.out.println("Failure on connecting to server for users list!"));
-                }
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for users list!"));
+            }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                    Gson gson = new Gson();
-                    ResponseBody responseBody = response.body();
-                    UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
-                    responseBody.close();
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                Gson gson = new Gson();
+                ResponseBody responseBody = response.body();
+                UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
+                responseBody.close();
 
-                    Platform.runLater(() -> updateUsersLists(usersLists));
-                }
-            });
-        }
+                Platform.runLater(() -> updateUsersLists(usersLists));
+            }
+        });
     }
 
     private void updateUsersLists(UsersLists usersLists) {
@@ -324,8 +328,8 @@ public class WorkerDashboardController {
                             ResponseBody responseBody = response.body();
                             try {
                                 if (responseBody != null) {
-                                    DashboardTaskDetailsDTO taskDetailsDTO = gson.fromJson(responseBody.string(), DashboardTaskDetailsDTO.class);
-                                    refreshWorkerTaskDetailsDTO(taskDetailsDTO);
+                                    AllTaskDetails taskDetails = gson.fromJson(responseBody.string(), AllTaskDetails.class);
+                                    refreshWorkerTaskDetails(taskDetails);
                                     responseBody.close();
                                 }
                             } catch (IOException e) { e.printStackTrace(); }
@@ -337,15 +341,15 @@ public class WorkerDashboardController {
         });
     }
 
-    public void refreshWorkerTaskDetailsDTO(DashboardTaskDetailsDTO taskDetailsDTO) {
-        WorkerDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
-        WorkerDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
+    public void refreshWorkerTaskDetails(AllTaskDetails taskDetails) {
+        WorkerDashboardController.this.TaskNameTextField.setText(taskDetails.getTaskName());
+        WorkerDashboardController.this.CreatedByTextField.setText(taskDetails.getUploader());
 
-        updateTaskTargetDetailsTable(taskDetailsDTO);
-        updateTaskStatusTable(taskDetailsDTO);
+        updateTaskTargetDetailsTable(taskDetails);
+        updateTaskStatusTable(taskDetails);
     }
 
-    private void updateTaskTargetDetailsTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+    private void updateTaskTargetDetailsTable(AllTaskDetails taskDetailsDTO) {
 
         SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
                 taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
@@ -356,7 +360,7 @@ public class WorkerDashboardController {
         WorkerDashboardController.this.TaskTargetsTableView.setItems(WorkerDashboardController.this.selectedTaskTargetsList);
     }
 
-    private void updateTaskStatusTable(DashboardTaskDetailsDTO taskDetailsDTO) {
+    private void updateTaskStatusTable(AllTaskDetails taskDetailsDTO) {
 
         WorkerTaskStatusTableItem taskStatusTableItem = new WorkerTaskStatusTableItem(taskDetailsDTO.getTaskType(), taskDetailsDTO.getTaskStatus(),
                 taskDetailsDTO.getRegisteredWorkers(), taskDetailsDTO.getTotalPayment(), WorkerDashboardController.this.username);
