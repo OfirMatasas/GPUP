@@ -44,14 +44,18 @@ public class UserManager {
         return (this.usersLists.getAdminsList().contains(username) || this.usersLists.getWorkersList().contains(username));
     }
 
-    public boolean isValidLogin(String userName, boolean isAdmin)
-    {
+    public boolean isValidLogin(String userName, boolean isAdmin) {
         return (isAdmin ? !this.workersNames.contains(userName) : !this.adminsNames.contains(userName));
 
 //        if(isAdmin) //Trying to log in as admin
 //            return !this.workersNames.contains(userName);
 //        else //Trying to log in as worker
 //            return !this.adminsNames.contains(userName);
+    }
+
+    public boolean isAdmin(String userName)
+    {
+        return this.adminsNames.contains(userName);
     }
 
     public UsersLists getUsersLists() { return this.usersLists; }

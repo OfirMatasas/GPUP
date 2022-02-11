@@ -144,6 +144,33 @@ public class TasksManager {
         this.taskThreadMap.put(taskName.toLowerCase(), taskThread);
     }
 
+    public void pauseTask(String taskName, String adminName) {
+        this.taskThreadMap.get(taskName.toLowerCase()).pauseTheTask();
+
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+
+        taskDetails.setTaskStatus("Paused");
+        taskDetails.addToTaskLogHistory(adminName + " paused the task on " + this.formatter.format(new Date()));
+    }
+
+    public void resumeTask(String taskName, String adminName) {
+        this.taskThreadMap.get(taskName.toLowerCase()).continueTheTask();
+
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+
+        taskDetails.setTaskStatus("Running");
+        taskDetails.addToTaskLogHistory(adminName + " resumed the task on " + this.formatter.format(new Date()));
+    }
+
+    public void stopTask(String taskName, String adminName) {
+        this.taskThreadMap.get(taskName.toLowerCase()).stopTheTask();
+
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+
+        taskDetails.setTaskStatus("Stopped");
+        taskDetails.addToTaskLogHistory(adminName + " stopped the task on " + this.formatter.format(new Date()));
+    }
+
     public synchronized void updateTargetInfoOnTask(ExecutedTargetUpdates updates, GraphsManager graphsManager) {
         String targetName = updates.getTargetName();
         String taskName = updates.getTaskName().toLowerCase();
@@ -193,6 +220,21 @@ public class TasksManager {
     public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
 
     public synchronized boolean isCompilationTask(String taskName) { return this.compilationTasksMap.containsKey(taskName.toLowerCase()); }
+
+    public synchronized boolean isTaskPausable(String taskName) {
+        String taskStatus = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus();
+        return taskStatus.equalsIgnoreCase("Running");
+    }
+
+    public synchronized boolean isTaskResumable(String taskName) {
+        String taskStatus = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus();
+        return taskStatus.equalsIgnoreCase("Paused");
+    }
+
+    public synchronized boolean isTaskStoppable(String taskName) {
+        String taskStatus = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus();
+        return taskStatus.equalsIgnoreCase("Running") || taskStatus.equalsIgnoreCase("Paused");
+    }
 
     //----------------------------------------------------- Getters -----------------------------------------------//
     public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {

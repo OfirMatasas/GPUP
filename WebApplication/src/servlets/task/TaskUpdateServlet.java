@@ -107,6 +107,12 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(req.getParameter("start-task") != null) //Requesting to start a task
             startTask(req, resp, tasksManager);
+        else if(req.getParameter("pause-task") != null)
+            pauseTask(req, resp, tasksManager);
+        else if(req.getParameter("resume-task") != null)
+            resumeTask(req, resp, tasksManager);
+        else if(req.getParameter("stop-task") != null)
+            stopTask(req, resp, tasksManager);
         else if(req.getHeader("executed-task-update") != null)
             updateTargetOnTask(req, resp, tasksManager);
         else
@@ -126,6 +132,63 @@ public class TaskUpdateServlet extends HttpServlet {
         }
         else
             responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void pauseTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        String taskName = req.getParameter("pause-task");
+        String adminName = req.getParameter("username");
+
+        if(tasksManager.isTaskExists(taskName) && adminName != null && userManager.isAdmin(adminName))
+        {
+            if(tasksManager.isTaskPausable(taskName))
+            {
+                tasksManager.pauseTask(taskName, adminName);
+                responseMessageAndCode(resp, taskName + " paused successfully!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "Task can't be paused!", HttpServletResponse.SC_BAD_REQUEST);
+        }
+        else
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void resumeTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        String taskName = req.getParameter("resume-task");
+        String adminName = req.getParameter("username");
+
+        if(tasksManager.isTaskExists(taskName) && adminName != null && userManager.isAdmin(adminName))
+        {
+            if(tasksManager.isTaskResumable(taskName))
+            {
+                tasksManager.resumeTask(taskName, adminName);
+                responseMessageAndCode(resp, taskName + " resumed successfully!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "Task can't be resumed!", HttpServletResponse.SC_BAD_REQUEST);
+        }
+        else
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void stopTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        String taskName = req.getParameter("stop-task");
+        String adminName = req.getParameter("username");
+
+        if(tasksManager.isTaskExists(taskName) && adminName != null && userManager.isAdmin(adminName))
+        {
+            if(tasksManager.isTaskStoppable(taskName))
+            {
+                tasksManager.stopTask(taskName, adminName);
+                responseMessageAndCode(resp, taskName + " stopped successfully!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "Task can't be stopped!", HttpServletResponse.SC_BAD_REQUEST);
+        }
+        else
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private void updateTargetOnTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {

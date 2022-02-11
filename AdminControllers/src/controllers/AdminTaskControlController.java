@@ -359,8 +359,7 @@ public class AdminTaskControlController {
         this.targetsFinishedLabel.setDisable(false);
     }
 
-    private void createNewProgressBar()
-    {
+    private void createNewProgressBar() {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -385,45 +384,9 @@ public class AdminTaskControlController {
     }
 
     //-------------------------------------------------During Task------------------------------------------------//
-    public void pausePressed(ActionEvent actionEvent) {
-    }
-
-    public void stopPressed(ActionEvent actionEvent) {
-    }
-
     @FXML void runPressed(ActionEvent event) {
+        this.runButton.setDisable(true);
         sendRequestToStartTask();
-
-//
-//        CompilationParameters compilationParameters = null;
-//        Thread updateThread = new Thread(this::updateTableRuntimeStatuses);
-//        TaskThreadWatcher taskThreadWatcher = new TaskThreadWatcher();
-//        Set<String> currentRunTargets = setCurrentRunTargets();
-//        TaskOutput taskOutput = new TaskOutput(this.logTextArea, this.graphSummary, this.graph);
-//        turnOnProgressBar();
-//
-//        if(this.taskType.equals(TaskThread.TaskType.Simulation))
-//            applyTaskParametersForAllTargets(this.taskParameters);
-//        else //Compilation
-//        {
-//            compilationParameters = new CompilationParameters(this.sourceCodeDirectory, this.outputDirectory);
-//            this.numOfThreads = this.threadsSpinner.getValue();
-//        }
-//
-//        this.taskDetailsOnTargetTextArea.setDisable(false);
-//        this.progressBar.setDisable(false);
-//        this.progressBarLabel.setDisable(false);
-//        this.targetsFinishedLabel.setDisable(false);
-//
-//        this.taskThread = new TaskThread(this.graph, this.taskType, this.taskParametersMap, compilationParameters, this.graphSummary,
-//                currentRunTargets, this.numOfThreads, taskOutput, this.incrementalRadioButton.isSelected());
-//
-//        taskThreadWatcher.setDaemon(true);
-//
-//        this.taskThread.start();
-//        createNewProgressBar();
-//        taskThreadWatcher.start();
-//        updateThread.start();
     }
 
     private void sendRequestToStartTask() {
@@ -438,7 +401,12 @@ public class AdminTaskControlController {
         HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> System.out.println("Failure on connecting to server for starting task!"));
+                Platform.runLater(() ->
+                {
+                    AdminTaskControlController.this.runButton.setDisable(false);
+                    ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null,
+                            "Failure on connecting to server for starting task!");
+                });
             }
 
             @Override
@@ -446,34 +414,128 @@ public class AdminTaskControlController {
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
-                        AdminTaskControlController.this.runButton.setDisable(true);
-                        AdminTaskControlController.this.PauseButton.setDisable(false);
-                        AdminTaskControlController.this.stopButton.setDisable(false);
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null, response.header("message"));
+                        disablePauseAndStopButtons(false);
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null,
+                                response.header("message"));
                     });
                 else //Failed
-                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null, response.header("message")));
+                    Platform.runLater(() ->
+                    {
+                        AdminTaskControlController.this.runButton.setDisable(false);
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null,
+                                response.header("message"));
+                    });
             }
         });
     }
 
-//    @FXML void pausePressed(ActionEvent event) {
-//        if(!this.taskThread.getPaused()) //Pausing the task
-//        {
-//            this.PauseButton.setDisable(true);
-//            this.stopButton.setDisable(true);
-//            this.taskThread.pauseTheTask();
-//        }
-//        else //Resuming the task
-//            this.taskThread.continueTheTask();
-//    }
-//
-//    @FXML void stopPressed(ActionEvent event) {
-//        this.taskThread.stopTheTask();
-//    }
+    @FXML void pausePressed(ActionEvent event) {
+        disablePauseAndStopButtons(true);
 
-    private void updateTableRuntimeStatuses()
-    {
+        if (this.PauseButton.getText().equalsIgnoreCase("Pause"))
+            sendRequestToPauseTask();
+        else //Resume
+            sendRequestToResumeTask();
+    }
+
+    private void disablePauseAndStopButtons(boolean flag) {
+        this.PauseButton.setDisable(flag);
+        this.stopButton.setDisable(flag);
+    }
+
+    private void sendRequestToPauseTask() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("pause-task", AdminTaskControlController.this.taskName)
+                .addQueryParameter("username", this.userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for pausing task!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                    {
+                        AdminTaskControlController.this.PauseButton.setText("Resume");
+                        disablePauseAndStopButtons(false);
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Paused Successfully!", null, response.header("message"));
+                    });
+                else //Failed
+                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Pausing Task!", null, response.header("message")));
+            }
+        });
+    }
+
+    private void sendRequestToResumeTask() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("resume-task", AdminTaskControlController.this.taskName)
+                .addQueryParameter("username", this.userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for resuming task!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                    {
+                        AdminTaskControlController.this.PauseButton.setText("Pause");
+                        disablePauseAndStopButtons(false);
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Resumed Successfully!", null, response.header("message"));
+                    });
+                else //Failed
+                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Resuming Task!", null, response.header("message")));
+            }
+        });
+    }
+
+    @FXML void stopPressed(ActionEvent event) {
+        disablePauseAndStopButtons(true);
+        sendRequestToStopTask();
+    }
+
+    private void sendRequestToStopTask() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("stop-task", AdminTaskControlController.this.taskName)
+                .addQueryParameter("username", this.userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for stopping task!"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, response.header("message")));
+                else //Failed
+                    Platform.runLater(() ->
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, response.header("message")));
+            }
+        });
+    }
+
+    private void updateTableRuntimeStatuses() {
         ObservableList<TaskTargetCurrentInfoTableItem> itemsList = this.taskTargetDetailsTableView.getItems();
         LocalTime startTime = LocalTime.now();
         LocalTime currTime = LocalTime.now();
@@ -487,8 +549,7 @@ public class AdminTaskControlController {
 //        AdminTaskControlController.this.incrementalRadioButton.setDisable(!incrementalIsOptional());
     }
 
-    public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime)
-    {
+    public void updateTable(ObservableList<TaskTargetCurrentInfoTableItem> itemsList , LocalTime startTime, LocalTime currTime) {
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
