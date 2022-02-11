@@ -3,17 +3,21 @@ package servlets.task;
 import com.google.gson.Gson;
 import dtos.WorkerChosenTaskDTO;
 import information.AllTaskDetails;
+import information.WorkerTaskHistory;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.TasksManager;
 import managers.UserManager;
+import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
 import task.ExecutedTargetUpdates;
 import utils.ServletUtils;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @WebServlet(name = "TaskUpdateServlet", urlPatterns = "/task/update")
@@ -28,12 +32,33 @@ public class TaskUpdateServlet extends HttpServlet {
             returnTaskCurrentInfoToAdmin(req, resp, tasksManager);
         else if(req.getParameter("registered-tasks") != null) //Returning worker's registered tasks
             returnWorkerRegisteredTasks(req, resp, tasksManager, userManager);
+        else if(req.getParameter("executed-targets") != null) //Returning worker's executed targets
+            returnWorkerExecutedTargets(req, resp, tasksManager, userManager);
         else if(req.getParameter("credits") != null) //Returning worker's credits
             returnWorkerCurrentCredits(req, resp, tasksManager, userManager);
         else if(req.getParameter("chosen-task") != null)
             returnWorkerChosenTask(req, resp, tasksManager, userManager);
+        else if(req.getParameter("chosen-target") != null)
+            returnWorkerChosenTarget(req, resp, tasksManager, userManager);
         else //Invalid request
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnWorkerExecutedTargets(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
+        String workerName = req.getParameter("executed-targets");
+
+        if(userManager.isUserExists(workerName)) //Valid worker name
+        {
+            Map<String, WorkerTaskHistory> workerTasksHistory = tasksManager.getWorkerTaskHistory(workerName);
+            Set<String> executedTargets = new HashSet<>();
+            for(WorkerTaskHistory taskHistory : workerTasksHistory.values())
+                executedTargets.addAll(taskHistory.getTargets());
+
+            resp.getWriter().write(new Gson().toJson(executedTargets, Set.class));
+            responseMessageAndCode(resp, "Successfully pulled worker's executed targets!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Worker not exists
+            responseMessageAndCode(resp, "The worker " + workerName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private void returnWorkerChosenTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
@@ -56,6 +81,42 @@ public class TaskUpdateServlet extends HttpServlet {
             resp.getWriter().write(new Gson().toJson(returnedDTO, WorkerChosenTaskDTO.class));
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
+    }
+
+    private void returnWorkerChosenTarget(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
+        String workerName = req.getParameter("username");
+        String taskName = getTaskNameFromWorkerChosenTargetRequest(req.getParameter("chosen-target"));
+        String targetName = getTargetNameFromWorkerChosenTargetRequest(req.getParameter("chosen-target"));
+
+        if(workerName == null || !userManager.isUserExists(workerName))
+            responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(taskName == null || !tasksManager.isTaskExists(taskName))
+            responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
+        else //Valid request
+        {
+            AllTaskDetails currInfo = tasksManager.getTaskDetailsDTO(taskName);
+            WorkerChosenTargetInformationTableItem tableItem = new WorkerChosenTargetInformationTableItem(targetName,
+                    taskName, currInfo.getTaskType(), currInfo.getTaskStatus(), currInfo.getSinglePayment());
+
+            resp.getWriter().write(new Gson().toJson(tableItem, WorkerChosenTargetInformationTableItem.class));
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+        }
+    }
+
+    private String getTaskNameFromWorkerChosenTargetRequest(String fullName) {
+        int index = fullName.indexOf(" - ");
+
+        if(index != -1)
+            return fullName.substring(0, index);
+        return null;
+    }
+
+    private String getTargetNameFromWorkerChosenTargetRequest(String fullName) {
+        int index = fullName.indexOf(" - ");
+
+        if(index != -1)
+            return fullName.substring(index);
+        return null;
     }
 
     private void returnWorkerCurrentCredits(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) {

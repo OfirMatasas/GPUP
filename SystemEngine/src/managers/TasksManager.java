@@ -250,6 +250,14 @@ public class TasksManager {
         return taskStatus.equalsIgnoreCase("Running") || taskStatus.equalsIgnoreCase("Paused");
     }
 
+    public boolean isTaskRunning(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Running");
+    }
+
+    public synchronized boolean isTaskFinished(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Finished");
+    }
+
     //----------------------------------------------------- Getters -----------------------------------------------//
     public synchronized CompilationTaskInformation getCompilationTaskInformation(String taskName) {
         return this.compilationTasksMap.get(taskName.toLowerCase());
@@ -292,10 +300,11 @@ public class TasksManager {
         return this.taskThreadMap.get(taskName.toLowerCase());
     }
 
-    public synchronized boolean isTaskFinished(String taskName) {
-        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Finished");
+    public synchronized Map<String, WorkerTaskHistory> getWorkerTaskHistory(String workerName) {
+        return this.workersTasksHistoryMap.get(workerName.toLowerCase());
     }
 
+    //----------------------------------------------------- Methods -----------------------------------------------//
     public synchronized void removeTaskThread(String taskName) {
         this.taskThreadMap.remove(taskName.toLowerCase());
     }
@@ -310,7 +319,4 @@ public class TasksManager {
         removeAllWorkersRegistrationsFromTask(taskName);
     }
 
-    public boolean isTaskRunning(String taskName) {
-        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Running");
-    }
 }

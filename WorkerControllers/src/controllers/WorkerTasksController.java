@@ -43,6 +43,7 @@ public class WorkerTasksController {
     public Label ProgressPercentageLabel;
     private String userName;
     private String chosenTask;
+    private String chosenTarget;
     private Integer numOfThreads;
     private ThreadPoolExecutor executor;
     private Integer totalTargets = 1;
@@ -168,6 +169,7 @@ public class WorkerTasksController {
     }
 
     public void SelectedFromTargetListView(MouseEvent mouseEvent) {
+
     }
 
     public void getInfoAboutSelectedTaskFromListView() {
@@ -181,8 +183,7 @@ public class WorkerTasksController {
     }
 
     //----------------------------------------------- Puller Thread -------------------------------------------------//
-    public class TasksPullerThread extends Thread
-    {
+    public class TasksPullerThread extends Thread {
         @Override public void run()
         {
             createNewProgressBar();
@@ -193,6 +194,7 @@ public class WorkerTasksController {
                 getRegisteredTasks();
                 getInfoAboutSelectedTaskFromListView();
                 getTargetsToExecute();
+                getExecutedTargets();
             }
         }
 
@@ -312,6 +314,60 @@ public class WorkerTasksController {
             });
         }
 
+        //---------------------- Executed Targets -----------------------//
+        private void getExecutedTargets()
+        {
+            sendExecutedTargetsRequestToServer();
+        }
+
+        private void sendExecutedTargetsRequestToServer() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("executed-targets", WorkerTasksController.this.userName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for executed targets history!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                        {
+                            System.out.println("Just got executed targets history from server!!");
+                            try {
+                                ResponseBody responseBody = response.body();
+                                if(responseBody != null)
+                                {
+                                    Set targets = new Gson().fromJson(responseBody.string(), Set.class);
+                                    refreshTargetsListView(targets);
+                                }
+                            } catch (Exception e) {System.out.println(e.getMessage()); }
+                        });
+                    }else Platform.runLater(() ->
+                    {
+                        System.out.println("Couldn't pull executed targets history from server!");
+                        System.out.println("Reason: " + response.header("message"));
+                    });
+                }
+            });
+        }
+
+        private void refreshTargetsListView(Set<String> targets) {
+            if (targets == null)
+                return;
+
+            for(String curr : targets)
+            {
+                if(!WorkerTasksController.this.historyOfTargetsList.contains(curr))
+                    WorkerTasksController.this.historyOfTargetsList.add(curr);
+            }
+        }
+
         //---------------------- Executing Targets ----------------------//
         private void getTargetsToExecute() {
             if(!isThreadPoolFull() && !WorkerTasksController.this.registeredTasksList.isEmpty())
@@ -394,8 +450,7 @@ public class WorkerTasksController {
     }
 
     //--------------------------------------------- Progress Bar ---------------------------------------------//
-    private void createNewProgressBar()
-    {
+    private void createNewProgressBar() {
         javafx.concurrent.Task<Void> task = new Task<Void>() {
             @Override protected Void call() {
                 while (true) {
