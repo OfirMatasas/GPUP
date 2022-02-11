@@ -81,11 +81,17 @@ public class WorkerTasksController {
     public void initialize(String userName, Integer numOfThreads) {
         setUserName(userName);
         setNumOfThreads(numOfThreads);
+        initializeListViews();
         initializeChosenTargetTaskTable();
         initializeChosenTaskTable();
         setupListeners();
         createTaskPullerThread();
         createThreadPool();
+    }
+
+    private void initializeListViews() {
+        this.TasksListView.setItems(this.registeredTasksList);
+        this.TargetsListView.setItems(this.historyOfTargetsList);
     }
 
     private void setUserName(String userName) { this.userName = userName; }
@@ -256,24 +262,19 @@ public class WorkerTasksController {
 
         //----------------------- Chosen Task Info ----------------------//
         private void refreshTasksListView(Set<String> registered) {
-            if (registered == null) {
-                WorkerTasksController.this.registeredTasksList.clear();
-                chosenTaskRemovedFromListView();
+            if (registered == null)
                 return;
-            }
-
-            for(String curr : registered) {
-                if (!WorkerTasksController.this.registeredTasksList.contains(curr))
-                    WorkerTasksController.this.registeredTasksList.add(curr);
-            }
 
             WorkerTasksController.this.registeredTasksList.removeIf(curr -> !registered.contains(curr));
 
             if(!registered.contains(WorkerTasksController.this.chosenTask))
                 chosenTaskRemovedFromListView();
 
-
-            WorkerTasksController.this.registeredTasksList.addAll(registered);
+            for(String curr : registered)
+            {
+                if(!WorkerTasksController.this.registeredTasksList.contains(curr))
+                    WorkerTasksController.this.registeredTasksList.add(curr);
+            }
         }
 
         private void sendChosenTaskUpdateRequestToServer() {
@@ -369,8 +370,6 @@ public class WorkerTasksController {
 
 //            WorkerTasksController.this.executor.execute(new CompilationThread(parameters));
         }
-
-
     }
 
     private void chosenTaskRemovedFromListView() {

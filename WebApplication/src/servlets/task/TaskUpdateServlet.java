@@ -202,7 +202,7 @@ public class TaskUpdateServlet extends HttpServlet {
 
             if(updates.getRuntimeStatus().equalsIgnoreCase("Finished"))
             {
-                tasksManager.addCreditsToWorker(updates.getUsername(), updates.getTaskName());
+                tasksManager.addCreditsToWorker(updates.getUsername(), updates.getTaskName(), updates.getTargetName());
                 tasksManager.getTaskThread(updates.getTaskName()).taskOnTargetFinished(updates.getTargetName());
             }
 
@@ -215,10 +215,10 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid upload of updates!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void taskFinished(String taskName, TasksManager tasksManager)
-    {
+    private void taskFinished(String taskName, TasksManager tasksManager) {
         tasksManager.removeTaskThread(taskName);
         tasksManager.removeTaskFromActiveList(taskName);
+        tasksManager.removeAllWorkersRegistrationsFromTask(taskName);
     }
 
     //------------------------------------------------- General -------------------------------------------------//

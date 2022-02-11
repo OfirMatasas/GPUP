@@ -82,7 +82,6 @@ public class AdminDashboardController {
     private AdminPrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
-    private Thread usersListsRefreshThread;
     private String chosenTask = null;
 
     public void initialize(AdminPrimaryController primaryController, String username)

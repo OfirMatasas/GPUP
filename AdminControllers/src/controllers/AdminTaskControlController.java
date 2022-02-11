@@ -525,12 +525,14 @@ public class AdminTaskControlController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, response.header("message")));
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message));
                 else //Failed
                     Platform.runLater(() ->
                         ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, response.header("message")));
+                response.close();
             }
         });
     }

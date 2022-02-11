@@ -1,7 +1,7 @@
 package managers;
 
 import information.AllTaskDetails;
-import information.WorkerWorkOnTask;
+import information.WorkerTaskHistory;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import tableItems.TaskTargetCurrentInfoTableItem;
@@ -24,8 +24,8 @@ public class TasksManager {
     private final Set<String> listOfActiveTasks = new HashSet<>(); //Active tasks names (for workers)
     private final Map<String, AllTaskDetails> allTaskDetailsMap = new HashMap<>(); //Info about each task (taskName, info)
     private final Map<String, Integer> workersCredits = new HashMap<>(); //Workers' credit (name, credit)
-    private final Map<String, Map<String, WorkerWorkOnTask>> workersWorksHistoryMap = new HashMap<>(); //Workers executedTargets (workerName, (taskName, info))
-    private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>(); //Registered workers (taskName, all workers)
+    private final Map<String, Map<String, WorkerTaskHistory>> workersTasksHistoryMap = new HashMap<>(); //Workers executedTargets (workerName, (taskName, info))
+    private final Map<String, Set<String>> workerRegisteredTasksMap = new HashMap<>(); //Workers registered tasks (workerName, all tasks)
     private final Map<String, GraphSummary> graphSummaryMap = new HashMap<>(); //Graph summary of task (taskName, graph summary)
     private final Map<String, TaskThread> taskThreadMap = new HashMap<>(); //Task thread of task (taskName, task thread)
 
@@ -99,21 +99,33 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
-    public synchronized void addCreditsToWorker(String workerName, String taskName) {
+    public synchronized void addCreditsToWorker(String workerName, String taskName, String targetName) {
         this.workersCredits.put(workerName.toLowerCase(), this.workersCredits.get(workerName.toLowerCase()) +
                 this.allTaskDetailsMap.get(taskName.toLowerCase()).getSinglePayment());
+
+        this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).newWorkedOnTarget(targetName);
     }
 
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
         //Creating new set of tasks if it's the first time the worker register
-        if(this.workerRegisteredTasksMap.get(workerName.toLowerCase()) == null)
-            this.workerRegisteredTasksMap.put(workerName.toLowerCase(), new HashSet<>());
+        this.workerRegisteredTasksMap.computeIfAbsent(workerName.toLowerCase(), k -> new HashSet<>());
+        this.workersTasksHistoryMap.computeIfAbsent(workerName.toLowerCase(), k -> new HashMap<>());
+//        if(!this.workersTasksHistoryMap.containsKey(workerName.toLowerCase()))
+//            this.workersTasksHistoryMap.put(workerName.toLowerCase(), new HashMap<>());
 
+        //Adding task to worker's registered tasks
         this.workerRegisteredTasksMap.get(workerName.toLowerCase()).add(taskName);
+
+        //Creating task history item for worker
+        Integer payment = this.allTaskDetailsMap.get(taskName.toLowerCase()).getSinglePayment();
+        this.workersTasksHistoryMap.get(workerName.toLowerCase()).put(taskName.toLowerCase(), new WorkerTaskHistory(payment));
     }
 
     public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName) {
         this.workerRegisteredTasksMap.get(workerName.toLowerCase()).remove(taskName);
+
+        if(this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).getTargets().isEmpty())
+            this.workersTasksHistoryMap.get(workerName.toLowerCase()).remove(taskName.toLowerCase());
     }
 
     public synchronized boolean isWorkerRegisteredToTask(String workerName, String taskName) {
@@ -164,6 +176,8 @@ public class TasksManager {
 
     public void stopTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).stopTheTask();
+        this.listOfActiveTasks.remove(taskName);
+        this.workerRegisteredTasksMap.remove(taskName.toLowerCase());
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
 
@@ -286,12 +300,17 @@ public class TasksManager {
         this.taskThreadMap.remove(taskName.toLowerCase());
     }
 
-    public synchronized void removeAllWorkersRegistrations(String taskName) {
-        this.workerRegisteredTasksMap.values().forEach(curr -> curr.remove(taskName));
+    public synchronized void removeAllWorkersRegistrationsFromTask(String taskName) {
+        for(String registeredWorker : this.allTaskDetailsMap.get(taskName.toLowerCase()).getRegisteredWorkers())
+            this.workerRegisteredTasksMap.get(registeredWorker.toLowerCase()).remove(taskName);
     }
 
     public synchronized void removeTaskFromActiveList(String taskName) {
         this.listOfActiveTasks.remove(taskName);
-        removeAllWorkersRegistrations(taskName);
+        removeAllWorkersRegistrationsFromTask(taskName);
+    }
+
+    public boolean isTaskRunning(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Running");
     }
 }
