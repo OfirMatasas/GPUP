@@ -1,8 +1,8 @@
 package controllers;
 
 import com.google.gson.Gson;
-import information.AllTaskDetails;
 import http.HttpClientUtil;
+import information.AllTaskDetails;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -23,10 +23,8 @@ import summaries.GraphSummary;
 import summaries.TargetSummary;
 import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
-import target.Target;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Set;
 
@@ -134,18 +132,20 @@ public class AdminTaskControlController {
                 }
 
                 private void updateTaskLogHistory(AllTaskDetails updatedInfo) {
-                    if(updatedInfo.getLogHistory() != null)
+                    if(updatedInfo.getTaskLogHistory() != null)
                     {
                         AdminTaskControlController.this.logTextArea.clear();
-                        AdminTaskControlController.this.logTextArea.appendText(updatedInfo.getLogHistory());
+                        AdminTaskControlController.this.logTextArea.appendText(updatedInfo.getTaskLogHistory());
                     }
                 }
 
                 private void updateTargetStatusesTable(AllTaskDetails updatedInfo) {
+                    int selected = AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().getSelectedIndex();
                     AdminTaskControlController.this.taskTargetStatusesList.clear();
                     AdminTaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
 
                     AdminTaskControlController.this.taskTargetDetailsTableView.setItems(AdminTaskControlController.this.taskTargetStatusesList);
+                    AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().select(selected);
                 }
             });
         }
@@ -224,64 +224,64 @@ public class AdminTaskControlController {
     }
 
     public void showDetailsOfSelectedTargetInTextArea(TaskTargetCurrentInfoTableItem taskTargetInformation) {
-        String detailMsg = null;
-        String currentTargetName = taskTargetInformation.getTargetName();
-        TargetSummary currentTargetSummary = this.graphSummary.getTargetsSummaryMap().get(currentTargetName);
-        if(currentTargetName!=null) {
-            Target currentTarget = this.graph.getTarget(currentTargetName);
-            detailMsg = "Target : " + currentTargetName + "\n"
-                    + "Position : " + currentTarget.getTargetPosition() + "\n";
-
-            switch (currentTargetSummary.getRuntimeStatus())
-            {
-                case Frozen:
-                {
-                    detailMsg += "List of dependencies that the target " + currentTargetName + " is waiting for to finish : ";
-                    if(printTargetWaitingForTargets(currentTargetName).isEmpty())
-                        detailMsg += "none.";
-                    else
-                        detailMsg += printTargetWaitingForTargets(currentTargetName);
-                    break;
-                }
-                case Skipped:
-                {
-                    detailMsg += "Target's runtime status : Skipped \n";
-                    detailMsg += "List of dependencies that their process failed are : ";
-                    if(printProcessedFailedTargets(currentTargetName).isEmpty())
-                        detailMsg += "none.";
-                    else
-                        detailMsg += printProcessedFailedTargets(currentTargetName);
-                    break;
-                }
-                case Waiting:
-                {
-                    detailMsg += "The target " + currentTargetName + " is waiting for : " +
-                            (currentTargetSummary.currentWaitingTime().toMillis() - currentTargetSummary.getTotalPausingTime().toMillis()) + " m/s";
-                    break;
-                }
-                case InProcess:
-                {
-                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " m/s";
-                    break;
-                }
-                case Finished:
-                {
-                    Duration time = currentTargetSummary.getTime();
-                    detailMsg += "Target's result status : ";
-
-                    if(currentTargetSummary.isSkipped())
-                        detailMsg += "Skipped\n";
-                    else
-                        detailMsg += currentTargetSummary.getResultStatus() + "\n";
-
-                    if(!currentTargetSummary.isSkipped())
-                        detailMsg += "Target's running time: " + time.toMillis() + "m/s\n";
-                    break;
-                }
-            }
-        }
-
-        this.taskDetailsOnTargetTextArea.setText(detailMsg);
+//        String detailMsg = null;
+//        String currentTargetName = taskTargetInformation.getTargetName();
+//        TargetSummary currentTargetSummary = this.graphSummary.getTargetsSummaryMap().get(currentTargetName);
+//        if(currentTargetName != null) {
+//            Target currentTarget = this.graph.getTarget(currentTargetName);
+//            detailMsg = "Target : " + currentTargetName + "\n"
+//                    + "Position : " + currentTarget.getTargetPosition() + "\n";
+//
+//            switch (currentTargetSummary.getRuntimeStatus())
+//            {
+//                case Frozen:
+//                {
+//                    detailMsg += "List of dependencies that the target " + currentTargetName + " is waiting for to finish : ";
+//                    if(printTargetWaitingForTargets(currentTargetName).isEmpty())
+//                        detailMsg += "none.";
+//                    else
+//                        detailMsg += printTargetWaitingForTargets(currentTargetName);
+//                    break;
+//                }
+//                case Skipped:
+//                {
+//                    detailMsg += "Target's runtime status : Skipped \n";
+//                    detailMsg += "List of dependencies that their process failed are : ";
+//                    if(printProcessedFailedTargets(currentTargetName).isEmpty())
+//                        detailMsg += "none.";
+//                    else
+//                        detailMsg += printProcessedFailedTargets(currentTargetName);
+//                    break;
+//                }
+//                case Waiting:
+//                {
+//                    detailMsg += "The target " + currentTargetName + " is waiting for : " +
+//                            (currentTargetSummary.currentWaitingTime().toMillis() - currentTargetSummary.getTotalPausingTime().toMillis()) + " m/s";
+//                    break;
+//                }
+//                case InProcess:
+//                {
+//                    detailMsg += "The target " + currentTargetName + " is in process for : " + currentTargetSummary.currentProcessingTime().toMillis() + " m/s";
+//                    break;
+//                }
+//                case Finished:
+//                {
+//                    Duration time = currentTargetSummary.getTime();
+//                    detailMsg += "Target's result status : ";
+//
+//                    if(currentTargetSummary.isSkipped())
+//                        detailMsg += "Skipped\n";
+//                    else
+//                        detailMsg += currentTargetSummary.getResultStatus() + "\n";
+//
+//                    if(!currentTargetSummary.isSkipped())
+//                        detailMsg += "Target's running time: " + time.toMillis() + "m/s\n";
+//                    break;
+//                }
+//            }
+//        }
+//
+//        this.taskDetailsOnTargetTextArea.setText(detailMsg);
     }
 
     public String printTargetWaitingForTargets(String currentTargetName) {

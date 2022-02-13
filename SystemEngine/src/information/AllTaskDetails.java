@@ -6,6 +6,7 @@ import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
 import target.Target;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,12 +26,14 @@ public class AllTaskDetails {
     private final Integer totalPayment;
     private final Set<String> registeredWorkers;
     private final Set<TaskTargetCurrentInfoTableItem> targetStatusSet;
-    private String logHistory;
+    private String taskLogHistory;
+    private final Map<String, String> targetLogHistory;
     private Integer finishedTargets;
+    private final Set<String> targetsToExecute;
 
     public AllTaskDetails(String taskName, String creatorName, Set<String> targetsToExecute,
                           Set<TaskTargetCurrentInfoTableItem> targetStatusSet, String taskType,
-                          Graph graph, String logHistory) {
+                          Graph graph, String log) {
         this.taskName = taskName;
         this.taskType = taskType;
         this.graphName = graph.getGraphName();
@@ -38,31 +41,32 @@ public class AllTaskDetails {
         this.registeredWorkers = new HashSet<>();
         this.taskStatus = "New";
         this.finishedTargets = 0;
-        this.logHistory = logHistory + "\n\n";
+        this.taskLogHistory = log + "\n\n";
         this.targetStatusSet = targetStatusSet;
+        this.targetsToExecute = new HashSet<>(targetsToExecute);
+        this.targetLogHistory = new HashMap<>();
 
-        if(targetsToExecute.size() == graph.getGraphTargets().size())
-        {
+        for (String currTarget : targetsToExecute)
+            this.targetLogHistory.put(currTarget.toLowerCase(), "");
+
+        if (targetsToExecute.size() == graph.getGraphTargets().size()) {
             Map<Target.TargetPosition, Set<Target>> targetsPositions = graph.getTargetsByPositions();
 
             this.roots = targetsPositions.get(Target.TargetPosition.ROOT).size();
             this.middles = targetsPositions.get(Target.TargetPosition.MIDDLE).size();
             this.leaves = targetsPositions.get(Target.TargetPosition.LEAF).size();
             this.independents = targetsPositions.get(Target.TargetPosition.INDEPENDENT).size();
-        }
-        else
-        {
+        } else {
             Target.TargetPosition currTargetPosition;
 
-            for(String currTargetName : targetsToExecute)
-            {
+            for (String currTargetName : targetsToExecute) {
                 currTargetPosition = graph.getTarget(currTargetName).getTargetPosition();
 
-                if(currTargetPosition.equals(Target.TargetPosition.ROOT))
+                if (currTargetPosition.equals(Target.TargetPosition.ROOT))
                     ++this.roots;
-                else if(currTargetPosition.equals(Target.TargetPosition.MIDDLE))
+                else if (currTargetPosition.equals(Target.TargetPosition.MIDDLE))
                     ++this.middles;
-                else if(currTargetPosition.equals(Target.TargetPosition.LEAF))
+                else if (currTargetPosition.equals(Target.TargetPosition.LEAF))
                     ++this.leaves;
                 else
                     ++this.independents;
@@ -85,7 +89,9 @@ public class AllTaskDetails {
         this.registeredWorkers.remove(workerName);
     }
 
-    public void setTaskStatus(String status) { this.taskStatus = status; }
+    public void setTaskStatus(String status) {
+        this.taskStatus = status;
+    }
 
     public String getTaskType() {
         return this.taskType;
@@ -147,37 +153,47 @@ public class AllTaskDetails {
         return this.registeredWorkers.size();
     }
 
-    public String getLogHistory() {
-        return this.logHistory;
+    public String getTaskLogHistory() {
+        return this.taskLogHistory;
     }
 
     public Integer getFinishedTargets() {
         return this.finishedTargets;
     }
 
-    public synchronized void updateInfo(GraphSummary graphSummary, String log)
-    {
+    public synchronized void updateInfo(GraphSummary graphSummary, String log) {
         TargetSummary targetSummary;
         String runtimeStatus, resultStatus;
         this.finishedTargets = 0;
 
-        for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
-        {
+        for (TaskTargetCurrentInfoTableItem curr : this.targetStatusSet) {
             targetSummary = graphSummary.getTargetsSummaryMap().get(curr.getTargetName());
             runtimeStatus = targetSummary.getRuntimeStatus().toString();
             resultStatus = targetSummary.getResultStatus().toString();
 
             curr.updateItem(runtimeStatus, resultStatus);
 
-            if(runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
+            if (runtimeStatus.equalsIgnoreCase("Finished") || runtimeStatus.equalsIgnoreCase("Skipped"))
                 ++this.finishedTargets;
         }
 
-        this.logHistory += log + "\n\n";
+        this.taskLogHistory += log + "\n\n";
 
-        if(this.finishedTargets == this.targetStatusSet.size())
+        if (this.finishedTargets == this.targetStatusSet.size())
             this.taskStatus = "Finished";
     }
 
-    public void addToTaskLogHistory(String addedInfo) { this.logHistory += addedInfo + "\n\n"; }
+    public void addToTaskLogHistory(String addedInfo) {
+        this.taskLogHistory += addedInfo + "\n\n";
+    }
+
+    public void addToTargetLogHistory(String targetName, String addedInfo) {
+        this.targetLogHistory.put(targetName.toLowerCase(), this.targetLogHistory.get(targetName.toLowerCase()) + addedInfo + "\n");
+    }
+
+    public String getTargetLogHistory(String targetName) {
+        return this.targetLogHistory.get(targetName.toLowerCase());
+    }
+
+    public Set<String> getTargetsToExecute() { return this.targetsToExecute; }
 }

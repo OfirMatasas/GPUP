@@ -204,6 +204,7 @@ public class TasksManager {
 
         //Updating task details item
         taskDetails.updateInfo(graphSummary, log);
+        taskDetails.addToTargetLogHistory(targetName, log);
     }
 
     public TargetSummary.RuntimeStatus convertRuntimeStatus(String runtimeStatus) {
@@ -273,7 +274,7 @@ public class TasksManager {
 
     public synchronized Set<String> getActiveTasksList() { return this.listOfActiveTasks; }
 
-    public synchronized AllTaskDetails getTaskDetailsDTO(String taskName) {
+    public synchronized AllTaskDetails getAllTaskDetails(String taskName) {
         return this.allTaskDetailsMap.get(taskName.toLowerCase());
     }
 
@@ -318,5 +319,4 @@ public class TasksManager {
         this.listOfActiveTasks.remove(taskName);
         removeAllWorkersRegistrationsFromTask(taskName);
     }
-
 }

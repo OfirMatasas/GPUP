@@ -1,6 +1,7 @@
 package servlets.task;
 
 import com.google.gson.Gson;
+import dtos.WorkerChosenTargetDTO;
 import dtos.WorkerChosenTaskDTO;
 import information.AllTaskDetails;
 import information.WorkerTaskHistory;
@@ -51,8 +52,9 @@ public class TaskUpdateServlet extends HttpServlet {
         {
             Map<String, WorkerTaskHistory> workerTasksHistory = tasksManager.getWorkerTaskHistory(workerName);
             Set<String> executedTargets = new HashSet<>();
-            for(WorkerTaskHistory taskHistory : workerTasksHistory.values())
-                executedTargets.addAll(taskHistory.getTargets());
+            for(String currTask : workerTasksHistory.keySet())
+                for(String currTarget : workerTasksHistory.get(currTask).getTargets())
+                    executedTargets.add(currTask + " - " + currTarget);
 
             resp.getWriter().write(new Gson().toJson(executedTargets, Set.class));
             responseMessageAndCode(resp, "Successfully pulled worker's executed targets!", HttpServletResponse.SC_ACCEPTED);
@@ -71,7 +73,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
         else //Valid request
         {
-            AllTaskDetails currInfo = tasksManager.getTaskDetailsDTO(taskName);
+            AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
 
             WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
                     currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
@@ -92,13 +94,17 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
         else if(taskName == null || !tasksManager.isTaskExists(taskName))
             responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(targetName == null)
+            responseMessageAndCode(resp, "Invalid target name!", HttpServletResponse.SC_BAD_REQUEST);
         else //Valid request
         {
-            AllTaskDetails currInfo = tasksManager.getTaskDetailsDTO(taskName);
+            AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
             WorkerChosenTargetInformationTableItem tableItem = new WorkerChosenTargetInformationTableItem(targetName,
                     taskName, currInfo.getTaskType(), currInfo.getTaskStatus(), currInfo.getSinglePayment());
+            String log = currInfo.getTargetLogHistory(targetName);
+            WorkerChosenTargetDTO dto = new WorkerChosenTargetDTO(tableItem, log);
 
-            resp.getWriter().write(new Gson().toJson(tableItem, WorkerChosenTargetInformationTableItem.class));
+            resp.getWriter().write(new Gson().toJson(dto, WorkerChosenTargetDTO.class));
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
     }
@@ -115,7 +121,7 @@ public class TaskUpdateServlet extends HttpServlet {
         int index = fullName.indexOf(" - ");
 
         if(index != -1)
-            return fullName.substring(index);
+            return fullName.substring(index + 3).trim();
         return null;
     }
 
@@ -153,7 +159,7 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(tasksManager.isTaskExists(taskName)) //Task exists
         {
-            AllTaskDetails updatedInfo = tasksManager.getTaskDetailsDTO(taskName);
+            AllTaskDetails updatedInfo = tasksManager.getAllTaskDetails(taskName);
             String infoAsString = gson.toJson(updatedInfo, AllTaskDetails.class);
             resp.getWriter().write(infoAsString);
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);

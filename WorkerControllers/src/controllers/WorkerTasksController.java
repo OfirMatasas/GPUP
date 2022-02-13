@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.gson.Gson;
+import dtos.WorkerChosenTargetDTO;
 import dtos.WorkerChosenTaskDTO;
 import http.HttpClientUtil;
 import javafx.application.Platform;
@@ -19,10 +20,11 @@ import javafx.scene.text.Font;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
-import tableItems.TaskTargetCurrentInfoTableItem;
 import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
-import task.*;
+import task.CompilationParameters;
+import task.SimulationThread;
+import task.WorkerSimulationParameters;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -36,7 +38,7 @@ public class WorkerTasksController {
     //----------------------------------------------- My Members --------------------------------------------//
     private final ObservableList<String> historyOfTargetsList = FXCollections.observableArrayList();
     private final ObservableList<String> registeredTasksList = FXCollections.observableArrayList();
-    private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetInfoList = FXCollections.observableArrayList();
+    private final ObservableList<WorkerChosenTargetInformationTableItem> chosenTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> chosenTaskInfoList = FXCollections.observableArrayList();
     private TasksPullerThread tasksPullerThread;
     public ProgressBar progressBar;
@@ -161,6 +163,28 @@ public class WorkerTasksController {
         this.finishedTargets = finishedTargets;
     }
 
+    private void refreshChosenTargetInfo(WorkerChosenTargetDTO dto)
+    {
+        refreshChosenTargetTable(dto.getItem());
+        refreshChosenTargetLog(dto.getLog());
+    }
+
+    private void refreshChosenTargetTable(WorkerChosenTargetInformationTableItem item) {
+        this.chosenTargetInfoList.clear();
+        this.chosenTargetInfoList.add(item);
+
+        this.TargetTableView.setItems(this.chosenTargetInfoList);
+    }
+
+    private void refreshChosenTargetLog(String log)
+    {
+        if(log != null)
+        {
+            this.TargetLogTextArea.clear();
+            this.TargetLogTextArea.appendText(log);
+        }
+    }
+
     private void refreshChosenTaskTable(WorkerChosenTaskInformationTableItem item) {
         this.chosenTaskInfoList.clear();
         this.chosenTaskInfoList.add(item);
@@ -168,8 +192,14 @@ public class WorkerTasksController {
         this.TaskTableView.setItems(this.chosenTaskInfoList);
     }
 
-    public void SelectedFromTargetListView(MouseEvent mouseEvent) {
+    public void getInfoAboutSelectedTargetFromListView(MouseEvent mouseEvent) {
+        String selectedTargetName = WorkerTasksController.this.TargetsListView.getSelectionModel().getSelectedItem();
 
+        if(selectedTargetName == null)
+            return;
+
+        WorkerTasksController.this.chosenTarget = selectedTargetName;
+        this.tasksPullerThread.sendChosenTargetUpdateRequestToServer();
     }
 
     public void getInfoAboutSelectedTaskFromListView() {
@@ -231,8 +261,8 @@ public class WorkerTasksController {
                                 if (responseBody != null) {
                                     Set registeredTasks = new Gson().fromJson(responseBody.string(), Set.class);
                                     refreshTasksListView(registeredTasks);
-                                    responseBody.close();
                                 }
+                                response.close();
                             } catch (IOException e) { e.printStackTrace(); }
                         });
                     } else //Failed
@@ -279,6 +309,40 @@ public class WorkerTasksController {
             }
         }
 
+        private void sendChosenTargetUpdateRequestToServer() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("chosen-target", WorkerTasksController.this.chosenTarget)
+                    .addQueryParameter("username", WorkerTasksController.this.userName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-target!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        Platform.runLater(() ->
+                                {
+                                    ResponseBody responseBody = response.body();
+                                    try {
+                                        if (responseBody != null) {
+                                            WorkerChosenTargetDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTargetDTO.class);
+                                            refreshChosenTargetInfo(dto);
+                                            response.close();
+                                        }
+                                    } catch (IOException e) { e.printStackTrace(); }
+                                }
+                        );
+                    } else Platform.runLater(() -> System.out.println("couldn't pull chosen-target from server!"));
+                }
+            });
+        }
+
         private void sendChosenTaskUpdateRequestToServer() {
             String finalUrl = HttpUrl
                     .parse(Patterns.TASK_UPDATE)
@@ -304,8 +368,8 @@ public class WorkerTasksController {
                                             WorkerChosenTaskDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTaskDTO.class);
                                             refreshChosenTaskTable(dto.getItem());
                                             refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
-                                            responseBody.close();
                                         }
+                                        response.close();
                                     } catch (IOException e) { e.printStackTrace(); }
                                 }
                         );
@@ -338,7 +402,6 @@ public class WorkerTasksController {
                     {
                         Platform.runLater(() ->
                         {
-                            System.out.println("Just got executed targets history from server!!");
                             try {
                                 ResponseBody responseBody = response.body();
                                 if(responseBody != null)
@@ -346,6 +409,7 @@ public class WorkerTasksController {
                                     Set targets = new Gson().fromJson(responseBody.string(), Set.class);
                                     refreshTargetsListView(targets);
                                 }
+                                response.close();
                             } catch (Exception e) {System.out.println(e.getMessage()); }
                         });
                     }else Platform.runLater(() ->
@@ -406,6 +470,7 @@ public class WorkerTasksController {
                                     executeSimulationTarget(response);
                                 else //Compilation
                                     executeCompilationTarget(response);
+                                response.close();
                             } catch (Exception e) {System.out.println("Error in pulling task:" + e.getMessage()); }
                         });
                     }else Platform.runLater(() -> System.out.println("couldn't pull executable targets from server!"));

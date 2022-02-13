@@ -30,11 +30,11 @@ public class LoginServlet extends HttpServlet {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         resp.setContentType("text/plain");
 
-        if(userManager.isUserExists(userName)){
-            resp.getWriter().println("The chosen user name is taken");
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
-        else if(!userManager.isValidLogin(userName, this.isAdmin))
+//        if(userManager.isUserExists(userName)){
+//            resp.getWriter().println("The chosen user name is taken");
+//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//        }
+        if(!userManager.isValidLogin(userName, this.isAdmin))
         {
             resp.getWriter().println("This user name is already taken by " + (this.isAdmin ? "a worker" : "an admin") + "!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

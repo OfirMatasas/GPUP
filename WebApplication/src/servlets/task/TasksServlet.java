@@ -43,7 +43,7 @@ public class TasksServlet extends HttpServlet {
 
         if(tasksManager.isTaskExists(taskInfoName))
         {
-            AllTaskDetails taskInfo = tasksManager.getTaskDetailsDTO(taskInfoName);
+            AllTaskDetails taskInfo = tasksManager.getAllTaskDetails(taskInfoName);
             infoAsString = gson.toJson(taskInfo, AllTaskDetails.class);
 
             resp.getWriter().write(infoAsString);
