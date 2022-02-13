@@ -168,7 +168,12 @@ public class AllTaskDetails {
 
         for (TaskTargetCurrentInfoTableItem curr : this.targetStatusSet) {
             targetSummary = graphSummary.getTargetsSummaryMap().get(curr.getTargetName());
-            runtimeStatus = targetSummary.getRuntimeStatus().toString();
+
+            if(targetSummary.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.InProcess))
+                runtimeStatus = "In process";
+            else
+                runtimeStatus = targetSummary.getRuntimeStatus().toString();
+
             resultStatus = targetSummary.getResultStatus().toString();
 
             curr.updateItem(runtimeStatus, resultStatus);
@@ -196,4 +201,6 @@ public class AllTaskDetails {
     }
 
     public Set<String> getTargetsToExecute() { return this.targetsToExecute; }
+
+    public void removeAllWorkersRegistrationsFromTask() { this.registeredWorkers.clear(); }
 }

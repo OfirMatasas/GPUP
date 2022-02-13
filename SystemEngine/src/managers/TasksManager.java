@@ -305,6 +305,10 @@ public class TasksManager {
         return this.workersTasksHistoryMap.get(workerName.toLowerCase());
     }
 
+    public synchronized Set<String> getWorkerExecutedTargetsFromTask(String workerName, String taskName) {
+        return getWorkerTaskHistory(workerName).get(taskName.toLowerCase()).getTargets();
+    }
+
     //----------------------------------------------------- Methods -----------------------------------------------//
     public synchronized void removeTaskThread(String taskName) {
         this.taskThreadMap.remove(taskName.toLowerCase());
@@ -313,6 +317,8 @@ public class TasksManager {
     public synchronized void removeAllWorkersRegistrationsFromTask(String taskName) {
         for(String registeredWorker : this.allTaskDetailsMap.get(taskName.toLowerCase()).getRegisteredWorkers())
             this.workerRegisteredTasksMap.get(registeredWorker.toLowerCase()).remove(taskName);
+
+        this.allTaskDetailsMap.get(taskName.toLowerCase()).removeAllWorkersRegistrationsFromTask();
     }
 
     public synchronized void removeTaskFromActiveList(String taskName) {

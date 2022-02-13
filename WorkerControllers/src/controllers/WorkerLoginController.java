@@ -75,19 +75,23 @@ public class WorkerLoginController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if(response.code() >= 200 && response.code() < 300) //Success
-                    Platform.runLater(() -> loggedInAsWorker(response));
+                    Platform.runLater(() -> {
+                        String username = response.header("username");
+                        loggedInAsWorker(username);
+                    });
                 else //Failure
                 {
                     String responseBody = Objects.requireNonNull(response.body()).string();
                     Platform.runLater(() -> loginError("Login failed: " + responseBody));
                 }
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
 
-    private void loggedInAsWorker(Response response) {
+    private void loggedInAsWorker(String username) {
         try{
-            this.username = response.header("username");
+            this.username = username;
             this.numOfThreads = Integer.parseInt(this.ThreadSpinner.getValue().toString());
 
             URL url = getClass().getResource(BodyComponentsPaths.PRIMARY);

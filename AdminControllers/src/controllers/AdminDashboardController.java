@@ -149,27 +149,17 @@ public class AdminDashboardController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
+                    String body = Objects.requireNonNull(response.body()).string();
                     Platform.runLater(() ->
-                            {
-                                Gson gson = new Gson();
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        {
-                                            DashboardGraphDetailsDTO graphDetailsDTO = gson.fromJson(responseBody.string(), DashboardGraphDetailsDTO.class);
-                                            refreshGraphDetailsDTO(graphDetailsDTO);
-                                            responseBody.close();
-                                        }
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                    );
+                    {
+                        DashboardGraphDetailsDTO graphDetailsDTO = new Gson().fromJson(body, DashboardGraphDetailsDTO.class);
+                        refreshGraphDetailsDTO(graphDetailsDTO);
+                    });
                 } else //Failed
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
-            }
 
+                Objects.requireNonNull(response.body()).close();
+            }
 
             private void refreshGraphDetailsDTO(DashboardGraphDetailsDTO graphDetailsDTO) {
                 AdminDashboardController.this.GraphNameTextField.setText(graphDetailsDTO.getGraphName());
@@ -223,25 +213,17 @@ public class AdminDashboardController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
+                    String body = Objects.requireNonNull(response.body()).string();
+
                     Platform.runLater(() ->
-                            {
-                                Gson gson = new Gson();
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        {
-                                            AllTaskDetails taskDetailsDTO = gson.fromJson(responseBody.string(), AllTaskDetails.class);
-                                            refreshTaskDetailsDTO(taskDetailsDTO);
-                                            responseBody.close();
-                                        }
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                    );
+                    {
+                        AllTaskDetails taskDetailsDTO = new Gson().fromJson(body, AllTaskDetails.class);
+                        refreshTaskDetailsDTO(taskDetailsDTO);
+                    });
                 } else //Failed
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+
+                Objects.requireNonNull(response.body()).close();
             }
 
             private void refreshTaskDetailsDTO(AllTaskDetails taskDetailsDTO) {
@@ -321,22 +303,17 @@ public class AdminDashboardController {
                 public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                            {
-                                Gson gson = new Gson();
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        Set graphList = gson.fromJson(responseBody.string(), Set.class);
-                                        refreshGraphList(graphList);
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
+                        {
+                            Set graphList = new Gson().fromJson(body, Set.class);
+                            refreshGraphList(graphList);
+                        }
                         );
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull graph-list from server!"));
+
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -371,23 +348,16 @@ public class AdminDashboardController {
                 public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                                {
-                                    Gson gson = new Gson();
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            Set taskList = gson.fromJson(responseBody.string(), Set.class);
-                                            refreshAllTasksList(taskList);
-                                            responseBody.close();
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                        );
+                        {
+                            Set taskList = new Gson().fromJson(body, Set.class);
+                            refreshAllTasksList(taskList);
+                        });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull all-task-list from server!"));
+
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -423,23 +393,16 @@ public class AdminDashboardController {
                 public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                                {
-                                    Gson gson = new Gson();
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            Set taskList = gson.fromJson(responseBody.string(), Set.class);
-                                            refreshMyTasksList(taskList);
-                                            responseBody.close();
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                        );
+                        {
+                            Set taskList = new Gson().fromJson(body, Set.class);
+                            refreshMyTasksList(taskList);
+                        });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull my-task-list from server!"));
+
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -470,12 +433,11 @@ public class AdminDashboardController {
                 }
 
                 @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                    Gson gson = new Gson();
-                    ResponseBody responseBody = response.body();
-                    UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
-                    responseBody.close();
+                    String body = Objects.requireNonNull(response.body()).string();
+                    UsersLists usersLists = new Gson().fromJson(body, UsersLists.class);
 
                     Platform.runLater(() -> updateUsersLists(usersLists));
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -557,11 +519,11 @@ public class AdminDashboardController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
-                    Gson gson = new Gson();
-                    ResponseBody responseBody = response.body();
-                    if(response.header("task-type").equals("simulation"))
+                    String body = Objects.requireNonNull(response.body()).string();
+
+                    if(Objects.equals(response.header("task-type"), "simulation"))
                     {
-                        SimulationTaskInformation info = gson.fromJson(responseBody.string(), SimulationTaskInformation.class);
+                        SimulationTaskInformation info = new Gson().fromJson(body, SimulationTaskInformation.class);
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
@@ -569,17 +531,20 @@ public class AdminDashboardController {
                     }
                     else
                     {
-                        CompilationTaskInformation info = gson.fromJson(responseBody.string(), CompilationTaskInformation.class);
+                        CompilationTaskInformation info = new Gson().fromJson(body, CompilationTaskInformation.class);
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
                                 (info.getTaskName(), info.getGraphName()));
                     }
-                    responseBody.close();
-                } else //Failed
-                {
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, response.header("error")));
                 }
+                else
+                {
+                    String message = response.header("message");
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, message));
+                }
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
@@ -634,16 +599,17 @@ public class AdminDashboardController {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
-                    Gson gson = new Gson();
-                    ResponseBody responseBody = response.body();
-                    File graphFile = gson.fromJson(responseBody.string(), File.class);
-                    responseBody.close();
+                    String body = Objects.requireNonNull(response.body()).string();
+                    File graphFile = new Gson().fromJson(body, File.class);
                     System.out.println("Just got " +  graphFile.getName() + " file from server!");
                     Platform.runLater(()-> AdminDashboardController.this.primaryController.loadGraph(graphFile));
                 } else //Failed
                 {
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, response.header("error")));
+                    String message = response.header("message");
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, message));
                 }
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }

@@ -26,6 +26,7 @@ import target.Graph;
 
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.Set;
 
 public class AdminTaskControlController {
@@ -100,25 +101,20 @@ public class AdminTaskControlController {
                 }
 
                 @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) {
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
                             {
-                                ResponseBody responseBody = response.body();
-                                try {
-                                    if (responseBody != null) {
-                                        AllTaskDetails updatedInfo = new Gson().fromJson(responseBody.string(), AllTaskDetails.class);
-                                        refreshInfo(updatedInfo);
-                                        responseBody.close();
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                AllTaskDetails updatedInfo = new Gson().fromJson(body, AllTaskDetails.class);
+                                refreshInfo(updatedInfo);
                             }
                         );
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
+
+                    Objects.requireNonNull(response.body()).close();
                 }
 
                 private void refreshInfo(AllTaskDetails updatedInfo) {
@@ -411,20 +407,22 @@ public class AdminTaskControlController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
                         disablePauseAndStopButtons(false);
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null,
-                                response.header("message"));
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null, message);
                     });
                 else //Failed
                     Platform.runLater(() ->
                     {
                         AdminTaskControlController.this.runButton.setDisable(false);
-                        ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null,
-                                response.header("message"));
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Starting Task!", null, message);
                     });
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
@@ -460,15 +458,19 @@ public class AdminTaskControlController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
                         AdminTaskControlController.this.PauseButton.setText("Resume");
                         disablePauseAndStopButtons(false);
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Paused Successfully!", null, response.header("message"));
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Paused Successfully!", null, message);
                     });
                 else //Failed
-                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Pausing Task!", null, response.header("message")));
+                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Pausing Task!", null, message));
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
@@ -490,15 +492,19 @@ public class AdminTaskControlController {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
                         AdminTaskControlController.this.PauseButton.setText("Pause");
                         disablePauseAndStopButtons(false);
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Resumed Successfully!", null, response.header("message"));
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Resumed Successfully!", null, message);
                     });
                 else //Failed
-                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Resuming Task!", null, response.header("message")));
+                    Platform.runLater(() -> ShowPopup(Alert.AlertType.ERROR, "Failure In Resuming Task!", null, message));
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
@@ -526,13 +532,15 @@ public class AdminTaskControlController {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
+
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                         ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message));
                 else //Failed
                     Platform.runLater(() ->
-                        ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, response.header("message")));
-                response.close();
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, message));
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }

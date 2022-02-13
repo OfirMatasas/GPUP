@@ -74,9 +74,10 @@ public class TaskUpdateServlet extends HttpServlet {
         else //Valid request
         {
             AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
+            Integer executedTargets = tasksManager.getWorkerExecutedTargetsFromTask(workerName, taskName).size();
 
             WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
-                    currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), currInfo.getFinishedTargets(), tasksManager.getWorkerCredits(workerName));
+                    currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), executedTargets , tasksManager.getWorkerCredits(workerName));
 
             WorkerChosenTaskDTO returnedDTO = new WorkerChosenTaskDTO(tableItem, currInfo.getTargetStatusSet().size(), currInfo.getFinishedTargets());
 

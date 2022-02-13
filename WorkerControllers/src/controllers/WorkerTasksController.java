@@ -251,22 +251,19 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for registered-tasks!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
                         {
-                            ResponseBody responseBody = response.body();
-                            try {
-                                if (responseBody != null) {
-                                    Set registeredTasks = new Gson().fromJson(responseBody.string(), Set.class);
-                                    refreshTasksListView(registeredTasks);
-                                }
-                                response.close();
-                            } catch (IOException e) { e.printStackTrace(); }
+                            Set registeredTasks = new Gson().fromJson(body, Set.class);
+                            refreshTasksListView(registeredTasks);
+
                         });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull registered tasks from server!"));
+                Objects.requireNonNull(response.body()).close();
                 }
 
 //                private void refreshInfo(TaskCurrentInfoDTO updatedInfo) {
@@ -323,22 +320,17 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-target!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                                {
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            WorkerChosenTargetDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTargetDTO.class);
-                                            refreshChosenTargetInfo(dto);
-                                            response.close();
-                                        }
-                                    } catch (IOException e) { e.printStackTrace(); }
-                                }
-                        );
+                        {
+                            WorkerChosenTargetDTO dto = new Gson().fromJson(body, WorkerChosenTargetDTO.class);
+                            refreshChosenTargetInfo(dto);
+                        });
                     } else Platform.runLater(() -> System.out.println("couldn't pull chosen-target from server!"));
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -357,23 +349,18 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for chosen-task!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                                {
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            WorkerChosenTaskDTO dto = new Gson().fromJson(responseBody.string(), WorkerChosenTaskDTO.class);
-                                            refreshChosenTaskTable(dto.getItem());
-                                            refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
-                                        }
-                                        response.close();
-                                    } catch (IOException e) { e.printStackTrace(); }
-                                }
-                        );
+                        {
+                            WorkerChosenTaskDTO dto = new Gson().fromJson(body, WorkerChosenTaskDTO.class);
+                            refreshChosenTaskTable(dto.getItem());
+                            refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
+                        });
                     } else Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -397,26 +384,17 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for executed targets history!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
                         {
-                            try {
-                                ResponseBody responseBody = response.body();
-                                if(responseBody != null)
-                                {
-                                    Set targets = new Gson().fromJson(responseBody.string(), Set.class);
-                                    refreshTargetsListView(targets);
-                                }
-                                response.close();
-                            } catch (Exception e) {System.out.println(e.getMessage()); }
+                            Set targets = new Gson().fromJson(body, Set.class);
+                            refreshTargetsListView(targets);
                         });
-                    }else Platform.runLater(() ->
-                    {
-                        System.out.println("Couldn't pull executed targets history from server!");
-                        System.out.println("Reason: " + response.header("message"));
-                    });
+                    }
+                    response.body().close();
                 }
             });
         }
@@ -459,35 +437,33 @@ public class WorkerTasksController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for executing targets!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
                         {
-                            System.out.println("Just got target to execute from server!!");
                             try {
                                 if(Objects.equals(response.header("task-type"), "Simulation"))
-                                    executeSimulationTarget(response);
+                                    executeSimulationTarget(body);
                                 else //Compilation
-                                    executeCompilationTarget(response);
-                                response.close();
+                                    executeCompilationTarget(body);
                             } catch (Exception e) {System.out.println("Error in pulling task:" + e.getMessage()); }
                         });
-                    }else Platform.runLater(() -> System.out.println("couldn't pull executable targets from server!"));
+                    }
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
 
-        private void executeSimulationTarget(Response response) throws IOException {
-            ResponseBody responseBody = response.body();
-            WorkerSimulationParameters parameters = new Gson().fromJson(responseBody.string(), WorkerSimulationParameters.class);
+        private void executeSimulationTarget(String body) {
+            WorkerSimulationParameters parameters = new Gson().fromJson(body, WorkerSimulationParameters.class);
 
             WorkerTasksController.this.executor.execute(new SimulationThread(parameters));
         }
 
-        private void executeCompilationTarget(Response response) throws IOException {
-            ResponseBody responseBody = response.body();
-            CompilationParameters parameters = new Gson().fromJson(responseBody.string(), CompilationParameters.class);
+        private void executeCompilationTarget(String body) {
+            CompilationParameters parameters = new Gson().fromJson(body, CompilationParameters.class);
 
 //            WorkerTasksController.this.executor.execute(new CompilationThread(parameters));
         }
