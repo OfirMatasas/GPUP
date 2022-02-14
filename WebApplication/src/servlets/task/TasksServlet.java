@@ -107,7 +107,7 @@ public class TasksServlet extends HttpServlet {
 
         if(!tasksManager.isTaskRunning(taskName)) //Task not running
             responseMessageAndCode(resp, "Task not running at the moment.", HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        if(tasksManager.isSimulationTask(taskName))  //Simulation task
+        else if(tasksManager.isSimulationTask(taskName))  //Simulation task
         {
             SimulationTaskInformation taskInfo = tasksManager.getSimulationTaskInformation(taskName);
             String targetName = tasksManager.getTaskThread(taskName).getWaitingTargetToExecute();

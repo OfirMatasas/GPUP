@@ -27,6 +27,7 @@ import task.SimulationThread;
 import task.WorkerSimulationParameters;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -40,6 +41,7 @@ public class WorkerTasksController {
     private final ObservableList<String> registeredTasksList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTargetInformationTableItem> chosenTargetInfoList = FXCollections.observableArrayList();
     private final ObservableList<WorkerChosenTaskInformationTableItem> chosenTaskInfoList = FXCollections.observableArrayList();
+    private final Set<String> pausedTasks = new HashSet<>();
     private TasksPullerThread tasksPullerThread;
     public ProgressBar progressBar;
     public Label ProgressPercentageLabel;
@@ -153,7 +155,50 @@ public class WorkerTasksController {
     }
 
     public void PauseButtonPressed(ActionEvent actionEvent) {
+        if(this.PauseButton.getText().equals("Pause"))
+        {
+            this.pausedTasks.add(this.chosenTask);
+            this.PauseButton.setText("Resume");
+        }
+        else
+        {
+            this.pausedTasks.remove(this.chosenTask);
+            this.PauseButton.setText("Pause");
+        }
+//        sendPausedTaskRequestToServer();
     }
+
+//    private void sendPausedTaskRequestToServer() {
+//        String finalUrl = HttpUrl
+//                .parse(Patterns.TASK_UPDATE)
+//                .newBuilder()
+//                .addQueryParameter("worker-pause-task", WorkerTasksController.this.chosenTask)
+//                .addQueryParameter("username", this.userName)
+//                .build()
+//                .toString();
+//
+//        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+//            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//                Platform.runLater(() -> System.out.println("Failure on connecting to server for worker-pause-task!"));
+//            }
+//
+//            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+//                String message = response.header("message");
+//
+//                if (response.code() >= 200 && response.code() < 300) //Success
+//                    Platform.runLater(() ->
+//                    {
+//                        WorkerTasksController.this.PauseButton.setText("Resume");
+//                        ShowPopUp(Alert.AlertType.INFORMATION, "Task paused!", null, message);
+//                    });
+//                else //Failure
+//                    Platform.runLater(() -> System.out.println(message));
+//
+//                WorkerTasksController.this.PauseButton.setDisable(false);
+//                Objects.requireNonNull(response.body()).close();
+//            }
+//        });
+//    }
 
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
     }
@@ -210,6 +255,9 @@ public class WorkerTasksController {
 
         WorkerTasksController.this.chosenTask = selectedTaskName;
         this.tasksPullerThread.sendChosenTaskUpdateRequestToServer();
+
+        this.PauseButton.setDisable(false);
+        this.PauseButton.setText(this.pausedTasks.contains(this.chosenTask) ? "Resume" : "Pause");
     }
 
     //----------------------------------------------- Puller Thread -------------------------------------------------//
@@ -259,34 +307,21 @@ public class WorkerTasksController {
                         {
                             Set registeredTasks = new Gson().fromJson(body, Set.class);
                             refreshTasksListView(registeredTasks);
-
+                            refreshPausedTasksSet(registeredTasks);
                         });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull registered tasks from server!"));
+
                 Objects.requireNonNull(response.body()).close();
                 }
-
-//                private void refreshInfo(TaskCurrentInfoDTO updatedInfo) {
-//                    updateTargetStatusesTable(updatedInfo);
-//                    updateNumberOfWorkers(updatedInfo);
-//                    updateTaskLogHistory(updatedInfo);
-//                }
-//
-//                private void updateTaskLogHistory(TaskCurrentInfoDTO updatedInfo) {
-//                    if(updatedInfo.getLogHistory() != null)
-//                    {
-//                        WorkerTasksController.this.logTextArea.clear();
-//                        WorkerTasksController.this.logTextArea.appendText(updatedInfo.getLogHistory());
-//                    }
-//                }
-//
-//                private void updateTargetStatusesTable(TaskCurrentInfoDTO updatedInfo) {
-//                    WorkerTasksController.this.taskTargetStatusesList.clear();
-//                    WorkerTasksController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
-//
-//                    WorkerTasksController.this.taskTargetDetailsTableView.setItems(WorkerTasksController.this.taskTargetStatusesList);
-//                }
             });
+        }
+
+        private void refreshPausedTasksSet(Set<String> registeredTasks) {
+            if(registeredTasks == null)
+                return;
+
+            WorkerTasksController.this.pausedTasks.removeIf(pausedTask -> !registeredTasks.contains(pausedTask));
         }
 
         //----------------------- Chosen Task Info ----------------------//
@@ -304,6 +339,8 @@ public class WorkerTasksController {
                 if(!WorkerTasksController.this.registeredTasksList.contains(curr))
                     WorkerTasksController.this.registeredTasksList.add(curr);
             }
+
+            WorkerTasksController.this.PauseButton.setText(WorkerTasksController.this.pausedTasks.contains(WorkerTasksController.this.chosenTask) ? "Resume" : "Pause");
         }
 
         private void sendChosenTargetUpdateRequestToServer() {
@@ -394,7 +431,7 @@ public class WorkerTasksController {
                             refreshTargetsListView(targets);
                         });
                     }
-                    response.body().close();
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -421,8 +458,7 @@ public class WorkerTasksController {
         }
 
         private void sendTargetsToExecuteRequestToServer() {
-            int index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
-            String taskName = WorkerTasksController.this.registeredTasksList.get(index);
+            String taskName = getTaskToExecute();
 
             String finalUrl = HttpUrl
                     .parse(Patterns.TASK)
@@ -454,6 +490,22 @@ public class WorkerTasksController {
                     Objects.requireNonNull(response.body()).close();
                 }
             });
+        }
+
+        private String getTaskToExecute() {
+            String taskName = null;
+            boolean validTask = false;
+            int index;
+
+            while(!validTask)
+            {
+                index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
+                taskName = WorkerTasksController.this.registeredTasksList.get(index);
+
+                validTask = !WorkerTasksController.this.pausedTasks.contains(taskName);
+            }
+
+            return taskName;
         }
 
         private void executeSimulationTarget(String body) {
