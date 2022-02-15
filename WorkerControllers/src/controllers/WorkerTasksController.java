@@ -17,7 +17,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import tableItems.WorkerChosenTargetInformationTableItem;
@@ -201,6 +204,41 @@ public class WorkerTasksController {
 //    }
 
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
+        setTaskControlButtons(true);
+        sendUnregisterRequestToServer();
+    }
+
+    private void sendUnregisterRequestToServer() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_REGISTER)
+                .newBuilder()
+                .addQueryParameter("unregister", this.chosenTask)
+                .addQueryParameter("username", this.userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() ->
+                        ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Unregistration Successfully!", null, message));
+                else //Failed
+                    Platform.runLater(()->
+                    {
+                        WorkerTasksController.this.LeaveTaskButton.setDisable(false);
+                        ShowPopUp(Alert.AlertType.ERROR, "Unregistration Failed!", null, message);
+                    });
+
+                Objects.requireNonNull(response.body()).close();
+            }
+        });
     }
 
     private void refreshProgressBar(Integer totalTargets, Integer finishedTargets) {
@@ -256,7 +294,7 @@ public class WorkerTasksController {
         WorkerTasksController.this.chosenTask = selectedTaskName;
         this.tasksPullerThread.sendChosenTaskUpdateRequestToServer();
 
-        this.PauseButton.setDisable(false);
+        setTaskControlButtons(false);
         this.PauseButton.setText(this.pausedTasks.contains(this.chosenTask) ? "Resume" : "Pause");
     }
 
@@ -367,6 +405,7 @@ public class WorkerTasksController {
                             refreshChosenTargetInfo(dto);
                         });
                     } else Platform.runLater(() -> System.out.println("couldn't pull chosen-target from server!"));
+
                     Objects.requireNonNull(response.body()).close();
                 }
             });
@@ -397,6 +436,7 @@ public class WorkerTasksController {
                             refreshProgressBar(dto.getTotalTargets(), dto.getFinishedTargets());
                         });
                     } else Platform.runLater(() -> System.out.println("couldn't pull chosen-task from server!"));
+
                     Objects.requireNonNull(response.body()).close();
                 }
             });
@@ -431,6 +471,7 @@ public class WorkerTasksController {
                             refreshTargetsListView(targets);
                         });
                     }
+
                     Objects.requireNonNull(response.body()).close();
                 }
             });
@@ -487,6 +528,7 @@ public class WorkerTasksController {
                             } catch (Exception e) {System.out.println("Error in pulling task:" + e.getMessage()); }
                         });
                     }
+
                     Objects.requireNonNull(response.body()).close();
                 }
             });
@@ -523,14 +565,14 @@ public class WorkerTasksController {
 
     private void chosenTaskRemovedFromListView() {
         WorkerTasksController.this.chosenTask = null;
-        resetTaskControlButtons();
+        setTaskControlButtons(true);
         resetChosenTaskTableView();
         resetProgressBar();
     }
 
-    private void resetTaskControlButtons() {
-        this.LeaveTaskButton.setDisable(true);
-        this.PauseButton.setDisable(true);
+    private void setTaskControlButtons(Boolean flag) {
+        this.LeaveTaskButton.setDisable(flag);
+        this.PauseButton.setDisable(flag);
     }
 
     private void resetChosenTaskTableView() {

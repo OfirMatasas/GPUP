@@ -161,6 +161,7 @@ public class WorkerDashboardController {
                     }
                     else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull worker's credits from server!"));
+
                     Objects.requireNonNull(response.body()).close();
                 }
             });
@@ -179,26 +180,19 @@ public class WorkerDashboardController {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for task-list!"));
                 }
 
-                @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
+                        String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                                {
-                                    Gson gson = new Gson();
-                                    ResponseBody responseBody = response.body();
-                                    try {
-                                        if (responseBody != null) {
-                                            Set taskList = gson.fromJson(responseBody.string(), Set.class);
-                                            refreshTasksList(taskList);
-                                        }
-                                        Objects.requireNonNull(response.body()).close();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                        );
+                        {
+                            Set taskList = new Gson().fromJson(body, Set.class);
+                            refreshTasksList(taskList);
+                        });
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull all-task-list from server!"));
+
+                    Objects.requireNonNull(response.body()).close();
                 }
             });
         }
@@ -249,9 +243,8 @@ public class WorkerDashboardController {
             }
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                Gson gson = new Gson();
-                ResponseBody responseBody = response.body();
-                UsersLists usersLists = gson.fromJson(responseBody.string(), UsersLists.class);
+                String body = Objects.requireNonNull(response.body()).string();
+                UsersLists usersLists = new Gson().fromJson(body, UsersLists.class);
 
                 Platform.runLater(() -> updateUsersLists(usersLists));
                 Objects.requireNonNull(response.body()).close();
@@ -305,10 +298,13 @@ public class WorkerDashboardController {
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
+
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Registration Successfully!", null, message));
                 else //Failed
                     Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Registration Failed!", null, message));
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
@@ -352,6 +348,7 @@ public class WorkerDashboardController {
                     });
                 } else //Failed
                     Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+
                 Objects.requireNonNull(response.body()).close();
             }
         });

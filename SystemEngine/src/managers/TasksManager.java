@@ -123,9 +123,6 @@ public class TasksManager {
 
     public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName) {
         this.workerRegisteredTasksMap.get(workerName.toLowerCase()).remove(taskName);
-
-        if(this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).getTargets().isEmpty())
-            this.workersTasksHistoryMap.get(workerName.toLowerCase()).remove(taskName.toLowerCase());
     }
 
     public synchronized boolean isWorkerRegisteredToTask(String workerName, String taskName) {
@@ -156,7 +153,7 @@ public class TasksManager {
         this.taskThreadMap.put(taskName.toLowerCase(), taskThread);
     }
 
-    public void pauseTask(String taskName, String adminName) {
+    public synchronized void pauseTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).pauseTheTask();
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
@@ -165,7 +162,7 @@ public class TasksManager {
         taskDetails.addToTaskLogHistory(adminName + " paused the task on " + this.formatter.format(new Date()));
     }
 
-    public void resumeTask(String taskName, String adminName) {
+    public synchronized void resumeTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).continueTheTask();
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
@@ -174,7 +171,7 @@ public class TasksManager {
         taskDetails.addToTaskLogHistory(adminName + " resumed the task on " + this.formatter.format(new Date()));
     }
 
-    public void stopTask(String taskName, String adminName) {
+    public synchronized void stopTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).stopTheTask();
         this.listOfActiveTasks.remove(taskName);
         this.workerRegisteredTasksMap.remove(taskName.toLowerCase());
@@ -183,6 +180,16 @@ public class TasksManager {
 
         taskDetails.setTaskStatus("Stopped");
         taskDetails.addToTaskLogHistory(adminName + " stopped the task on " + this.formatter.format(new Date()));
+
+        removeWorkersWithNoHistoryFromTask(taskName);
+    }
+
+    public synchronized void removeWorkersWithNoHistoryFromTask(String taskName) {
+        String taskNameLow = taskName.toLowerCase();
+
+        for(Map<String, WorkerTaskHistory> curr : this.workersTasksHistoryMap.values())
+            if(curr.get(taskNameLow).getTargets().isEmpty())
+                curr.remove(taskNameLow);
     }
 
     public synchronized void updateTargetInfoOnTask(ExecutedTargetUpdates updates, GraphsManager graphsManager) {
@@ -251,7 +258,7 @@ public class TasksManager {
         return taskStatus.equalsIgnoreCase("Running") || taskStatus.equalsIgnoreCase("Paused");
     }
 
-    public boolean isTaskRunning(String taskName) {
+    public synchronized boolean isTaskRunning(String taskName) {
         return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus().equalsIgnoreCase("Running");
     }
 

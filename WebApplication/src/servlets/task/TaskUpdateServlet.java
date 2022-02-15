@@ -140,12 +140,11 @@ public class TaskUpdateServlet extends HttpServlet {
 
     private void returnWorkerRegisteredTasks(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {
         String workerName = req.getParameter("registered-tasks");
-        Gson gson = new Gson();
 
         if(workerName != null && userManager.isUserExists(workerName)) //Worker exists in the system
         {
             Set<String> registeredTasks = tasksManager.getWorkerRegisteredTasks(workerName);
-            String registeredTasksAsString = gson.toJson(registeredTasks, Set.class);
+            String registeredTasksAsString = new Gson().toJson(registeredTasks, Set.class);
             resp.getWriter().write(registeredTasksAsString);
 
             responseMessageAndCode(resp, "Successfully pulled worker's registered tasks!", HttpServletResponse.SC_ACCEPTED);
@@ -287,6 +286,7 @@ public class TaskUpdateServlet extends HttpServlet {
         tasksManager.removeTaskThread(taskName);
         tasksManager.removeTaskFromActiveList(taskName);
         tasksManager.removeAllWorkersRegistrationsFromTask(taskName);
+        tasksManager.removeWorkersWithNoHistoryFromTask(taskName);
     }
 
     //------------------------------------------------- General -------------------------------------------------//
