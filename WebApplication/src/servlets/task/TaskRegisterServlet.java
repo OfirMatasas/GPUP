@@ -52,6 +52,7 @@ public class TaskRegisterServlet extends HttpServlet {
         else //Valid removing registration from task
         {
             tasksManager.removeWorkerRegistrationFromTask(taskName, workerName);
+            resp.addHeader("task", taskName);
             responseMessageAndCode(resp, "Unregistered successfully from " + taskName + "!", HttpServletResponse.SC_ACCEPTED);
         }
     }

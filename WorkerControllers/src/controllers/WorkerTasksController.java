@@ -205,6 +205,7 @@ public class WorkerTasksController {
 
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
         setTaskControlButtons(true);
+        this.registeredTasksList.remove(this.chosenTask);
         sendUnregisterRequestToServer();
     }
 
@@ -226,9 +227,14 @@ public class WorkerTasksController {
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
+                String taskName = response.header("task");
 
                 if (response.code() >= 200 && response.code() < 300) //Success
-                    Platform.runLater(()-> ShowPopUp(Alert.AlertType.INFORMATION, "Unregistration Successfully!", null, message));
+                    Platform.runLater(()->
+                    {
+                        WorkerTasksController.this.pausedTasks.remove(taskName);
+                        ShowPopUp(Alert.AlertType.INFORMATION, "Unregistration Successfully!", null, message);
+                    });
                 else //Failed
                     Platform.runLater(()->
                     {
@@ -501,6 +507,9 @@ public class WorkerTasksController {
         private void sendTargetsToExecuteRequestToServer() {
             String taskName = getTaskToExecute();
 
+            if(taskName == null)
+                return;
+
             String finalUrl = HttpUrl
                     .parse(Patterns.TASK)
                     .newBuilder()
@@ -541,6 +550,9 @@ public class WorkerTasksController {
 
             while(!validTask)
             {
+                if(WorkerTasksController.this.registeredTasksList.isEmpty())
+                    return null;
+
                 index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
                 taskName = WorkerTasksController.this.registeredTasksList.get(index);
 
