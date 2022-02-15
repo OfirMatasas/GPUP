@@ -261,24 +261,26 @@ public class TaskUpdateServlet extends HttpServlet {
     private void updateTargetOnTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
         ExecutedTargetUpdates updates = new Gson().fromJson(req.getReader(), ExecutedTargetUpdates.class);
         String taskName;
+        String targetName;
 
-        if(updates != null)
+        if(updates != null) //Valid request
         {
             tasksManager.updateTargetInfoOnTask(updates, ServletUtils.getGraphsManager(getServletContext()));
             taskName = updates.getTaskName();
+            targetName = updates.getTargetName();
 
-            if(updates.getRuntimeStatus().equalsIgnoreCase("Finished"))
+            if(updates.getRuntimeStatus().equalsIgnoreCase("Finished")) //The task on target is finished
             {
-                tasksManager.addCreditsToWorker(updates.getUsername(), updates.getTaskName(), updates.getTargetName());
-                tasksManager.getTaskThread(updates.getTaskName()).taskOnTargetFinished(updates.getTargetName());
+                tasksManager.addCreditsToWorker(updates.getUsername(), taskName, targetName);
+                tasksManager.getTaskThread(taskName).taskOnTargetFinished(targetName);
             }
 
-            if(tasksManager.isTaskFinished(taskName))
+            if(tasksManager.isTaskFinished(taskName)) //The task is over
                 taskFinished(taskName, tasksManager);
 
-            responseMessageAndCode(resp, "Update received in server about " + taskName + " - " + updates.getTargetName(), HttpServletResponse.SC_ACCEPTED);
+            responseMessageAndCode(resp, "Update received in server about " + taskName + " - " + targetName, HttpServletResponse.SC_ACCEPTED);
         }
-        else
+        else //Invalid request
             responseMessageAndCode(resp, "Invalid upload of updates!", HttpServletResponse.SC_BAD_REQUEST);
     }
 

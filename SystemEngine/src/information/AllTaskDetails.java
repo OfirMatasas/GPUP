@@ -27,7 +27,7 @@ public class AllTaskDetails {
     private final Set<String> registeredWorkers;
     private final Set<TaskTargetCurrentInfoTableItem> targetStatusSet;
     private String taskLogHistory;
-    private final Map<String, String> targetLogHistory;
+    private final Map<String, String> targetLogHistory; //(target, log)
     private Integer finishedTargets;
     private final Set<String> targetsToExecute;
 

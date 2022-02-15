@@ -550,13 +550,13 @@ public class WorkerTasksController {
 
             while(!validTask)
             {
-                if(WorkerTasksController.this.registeredTasksList.isEmpty())
-                    return null;
+                try {
+                    index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
+                    taskName = WorkerTasksController.this.registeredTasksList.get(index);
 
-                index = WorkerTasksController.this.random.nextInt(WorkerTasksController.this.registeredTasksList.size());
-                taskName = WorkerTasksController.this.registeredTasksList.get(index);
-
-                validTask = !WorkerTasksController.this.pausedTasks.contains(taskName);
+                    validTask = !WorkerTasksController.this.pausedTasks.contains(taskName);
+                }
+                catch(Exception e) { return null; }
             }
 
             return taskName;

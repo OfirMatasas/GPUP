@@ -100,25 +100,30 @@ public class TasksManager {
     }
 
     public synchronized void addCreditsToWorker(String workerName, String taskName, String targetName) {
-        this.workersCredits.put(workerName.toLowerCase(), this.workersCredits.get(workerName.toLowerCase()) +
-                this.allTaskDetailsMap.get(taskName.toLowerCase()).getSinglePayment());
+        String workerNameLow = workerName.toLowerCase();
+        String taskNameLow = taskName.toLowerCase();
 
-        this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).newWorkedOnTarget(targetName);
+        this.workersCredits.put(workerNameLow, this.workersCredits.get(workerNameLow) +
+                this.allTaskDetailsMap.get(taskNameLow).getSinglePayment());
+
+        this.workersTasksHistoryMap.get(workerNameLow).get(taskNameLow).newWorkedOnTarget(targetName);
     }
 
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
-        //Creating new set of tasks if it's the first time the worker register
-        this.workerRegisteredTasksMap.computeIfAbsent(workerName.toLowerCase(), k -> new HashSet<>());
-        this.workersTasksHistoryMap.computeIfAbsent(workerName.toLowerCase(), k -> new HashMap<>());
-//        if(!this.workersTasksHistoryMap.containsKey(workerName.toLowerCase()))
-//            this.workersTasksHistoryMap.put(workerName.toLowerCase(), new HashMap<>());
+        String workerNameLow = workerName.toLowerCase();
+        String taskNameLow = taskName.toLowerCase();
+        Integer payment = this.allTaskDetailsMap.get(taskNameLow).getSinglePayment();
 
         //Adding task to worker's registered tasks
-        this.workerRegisteredTasksMap.get(workerName.toLowerCase()).add(taskName);
+        this.workerRegisteredTasksMap.computeIfAbsent(workerNameLow, k -> new HashSet<>());
+        this.workerRegisteredTasksMap.get(workerNameLow).add(taskName);
 
         //Creating task history item for worker
-        Integer payment = this.allTaskDetailsMap.get(taskName.toLowerCase()).getSinglePayment();
-        this.workersTasksHistoryMap.get(workerName.toLowerCase()).put(taskName.toLowerCase(), new WorkerTaskHistory(payment));
+        this.workersTasksHistoryMap.computeIfAbsent(workerNameLow, k -> new HashMap<>());
+        this.workersTasksHistoryMap.get(workerNameLow).computeIfAbsent(taskNameLow, k -> new WorkerTaskHistory(payment));
+//        if(!this.workersTasksHistoryMap.get(workerNameLow).containsKey(taskNameLow))
+//            this.workersTasksHistoryMap.get(workerNameLow).put(taskNameLow, new WorkerTaskHistory(payment))
+//        this.workersTasksHistoryMap.get(workerNameLow).put(taskNameLow, new WorkerTaskHistory(payment));
     }
 
     public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName) {
