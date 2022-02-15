@@ -118,12 +118,9 @@ public class TasksManager {
         this.workerRegisteredTasksMap.computeIfAbsent(workerNameLow, k -> new HashSet<>());
         this.workerRegisteredTasksMap.get(workerNameLow).add(taskName);
 
-        //Creating task history item for worker
+        //Creating task history item for worker, if it wasn't created by now
         this.workersTasksHistoryMap.computeIfAbsent(workerNameLow, k -> new HashMap<>());
         this.workersTasksHistoryMap.get(workerNameLow).computeIfAbsent(taskNameLow, k -> new WorkerTaskHistory(payment));
-//        if(!this.workersTasksHistoryMap.get(workerNameLow).containsKey(taskNameLow))
-//            this.workersTasksHistoryMap.get(workerNameLow).put(taskNameLow, new WorkerTaskHistory(payment))
-//        this.workersTasksHistoryMap.get(workerNameLow).put(taskNameLow, new WorkerTaskHistory(payment));
     }
 
     public synchronized void removeRegisteredTaskFromWorker(String workerName, String taskName) {

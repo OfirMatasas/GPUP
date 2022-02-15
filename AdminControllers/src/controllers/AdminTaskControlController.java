@@ -35,7 +35,9 @@ public class AdminTaskControlController {
     private int finishedTargets;
     private String taskName = null;
     private String userName;
-
+    private boolean isTaskRunning = false;
+    private TaskControlPullerThread taskControlPullerThread;
+    
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
     @FXML private ToolBar toolBar;
@@ -62,7 +64,6 @@ public class AdminTaskControlController {
     @FXML private Pane zeroSuccessRate;
     @FXML private TextArea logTextArea;
     private Graph graph;
-    private TaskControlPullerThread taskControlPullerThread;
     private GraphSummary graphSummary;
 
     //----------------------------------------------Puller Thread--------------------------------------------//
@@ -74,7 +75,10 @@ public class AdminTaskControlController {
             {
                 sendingThreadToSleep();
 
-                getTargetCurrentInfo();
+                if(AdminTaskControlController.this.isTaskRunning)
+                    getTargetCurrentInfo();
+                else
+                    checkForIncremental();
             }
         }
 
@@ -121,6 +125,16 @@ public class AdminTaskControlController {
                     updateTargetStatusesTable(updatedInfo);
                     updateNumberOfWorkers(updatedInfo);
                     updateTaskLogHistory(updatedInfo);
+                    checkIfTaskIsOver(updatedInfo);
+                }
+
+                private void updateTargetStatusesTable(AllTaskDetails updatedInfo) {
+                    int selected = AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().getSelectedIndex();
+                    AdminTaskControlController.this.taskTargetStatusesList.clear();
+                    AdminTaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
+
+                    AdminTaskControlController.this.taskTargetDetailsTableView.setItems(AdminTaskControlController.this.taskTargetStatusesList);
+                    AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().select(selected);
                 }
 
                 private void updateNumberOfWorkers(AllTaskDetails updatedInfo) {
@@ -135,16 +149,36 @@ public class AdminTaskControlController {
                     }
                 }
 
-                private void updateTargetStatusesTable(AllTaskDetails updatedInfo) {
-                    int selected = AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().getSelectedIndex();
-                    AdminTaskControlController.this.taskTargetStatusesList.clear();
-                    AdminTaskControlController.this.taskTargetStatusesList.addAll(updatedInfo.getTargetStatusSet());
-
-                    AdminTaskControlController.this.taskTargetDetailsTableView.setItems(AdminTaskControlController.this.taskTargetStatusesList);
-                    AdminTaskControlController.this.taskTargetDetailsTableView.getSelectionModel().select(selected);
+                private void checkIfTaskIsOver(AllTaskDetails updatedInfo) {
+                    if(updatedInfo.getTaskStatus().equalsIgnoreCase("Finished"))
+                    {
+                        String message = "The task " + updatedInfo.getTaskName() + " is over!";
+                        Platform.runLater(() ->
+                        {
+                            AdminTaskControlController.this.isTaskRunning = false;
+                            AdminTaskControlController.this.runButton.setDisable(false);
+                            disablePauseAndStopButtons(true);
+                            ShowPopup(Alert.AlertType.INFORMATION, "Task Finished!", null, message);
+                        });
+                    }
                 }
             });
         }
+
+        private void checkForIncremental() {
+            if(incrementalIsOptional()) //Optional
+                disableFromScratchAndIncrementalButtons(false);
+            else //Not optional
+            {
+                disableFromScratchAndIncrementalButtons(true);
+                AdminTaskControlController.this.fromScratchRadioButton.setSelected(true);
+            }
+        }
+    }
+
+    private void disableFromScratchAndIncrementalButtons(boolean flag) {
+        this.incrementalRadioButton.setDisable(flag);
+        this.fromScratchRadioButton.setDisable(flag);
     }
 
     //-------------------------------------------------Initialize-----------------------------------------------//
@@ -153,6 +187,7 @@ public class AdminTaskControlController {
         this.userName = userName;
         createTaskControlPullerThread();
         initializeTaskDetailsTableView();
+        this.taskControlPullerThread.getTargetCurrentInfo();
     }
 
     private void createTaskControlPullerThread() {
@@ -317,20 +352,19 @@ public class AdminTaskControlController {
         for(TaskTargetCurrentInfoTableItem currItem : this.taskTargetDetailsTableView.getItems())
         {
             if(currItem.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Finished.toString())||currItem.getRuntimeStatus().equals(TargetSummary.RuntimeStatus.Skipped.toString()))
-                this.finishedTargets++;
+                ++this.finishedTargets;
         }
     }
 
     //------------------------------------------Preparations For Launch-------------------------------------------//
     private boolean incrementalIsOptional() {
-//        if(this.runButton.isDisable())
-//            return false;
+        if(this.isTaskRunning)
+            return false;
 
         for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
-        {
-            if(curr.getResultStatus().equals("Undefined"))
+            if(curr.getResultStatus().equalsIgnoreCase("Undefined") || curr.getResultStatus().equalsIgnoreCase("Skipped")) //At least one of the targets in not finished or skipped
                 return false;
-        }
+
         return true;
     }
 
@@ -382,6 +416,7 @@ public class AdminTaskControlController {
     //-------------------------------------------------During Task------------------------------------------------//
     @FXML void runPressed(ActionEvent event) {
         this.runButton.setDisable(true);
+        disablePauseAndStopButtons(true);
         sendRequestToStartTask();
     }
 
@@ -412,6 +447,7 @@ public class AdminTaskControlController {
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
+                        AdminTaskControlController.this.isTaskRunning = true;
                         disablePauseAndStopButtons(false);
                         ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null, message);
                     });
