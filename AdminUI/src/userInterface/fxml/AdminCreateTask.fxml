@@ -30,10 +30,10 @@
                              <ComboBox fx:id="affectedTargets" disable="true" layoutX="30.0" layoutY="104.0" onAction="#affectedTargetsPressed" prefWidth="150.0" promptText="-Affected Targets-" />
                              <ListView fx:id="currentSelectedTargetListView" disable="true" layoutX="20.0" layoutY="166.0" prefHeight="156.0" prefWidth="190.0" />
                              <Label fx:id="currentSelectedTargetLabel" disable="true" layoutX="50.0" layoutY="142.0" text="Current Selected Targets" />
-                             <Label fx:id="processingTimeLabel" disable="true" layoutX="10.0" layoutY="374.0" text="Processing Time (m/s) : " />
-                             <Label fx:id="limitedPermanentLabel" disable="true" layoutX="11.0" layoutY="412.0" text="Limited/Permanent : " />
-                             <Label fx:id="successRateLabel" disable="true" layoutX="12.0" layoutY="436.0" text="Success Rate :" />
-                             <Label fx:id="successRateWithWarnings" disable="true" layoutX="11.0" layoutY="465.0" text="Success Rate&#10;With Warnings : " />
+                             <Label fx:id="processingTimeLabel" disable="true" layoutX="10.0" layoutY="374.0" text="Processing Time (m/s): " />
+                             <Label fx:id="limitedPermanentLabel" disable="true" layoutX="11.0" layoutY="412.0" text="Limited/Permanent: " />
+                             <Label fx:id="successRateLabel" disable="true" layoutX="12.0" layoutY="436.0" text="Success Rate:" />
+                             <Label fx:id="successRateWithWarnings" disable="true" layoutX="11.0" layoutY="465.0" text="Success Rate&#10;With Warnings: " />
                              <HBox layoutX="123.0" layoutY="412.0">
                                  <fx:define>
                                      <ToggleGroup fx:id="limitedOrPermanent" />
@@ -57,8 +57,8 @@
                            <Label fx:id="compilationOutputLabel" layoutX="9.0" layoutY="450.0" text="Please Choose The Output Directory&#10;Of The Compiled Code" visible="false" />
                            <Button fx:id="toCompileButton" layoutX="215.0" layoutY="362.0" mnemonicParsing="false" onAction="#chooseSourceCodeDirectoryToCompile" text="Browse..." visible="false" />
                            <Button fx:id="compiledOutputButton" layoutX="215.0" layoutY="454.0" mnemonicParsing="false" onAction="#chooseOutputDirectory" text="Browse..." visible="false" />
-                           <Label fx:id="sourceCodePathLabel" layoutX="10.0" layoutY="412.0" text="Path :" visible="false" />
-                           <Label fx:id="outputPathLabel" layoutX="9.0" layoutY="505.0" text="Path :" visible="false" />
+                           <Label fx:id="sourceCodePathLabel" layoutX="10.0" layoutY="412.0" text="Path:" visible="false" />
+                           <Label fx:id="outputPathLabel" layoutX="9.0" layoutY="505.0" text="Path:" visible="false" />
                          </Pane>
                      </left>
                      <center>

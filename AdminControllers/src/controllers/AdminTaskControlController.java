@@ -36,8 +36,9 @@ public class AdminTaskControlController {
     private Integer totalTargets = 1;
     private String taskName = null;
     private String userName;
-    private boolean isTaskRunning = false;
+    private Boolean isTaskRunning = false;
     private TaskControlPullerThread taskControlPullerThread;
+    private Boolean isFirstRun = true;
     
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
@@ -157,6 +158,7 @@ public class AdminTaskControlController {
                         String message = "The task " + updatedInfo.getTaskName() + " is over!";
                         Platform.runLater(() ->
                         {
+                            AdminTaskControlController.this.isFirstRun = false;
                             AdminTaskControlController.this.isTaskRunning = false;
                             AdminTaskControlController.this.runButton.setDisable(false);
                             disablePauseAndStopButtons(true);
@@ -368,11 +370,7 @@ public class AdminTaskControlController {
         if(this.isTaskRunning)
             return false;
 
-        for(TaskTargetCurrentInfoTableItem curr : this.taskTargetDetailsTableView.getItems())
-            if(curr.getResultStatus().equalsIgnoreCase("Undefined") || curr.getResultStatus().equalsIgnoreCase("Skipped")) //At least one of the targets in not finished or skipped
-                return false;
-
-        return true;
+        return !this.isFirstRun;
     }
 
     private void turnOnIncrementalButton() {
@@ -547,6 +545,8 @@ public class AdminTaskControlController {
     }
 
     @FXML void stopPressed(ActionEvent event) {
+        this.isTaskRunning = false;
+        this.isFirstRun = false;
         disablePauseAndStopButtons(true);
         sendRequestToStopTask();
     }
@@ -572,13 +572,13 @@ public class AdminTaskControlController {
 
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
-                    {
-                        AdminTaskControlController.this.isTaskRunning = false;
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message);
-                    });
-                else //Failed
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message));
+                else //Failure
                     Platform.runLater(() ->
-                        ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, message));
+                    {
+                        AdminTaskControlController.this.isTaskRunning = true;
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, message);
+                    });
 
                 Objects.requireNonNull(response.body()).close();
             }
