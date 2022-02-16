@@ -84,8 +84,7 @@ public class AdminDashboardController {
     private PullerThread pullerThread;
     private String chosenTask = null;
 
-    public void initialize(AdminPrimaryController primaryController, String username)
-    {
+    public void initialize(AdminPrimaryController primaryController, String username) {
         setPrimaryController(primaryController);
         setUsername(username);
         createPullingThread();
@@ -221,7 +220,7 @@ public class AdminDashboardController {
                         refreshTaskDetailsDTO(taskDetailsDTO);
                     });
                 } else //Failed
-                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+                    Platform.runLater(() -> System.out.println("couldn't pull task-info from server!"));
 
                 Objects.requireNonNull(response.body()).close();
             }
@@ -263,8 +262,7 @@ public class AdminDashboardController {
         this.ControlSelectedTaskButton.setDisable(false);
     }
 
-    public class PullerThread extends Thread
-    {
+    public class PullerThread extends Thread {
         @Override
         public void run()
         {
@@ -280,7 +278,7 @@ public class AdminDashboardController {
                 refreshAllTasksList();
                 refreshMyTasksList();
 
-                if(chosenTask != null)
+                if(AdminDashboardController.this.chosenTask != null)
                     TaskSelectedFromAllListView();
             }
         }

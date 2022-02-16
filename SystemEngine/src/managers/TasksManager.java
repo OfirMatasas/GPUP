@@ -76,7 +76,7 @@ public class TasksManager {
         }
         addUserTask(creatorName.toLowerCase(), taskName);
 
-        this.allTaskDetailsMap.put(taskName.toLowerCase(), new AllTaskDetails(taskName,
+        this.allTaskDetailsMap.put(taskName.toLowerCase(), new AllTaskDetails(taskName, taskName,
                 creatorName, targets, infoSet, taskType, graphsManager.getGraph(graphName),
                 "Task created by " + creatorName + " on " + this.formatter.format(new Date())));
     }
@@ -134,25 +134,28 @@ public class TasksManager {
 
     //-------------------------------------------------- Update Tasks --------------------------------------------//
     public synchronized void startTask(String taskName, String userName, GraphsManager graphsManager) {
-        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+        String taskNameLowerCase = taskName.toLowerCase();
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskNameLowerCase);
         TaskThread taskThread;
         String graphName = taskDetails.getGraphName();
+        String originalTaskNameLowerCase = taskDetails.getOriginalTaskName().toLowerCase();
 
         taskDetails.setTaskStatus("Running");
         taskDetails.addToTaskLogHistory(userName + " started the task on " + this.formatter.format(new Date()) + "!");
 
-        this.allTaskDetailsMap.get(taskName.toLowerCase()).setTaskStatus("Running");
+        this.allTaskDetailsMap.get(taskNameLowerCase).setTaskStatus("Running");
         this.listOfActiveTasks.add(taskName);
 
-        if(this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskType().equals("Simulation")) //Simulation task
-            taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName),
-                    this.graphSummaryMap.get(taskName.toLowerCase()), this.simulationTasksMap.get(taskName.toLowerCase()), null, false);
+        if(this.allTaskDetailsMap.get(taskNameLowerCase).getTaskType().equals("Simulation")) //Simulation task
+            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName),
+                    this.graphSummaryMap.get(taskNameLowerCase), this.simulationTasksMap.get(originalTaskNameLowerCase), null, false);
         else //Compilation task
-            taskThread = new TaskThread(taskDetails.getTaskName(), graphsManager.getGraph(graphName), this.graphSummaryMap.get(taskName.toLowerCase()),
-                    null, this.compilationTasksMap.get(taskName.toLowerCase()), false);
+            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName),
+                    this.graphSummaryMap.get(taskNameLowerCase),
+                    null, this.compilationTasksMap.get(originalTaskNameLowerCase), false);
 
         taskThread.start();
-        this.taskThreadMap.put(taskName.toLowerCase(), taskThread);
+        this.taskThreadMap.put(taskNameLowerCase, taskThread);
     }
 
     public synchronized void pauseTask(String taskName, String adminName) {
@@ -333,5 +336,25 @@ public class TasksManager {
     public synchronized void removeTaskFromActiveList(String taskName) {
         this.listOfActiveTasks.remove(taskName);
         removeAllWorkersRegistrationsFromTask(taskName);
+    }
+
+    public synchronized String copyAndRunTask(String taskName, GraphsManager graphsManager) {
+        String taskNameLowerCase = taskName.toLowerCase();
+        String copiedTaskName;
+        AllTaskDetails originalTaskDetails = this.allTaskDetailsMap.get(taskNameLowerCase);
+        Graph graph = graphsManager.getGraph(originalTaskDetails.getGraphName());
+
+        AllTaskDetails copiedTaskDetails = originalTaskDetails.createCopyForIncremental
+                (graph, "A new copy of " + taskName + " was made by " + originalTaskDetails.getUploader() +
+                        " on " + this.formatter.format(new Date()));
+
+        copiedTaskName = copiedTaskDetails.getTaskName();
+        this.listOfAllTasks.add(copiedTaskName);
+
+        addUserTask(copiedTaskDetails.getUploader().toLowerCase(), copiedTaskName);
+
+        createNewGraphSummary(copiedTaskName, copiedTaskDetails.getGraphName(), graphsManager);
+
+        return copiedTaskDetails.getTaskName();
     }
 }

@@ -571,7 +571,10 @@ public class AdminTaskControlController {
 
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message));
+                    {
+                        AdminTaskControlController.this.isTaskRunning = false;
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message);
+                    });
                 else //Failed
                     Platform.runLater(() ->
                         ShowPopup(Alert.AlertType.ERROR, "Failure In Stopping Task!", null, message));

@@ -10,10 +10,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AllTaskDetails {
+    //------------------------------------------------ Members ---------------------------------------------------//
     private final String taskType;
     private final String taskName;
+    private final String originalTaskName;
+    private Integer copies;
     private final String graphName;
     private final String uploader;
     private String taskStatus;
@@ -29,12 +33,13 @@ public class AllTaskDetails {
     private String taskLogHistory;
     private final Map<String, String> targetLogHistory; //(target, log)
     private Integer finishedTargets;
-    private final Set<String> targetsToExecute;
 
-    public AllTaskDetails(String taskName, String creatorName, Set<String> targetsToExecute,
+    //--------------------------------------------- Constructors ------------------------------------------------//
+    public AllTaskDetails(String taskName, String originalTaskName, String creatorName, Set<String> targetsToExecute,
                           Set<TaskTargetCurrentInfoTableItem> targetStatusSet, String taskType,
                           Graph graph, String log) {
         this.taskName = taskName;
+        this.originalTaskName = originalTaskName;
         this.taskType = taskType;
         this.graphName = graph.getGraphName();
         this.uploader = creatorName;
@@ -43,8 +48,8 @@ public class AllTaskDetails {
         this.finishedTargets = 0;
         this.taskLogHistory = log + "\n\n";
         this.targetStatusSet = targetStatusSet;
-        this.targetsToExecute = new HashSet<>(targetsToExecute);
         this.targetLogHistory = new HashMap<>();
+        this.copies = 0;
 
         for (String currTarget : targetsToExecute)
             this.targetLogHistory.put(currTarget.toLowerCase(), "");
@@ -81,18 +86,22 @@ public class AllTaskDetails {
         this.totalPayment = this.singlePayment * this.targets;
     }
 
-    public void addWorker(String workerName) {
-        this.registeredWorkers.add(workerName);
+    public synchronized AllTaskDetails createCopyForIncremental(Graph graph, String log) {
+        String copiedTaskName = this.taskName + ++this.copies;
+
+        Set<TaskTargetCurrentInfoTableItem> copiedTargetsStatusSet = this.targetStatusSet.stream()
+                .filter(p -> !p.getResultStatus().equalsIgnoreCase("Success")
+                        || !p.getResultStatus().equalsIgnoreCase("Warning")).collect(Collectors.toSet());
+
+        Set<String> copiedTargetsToExecute = new HashSet<>();
+        for(TaskTargetCurrentInfoTableItem curr : copiedTargetsStatusSet)
+            copiedTargetsToExecute.add(curr.getTargetName());
+
+        return new AllTaskDetails(copiedTaskName, this.originalTaskName, this.uploader, copiedTargetsToExecute,
+                copiedTargetsStatusSet, this.taskType, graph, log);
     }
 
-    public void removeWorker(String workerName) {
-        this.registeredWorkers.remove(workerName);
-    }
-
-    public void setTaskStatus(String status) {
-        this.taskStatus = status;
-    }
-
+    //------------------------------------------------ Getters ---------------------------------------------------//
     public String getTaskType() {
         return this.taskType;
     }
@@ -161,6 +170,18 @@ public class AllTaskDetails {
         return this.finishedTargets;
     }
 
+    public String getOriginalTaskName(){ return this.originalTaskName; }
+
+    public String getTargetLogHistory(String targetName) {
+        return this.targetLogHistory.get(targetName.toLowerCase());
+    }
+
+    //------------------------------------------------ Setters ---------------------------------------------------//
+    public void setTaskStatus(String status) {
+        this.taskStatus = status;
+    }
+
+    //------------------------------------------------ Methods ---------------------------------------------------//
     public synchronized void updateInfo(GraphSummary graphSummary, String log) {
         TargetSummary targetSummary;
         String runtimeStatus, resultStatus;
@@ -188,6 +209,16 @@ public class AllTaskDetails {
             this.taskStatus = "Finished";
     }
 
+    public void addWorker(String workerName) {
+        this.registeredWorkers.add(workerName);
+    }
+
+    public void removeWorker(String workerName) {
+        this.registeredWorkers.remove(workerName);
+    }
+
+    public void removeAllWorkersRegistrationsFromTask() { this.registeredWorkers.clear(); }
+
     public void addToTaskLogHistory(String addedInfo) {
         this.taskLogHistory += addedInfo + "\n\n";
     }
@@ -195,12 +226,4 @@ public class AllTaskDetails {
     public void addToTargetLogHistory(String targetName, String addedInfo) {
         this.targetLogHistory.put(targetName.toLowerCase(), this.targetLogHistory.get(targetName.toLowerCase()) + addedInfo + "\n");
     }
-
-    public String getTargetLogHistory(String targetName) {
-        return this.targetLogHistory.get(targetName.toLowerCase());
-    }
-
-    public Set<String> getTargetsToExecute() { return this.targetsToExecute; }
-
-    public void removeAllWorkersRegistrationsFromTask() { this.registeredWorkers.clear(); }
 }
