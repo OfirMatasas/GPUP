@@ -39,9 +39,9 @@
                                      <ToggleGroup fx:id="limitedOrPermanent" />
                                  </fx:define>
                                  <children>
-                                     <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" prefWidth="87.0" selected="true" text="Limited">
+                                     <RadioButton fx:id="limitedRadioButton" disable="true" mnemonicParsing="false" prefWidth="87.0" text="Limited" selected="true" toggleGroup="$limitedOrPermanent">
                                  </RadioButton>
-                                     <RadioButton fx:id="permanentRadioButton" onMouseClicked="#permanentOptionPressed" disable="true" mnemonicParsing="false" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
+                                     <RadioButton fx:id="permanentRadioButton" disable="true" mnemonicParsing="false" prefWidth="87.0" text="Permanent" toggleGroup="$limitedOrPermanent" />
                                  </children>
                              </HBox>
                               <Slider fx:id="successRateSlider" disable="true" layoutX="97.0" layoutY="438.0" max="1.0" showTickLabels="true" showTickMarks="true" />

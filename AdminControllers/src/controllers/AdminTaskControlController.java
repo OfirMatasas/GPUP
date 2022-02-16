@@ -32,7 +32,8 @@ import java.util.Set;
 public class AdminTaskControlController {
 
     private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
-    private int finishedTargets;
+    private Integer finishedTargets = 0;
+    private Integer totalTargets = 1;
     private String taskName = null;
     private String userName;
     private boolean isTaskRunning = false;
@@ -60,7 +61,7 @@ public class AdminTaskControlController {
     @FXML private TextArea taskDetailsOnTargetTextArea;
     @FXML private ProgressBar progressBar;
     @FXML private Label targetsFinishedLabel;
-    @FXML private Label progressBarLabel;
+    @FXML private Label progressBarPercentage;
     @FXML private Pane zeroSuccessRate;
     @FXML private TextArea logTextArea;
     private Graph graph;
@@ -68,10 +69,11 @@ public class AdminTaskControlController {
 
     //----------------------------------------------Puller Thread--------------------------------------------//
     public class TaskControlPullerThread extends Thread {
-        @Override
-        public void run()
+        @Override public void run()
         {
-            while(true)
+            createNewProgressBar();
+
+            while(this.isAlive())
             {
                 sendingThreadToSleep();
 
@@ -113,9 +115,9 @@ public class AdminTaskControlController {
                             {
                                 AllTaskDetails updatedInfo = new Gson().fromJson(body, AllTaskDetails.class);
                                 refreshInfo(updatedInfo);
-                            }
-                        );
-                    } else //Failed
+                                updateProgressBar(updatedInfo);
+                            });
+                    } else //Failure
                         Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
 
                     Objects.requireNonNull(response.body()).close();
@@ -163,6 +165,11 @@ public class AdminTaskControlController {
                     }
                 }
             });
+        }
+
+        private void updateProgressBar(AllTaskDetails updatedInfo) {
+            AdminTaskControlController.this.finishedTargets = updatedInfo.getFinishedTargets();
+            AdminTaskControlController.this.totalTargets = updatedInfo.getTargets();
         }
 
         private void checkForIncremental() {
@@ -385,27 +392,22 @@ public class AdminTaskControlController {
     //------------------------------------------------Progress Bar------------------------------------------------//
     private void turnOnProgressBar() {
         this.progressBar.setDisable(false);
-        this.progressBarLabel.setDisable(false);
+        this.progressBarPercentage.setDisable(false);
         this.targetsFinishedLabel.setDisable(false);
     }
 
     private void createNewProgressBar() {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                int maxSize = AdminTaskControlController.this.taskTargetDetailsTableView.getItems().size();
+        javafx.concurrent.Task<Void> task = new Task<Void>() {
+            @Override protected Void call() {
                 while (true) {
-                    Thread.sleep(200);
-                    getFinishedTargetsInRealTime();
-                    updateProgress(AdminTaskControlController.this.finishedTargets, maxSize);
+                    updateProgress(AdminTaskControlController.this.finishedTargets, AdminTaskControlController.this.totalTargets);
                 }
-//                updateProgress(maxSize, maxSize);
-//                return null;
             }
         };
+
         this.progressBar.setStyle("-fx-accent: #00FF00;");
         this.progressBar.progressProperty().bind(task.progressProperty());
-        this.progressBarLabel.textProperty().bind
+        this.progressBarPercentage.textProperty().bind
                 (Bindings.concat(Bindings.format("%.0f", Bindings.multiply(task.progressProperty(), 100)), " %"));
 
         Thread progressBarThread = new Thread(task);
@@ -430,8 +432,7 @@ public class AdminTaskControlController {
                 .toString();
 
         HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() ->
                 {
                     AdminTaskControlController.this.runButton.setDisable(false);
@@ -440,8 +441,7 @@ public class AdminTaskControlController {
                 });
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
 
                 if (response.code() >= 200 && response.code() < 300) //Success
@@ -449,9 +449,10 @@ public class AdminTaskControlController {
                     {
                         AdminTaskControlController.this.isTaskRunning = true;
                         disablePauseAndStopButtons(false);
+                        turnOnProgressBar();
                         ShowPopup(Alert.AlertType.INFORMATION, "Task Started Successfully!", null, message);
                     });
-                else //Failed
+                else //Failure
                     Platform.runLater(() ->
                     {
                         AdminTaskControlController.this.runButton.setDisable(false);

@@ -53,14 +53,11 @@ public class AdminLoginController {
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> loginError("Something went wrong: " + e.getMessage()));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if(response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() -> loggedInAsAdmin(response));
                 else //Failure

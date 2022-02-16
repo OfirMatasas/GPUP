@@ -10,19 +10,19 @@ import java.io.IOException;
 
 @WebServlet(name = "LoginServlet" , urlPatterns = "/user/login")
 public class LoginServlet extends HttpServlet {
-    boolean isAdmin;
 
     @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String userName;
+        boolean isAdmin;
 
         if(req.getParameter("adminUsername") != null)
         {
-            this.isAdmin = true;
+            isAdmin = true;
             userName = req.getParameter("adminUsername");
         }
         else
         {
-            this.isAdmin = false;
+            isAdmin = false;
             userName = req.getParameter("workerUsername");
         }
 
@@ -34,14 +34,14 @@ public class LoginServlet extends HttpServlet {
 //            resp.getWriter().println("The chosen user name is taken");
 //            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 //        }
-        if(!userManager.isValidLogin(userName, this.isAdmin))
+        if(!userManager.isValidLogin(userName, isAdmin))
         {
-            resp.getWriter().println("This user name is already taken by " + (this.isAdmin ? "a worker" : "an admin") + "!");
+            resp.getWriter().println("This user name is already taken by " + (isAdmin ? "a worker" : "an admin") + "!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         else {
             req.getSession(true).setAttribute("username", userName);
-            if(this.isAdmin)
+            if(isAdmin)
                 userManager.addAdmin(userName);
             else
                 userManager.addWorker(userName);

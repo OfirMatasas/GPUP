@@ -411,8 +411,6 @@ public class AdminCreateTaskController implements Initializable{
         return taskParameters;
     }
 
-    @FXML void permanentOptionPressed(MouseEvent event) {}
-
     private Set<String> setCurrentRunTargets() {
         Set<String> currentRunTargets = new HashSet<>();
 

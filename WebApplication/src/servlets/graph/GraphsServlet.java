@@ -49,7 +49,7 @@ public class GraphsServlet extends HttpServlet {
     private void returnGraphDetails(HttpServletRequest req, HttpServletResponse resp, GraphsManager graphsManager) throws IOException {
         String graphName = req.getParameter("graph-details-DTO");
 
-        if(graphsManager.isGraphExists(graphName))
+        if(graphsManager.isGraphExists(graphName)) //Graph exists = valid request
         {
             DashboardGraphDetailsDTO currDTO = this.graphDetailsDTOMap.get(graphName);
             String dtoAsString = this.gson.toJson(currDTO, DashboardGraphDetailsDTO.class);
@@ -57,7 +57,7 @@ public class GraphsServlet extends HttpServlet {
 
             responseMessageAndCode(resp, graphName + " information pulled successfully from the server!", HttpServletResponse.SC_ACCEPTED);
         }
-        else
+        else //Graph not exists = invalid request
             responseMessageAndCode(resp, "The graph" + graphName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
