@@ -101,14 +101,17 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
-    public synchronized void addCreditsToWorker(String workerName, String taskName, String targetName) {
+    public synchronized void addCreditsToWorker(String workerName, String taskName) {
         String workerNameLow = workerName.toLowerCase();
         String taskNameLow = taskName.toLowerCase();
 
         this.workersCredits.put(workerNameLow, this.workersCredits.get(workerNameLow) +
                 this.allTaskDetailsMap.get(taskNameLow).getSinglePayment());
+    }
 
-        this.workersTasksHistoryMap.get(workerNameLow).get(taskNameLow).newWorkedOnTarget(targetName);
+    public synchronized void addTargetToWorkerTaskHistory(String workerName, String taskName, String targetName)
+    {
+        this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).newWorkedOnTarget(targetName);
     }
 
     public synchronized void addRegisteredTaskToWorker(String workerName, String taskName) {
@@ -325,6 +328,17 @@ public class TasksManager {
 
     public String getOriginalTaskName(String taskName) {
         return this.allTaskDetailsMap.get(taskName.toLowerCase()).getOriginalTaskName();
+    }
+
+    public String getWorkerChosenTargetStatus(String taskName, String targetName)
+    {
+        TargetSummary targetSummary = this.graphSummaryMap.get(taskName.toLowerCase()).getTargetsSummaryMap().get(targetName);
+        TargetSummary.ResultStatus resultStatus = targetSummary.getResultStatus();
+
+        if(resultStatus.equals(TargetSummary.ResultStatus.Undefined)) //Target still running
+            return "In process";
+        else //Target finished
+            return resultStatus.toString();
     }
 
     //----------------------------------------------------- Methods -----------------------------------------------//

@@ -101,8 +101,10 @@ public class TaskUpdateServlet extends HttpServlet {
         else //Valid request
         {
             AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
+            String targetStatus = tasksManager.getWorkerChosenTargetStatus(taskName, targetName);
+
             WorkerChosenTargetInformationTableItem tableItem = new WorkerChosenTargetInformationTableItem(targetName,
-                    taskName, currInfo.getTaskType(), currInfo.getTaskStatus(), currInfo.getSinglePayment());
+                    taskName, currInfo.getTaskType(), targetStatus, currInfo.getSinglePayment());
             String log = currInfo.getTargetLogHistory(targetName);
             WorkerChosenTargetDTO dto = new WorkerChosenTargetDTO(tableItem, log);
 
@@ -314,7 +316,7 @@ public class TaskUpdateServlet extends HttpServlet {
 
             if(updates.getRuntimeStatus().equalsIgnoreCase("Finished")) //The task on target is finished
             {
-                tasksManager.addCreditsToWorker(updates.getUsername(), taskName, targetName);
+                tasksManager.addCreditsToWorker(updates.getUsername(), taskName);
                 tasksManager.getTaskThread(taskName).taskOnTargetFinished(targetName);
             }
 

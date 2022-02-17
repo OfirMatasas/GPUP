@@ -37,12 +37,12 @@ public class TasksServlet extends HttpServlet {
     }
 
     private void doGetTaskInfo(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
-        String taskInfoName = req.getParameter("task-info");
+        String taskName = req.getParameter("task-info");
         String infoAsString;
 
-        if(tasksManager.isTaskExists(taskInfoName))
+        if(tasksManager.isTaskExists(taskName))
         {
-            AllTaskDetails taskInfo = tasksManager.getAllTaskDetails(taskInfoName);
+            AllTaskDetails taskInfo = tasksManager.getAllTaskDetails(taskName);
             infoAsString = new Gson().toJson(taskInfo, AllTaskDetails.class);
 
             resp.getWriter().write(infoAsString);
@@ -50,7 +50,7 @@ public class TasksServlet extends HttpServlet {
         }
         else //Task not exists in the system
         {
-            resp.getWriter().println("The task " + taskInfoName + " doesn't exist in the system!");
+            resp.getWriter().println("The task " + taskName + " doesn't exist in the system!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -117,6 +117,7 @@ public class TasksServlet extends HttpServlet {
             {
                 WorkerSimulationParameters parameters = new WorkerSimulationParameters(taskName, targetName, workerName,
                         taskInfo.getSimulationParameters());
+                tasksManager.addTargetToWorkerTaskHistory(workerName, taskName, targetName);
                 parametersAsString = new Gson().toJson(parameters, WorkerSimulationParameters.class);
                 resp.getWriter().write(parametersAsString);
                 resp.addHeader("task-type", "Simulation");
