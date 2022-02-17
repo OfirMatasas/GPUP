@@ -14,7 +14,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import okhttp3.Call;
@@ -281,23 +280,25 @@ public class WorkerTasksController {
         this.TaskTableView.setItems(this.chosenTaskInfoList);
     }
 
-    public void getInfoAboutSelectedTargetFromListView(MouseEvent mouseEvent) {
+    public void getInfoAboutSelectedTargetFromListView() {
         String selectedTargetName = WorkerTasksController.this.TargetsListView.getSelectionModel().getSelectedItem();
 
-        if(selectedTargetName == null)
+        if(selectedTargetName != null)
+            WorkerTasksController.this.chosenTarget = selectedTargetName;
+        else if(this.chosenTarget == null)
             return;
 
-        WorkerTasksController.this.chosenTarget = selectedTargetName;
         this.tasksPullerThread.sendChosenTargetUpdateRequestToServer();
     }
 
     public void getInfoAboutSelectedTaskFromListView() {
         String selectedTaskName = WorkerTasksController.this.TasksListView.getSelectionModel().getSelectedItem();
 
-        if(selectedTaskName == null)
+        if(selectedTaskName != null)
+            WorkerTasksController.this.chosenTask = selectedTaskName;
+        else if(WorkerTasksController.this.chosenTask == null)
             return;
 
-        WorkerTasksController.this.chosenTask = selectedTaskName;
         this.tasksPullerThread.sendChosenTaskUpdateRequestToServer();
 
         setTaskControlButtons(false);
@@ -314,6 +315,7 @@ public class WorkerTasksController {
             {
                 sendingThreadToSleep();
                 getRegisteredTasks();
+                getInfoAboutSelectedTargetFromListView();
                 getInfoAboutSelectedTaskFromListView();
                 getTargetsToExecute();
                 getExecutedTargets();
