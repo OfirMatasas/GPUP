@@ -82,7 +82,8 @@ public class AdminDashboardController {
     private AdminPrimaryController primaryController;
     private String username;
     private PullerThread pullerThread;
-    private String chosenTask = null;
+    private String chosenAllTask = null;
+    private String chosenMyTask = null;
 
     public void initialize(AdminPrimaryController primaryController, String username) {
         setPrimaryController(primaryController);
@@ -191,7 +192,7 @@ public class AdminDashboardController {
         if(selectedTaskName == null)
             return;
 
-        this.chosenTask = selectedTaskName;
+        this.chosenAllTask = selectedTaskName;
 
         String finalUrl = HttpUrl
                 .parse(Patterns.TASK)
@@ -258,6 +259,10 @@ public class AdminDashboardController {
 
     public void TaskSelectedFromMyListView(MouseEvent mouseEvent) {
         this.ControlSelectedTaskButton.setDisable(false);
+        String selectedTask = this.myTasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTask != null)
+            this.chosenMyTask = selectedTask;
     }
 
     public class PullerThread extends Thread {
@@ -276,7 +281,7 @@ public class AdminDashboardController {
                 refreshAllTasksList();
                 refreshMyTasksList();
 
-                if(AdminDashboardController.this.chosenTask != null)
+                if(AdminDashboardController.this.chosenAllTask != null)
                     TaskSelectedFromAllListView();
             }
         }
@@ -491,28 +496,21 @@ public class AdminDashboardController {
     }
 
     @FXML void ControlSelectedTaskButtonClicked(ActionEvent event) {
-        String selectedTaskName = this.myTasksListView.getSelectionModel().getSelectedItem();
-
-        if(selectedTaskName == null)
-            return;
-
         String finalUrl = HttpUrl
                 .parse(Patterns.TASK)
                 .newBuilder()
-                .addQueryParameter("task", selectedTaskName)
+                .addQueryParameter("task", this.chosenMyTask)
                 .build()
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
 
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() ->
                         ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     String body = Objects.requireNonNull(response.body()).string();
@@ -523,7 +521,7 @@ public class AdminDashboardController {
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
-                                (info.getTaskName(), info.getGraphName()));
+                                (AdminDashboardController.this.chosenMyTask, info.getGraphName()));
                     }
                     else
                     {
@@ -531,7 +529,7 @@ public class AdminDashboardController {
                         System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
-                                (info.getTaskName(), info.getGraphName()));
+                                (AdminDashboardController.this.chosenMyTask, info.getGraphName()));
                     }
                 }
                 else

@@ -168,40 +168,40 @@ public class WorkerTasksController {
             this.pausedTasks.remove(this.chosenTask);
             this.PauseButton.setText("Pause");
         }
-//        sendPausedTaskRequestToServer();
+        sendPausedTaskRequestToServer();
     }
 
-//    private void sendPausedTaskRequestToServer() {
-//        String finalUrl = HttpUrl
-//                .parse(Patterns.TASK_UPDATE)
-//                .newBuilder()
-//                .addQueryParameter("worker-pause-task", WorkerTasksController.this.chosenTask)
-//                .addQueryParameter("username", this.userName)
-//                .build()
-//                .toString();
-//
-//        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
-//            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                Platform.runLater(() -> System.out.println("Failure on connecting to server for worker-pause-task!"));
-//            }
-//
-//            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-//                String message = response.header("message");
-//
-//                if (response.code() >= 200 && response.code() < 300) //Success
-//                    Platform.runLater(() ->
-//                    {
-//                        WorkerTasksController.this.PauseButton.setText("Resume");
-//                        ShowPopUp(Alert.AlertType.INFORMATION, "Task paused!", null, message);
-//                    });
-//                else //Failure
-//                    Platform.runLater(() -> System.out.println(message));
-//
-//                WorkerTasksController.this.PauseButton.setDisable(false);
-//                Objects.requireNonNull(response.body()).close();
-//            }
-//        });
-//    }
+    private void sendPausedTaskRequestToServer() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("worker-pause-task", WorkerTasksController.this.chosenTask)
+                .addQueryParameter("username", this.userName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for worker-pause-task!"));
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                    {
+                        WorkerTasksController.this.PauseButton.setText("Resume");
+                        ShowPopUp(Alert.AlertType.INFORMATION, "Task paused!", null, message);
+                    });
+                else //Failure
+                    Platform.runLater(() -> System.out.println(message));
+
+                WorkerTasksController.this.PauseButton.setDisable(false);
+                Objects.requireNonNull(response.body()).close();
+            }
+        });
+    }
 
     public void LeaveTaskButtonPressed(ActionEvent actionEvent) {
         setTaskControlButtons(true);

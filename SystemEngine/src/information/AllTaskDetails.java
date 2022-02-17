@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class AllTaskDetails {
     //------------------------------------------------ Members ---------------------------------------------------//
@@ -33,6 +32,7 @@ public class AllTaskDetails {
     private String taskLogHistory;
     private final Map<String, String> targetLogHistory; //(target, log)
     private Integer finishedTargets;
+    private Set<String> targetsToExecute;
 
     //--------------------------------------------- Constructors ------------------------------------------------//
     public AllTaskDetails(String taskName, String originalTaskName, String creatorName, Set<String> targetsToExecute,
@@ -50,6 +50,7 @@ public class AllTaskDetails {
         this.targetStatusSet = targetStatusSet;
         this.targetLogHistory = new HashMap<>();
         this.copies = 0;
+        this.targetsToExecute = new HashSet<>(targetsToExecute);
 
         for (String currTarget : targetsToExecute)
             this.targetLogHistory.put(currTarget.toLowerCase(), "");
@@ -86,12 +87,19 @@ public class AllTaskDetails {
         this.totalPayment = this.singlePayment * this.targets;
     }
 
-    public synchronized AllTaskDetails createCopyForIncremental(Graph graph, String log) {
+    public synchronized AllTaskDetails createCopy(Graph graph, String log, Boolean isIncremental) {
         String copiedTaskName = this.taskName + ++this.copies;
+        Set<TaskTargetCurrentInfoTableItem> copiedTargetsStatusSet = new HashSet<>();
+        int i = 1;
 
-        Set<TaskTargetCurrentInfoTableItem> copiedTargetsStatusSet = this.targetStatusSet.stream()
-                .filter(p -> !p.getResultStatus().equalsIgnoreCase("Success")
-                        || !p.getResultStatus().equalsIgnoreCase("Warning")).collect(Collectors.toSet());
+        for(TaskTargetCurrentInfoTableItem curr : this.targetStatusSet)
+        {
+            if(!isIncremental) //Copy all set as is, just reset result and runtime statuses
+                copiedTargetsStatusSet.add(new TaskTargetCurrentInfoTableItem(curr.getTargetNumber(), curr.getTargetName(), "Undefined", "Undefined"));
+            else if(!curr.getResultStatus().equalsIgnoreCase("Success")
+                    && !curr.getResultStatus().equalsIgnoreCase("Warning")) //Incremental - copy only those who failed the last run
+                copiedTargetsStatusSet.add(new TaskTargetCurrentInfoTableItem(i++, curr.getTargetName(), "Undefined", "Undefined"));
+        }
 
         Set<String> copiedTargetsToExecute = new HashSet<>();
         for(TaskTargetCurrentInfoTableItem curr : copiedTargetsStatusSet)
@@ -174,6 +182,10 @@ public class AllTaskDetails {
 
     public String getTargetLogHistory(String targetName) {
         return this.targetLogHistory.get(targetName.toLowerCase());
+    }
+
+    public Set<String> getTargetsToExecute() {
+        return this.targetsToExecute;
     }
 
     //------------------------------------------------ Setters ---------------------------------------------------//

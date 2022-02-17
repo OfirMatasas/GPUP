@@ -37,7 +37,7 @@ public class TasksManager {
         this.simulationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
         this.listOfAllTasks.add(newTask.getTaskName());
 
-        addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
+        addUserTask(newTask.getTaskCreator(), newTask.getTaskName());
 
         createNewAllTaskDetailsItem(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
                 newTask.getTargetsToExecute(), "Simulation", graphsManager);
@@ -49,7 +49,7 @@ public class TasksManager {
         this.compilationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
         this.listOfAllTasks.add(newTask.getTaskName());
 
-        addUserTask(newTask.getTaskCreator().toLowerCase(), newTask.getTaskName());
+        addUserTask(newTask.getTaskCreator(), newTask.getTaskName());
 
         createNewAllTaskDetailsItem(newTask.getTaskName(), newTask.getGraphName(), newTask.getTaskCreator(),
                 newTask.getTargetsToExecute(), "Compilation", graphsManager);
@@ -74,7 +74,7 @@ public class TasksManager {
                     TargetSummary.RuntimeStatus.Undefined.toString(),
                     TargetSummary.ResultStatus.Undefined.toString()));
         }
-        addUserTask(creatorName.toLowerCase(), taskName);
+        addUserTask(creatorName, taskName);
 
         this.allTaskDetailsMap.put(taskName.toLowerCase(), new AllTaskDetails(taskName, taskName,
                 creatorName, targets, infoSet, taskType, graphsManager.getGraph(graphName),
@@ -82,10 +82,12 @@ public class TasksManager {
     }
     //---------------------------------------------------- Admins -----------------------------------------------//
     public synchronized void addUserTask(String taskCreator, String taskName) {
-        if(!this.adminsTasks.containsKey(taskCreator))
-            this.adminsTasks.put(taskCreator, new HashSet<>());
+        String taskCreatorLowerCase = taskCreator.toLowerCase();
 
-        this.adminsTasks.get(taskCreator).add(taskName);
+        if(!this.adminsTasks.containsKey(taskCreatorLowerCase))
+            this.adminsTasks.put(taskCreatorLowerCase, new HashSet<>());
+
+        this.adminsTasks.get(taskCreatorLowerCase).add(taskName);
     }
 
     //---------------------------------------------------- Workers ----------------------------------------------//
@@ -147,10 +149,10 @@ public class TasksManager {
         this.listOfActiveTasks.add(taskName);
 
         if(this.allTaskDetailsMap.get(taskNameLowerCase).getTaskType().equals("Simulation")) //Simulation task
-            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName),
+            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName), taskDetails.getTargetsToExecute(),
                     this.graphSummaryMap.get(taskNameLowerCase), this.simulationTasksMap.get(originalTaskNameLowerCase), null, false);
         else //Compilation task
-            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName),
+            taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName), taskDetails.getTargetsToExecute(),
                     this.graphSummaryMap.get(taskNameLowerCase),
                     null, this.compilationTasksMap.get(originalTaskNameLowerCase), false);
 
@@ -241,7 +243,7 @@ public class TasksManager {
 
     //----------------------------------------------------- Checks -----------------------------------------------//
     public synchronized boolean isTaskExists(String taskName) {
-        return this.simulationTasksMap.containsKey(taskName.toLowerCase()) || this.compilationTasksMap.containsKey(taskName.toLowerCase());
+        return getAllTasksList().contains(taskName);
     }
 
     public synchronized boolean isSimulationTask(String taskName) { return this.simulationTasksMap.containsKey(taskName.toLowerCase()); }
@@ -321,6 +323,10 @@ public class TasksManager {
         return getWorkerTaskHistory(workerName).get(taskName.toLowerCase()).getTargets();
     }
 
+    public String getOriginalTaskName(String taskName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getOriginalTaskName();
+    }
+
     //----------------------------------------------------- Methods -----------------------------------------------//
     public synchronized void removeTaskThread(String taskName) {
         this.taskThreadMap.remove(taskName.toLowerCase());
@@ -338,23 +344,29 @@ public class TasksManager {
         removeAllWorkersRegistrationsFromTask(taskName);
     }
 
-    public synchronized String copyAndRunTask(String taskName, GraphsManager graphsManager) {
+    public synchronized String copyTask(String taskName, GraphsManager graphsManager, Boolean isIncremental) {
         String taskNameLowerCase = taskName.toLowerCase();
         String copiedTaskName;
         AllTaskDetails originalTaskDetails = this.allTaskDetailsMap.get(taskNameLowerCase);
         Graph graph = graphsManager.getGraph(originalTaskDetails.getGraphName());
 
-        AllTaskDetails copiedTaskDetails = originalTaskDetails.createCopyForIncremental
+        AllTaskDetails copiedTaskDetails = originalTaskDetails.createCopy
                 (graph, "A new copy of " + taskName + " was made by " + originalTaskDetails.getUploader() +
-                        " on " + this.formatter.format(new Date()));
+                        " on " + this.formatter.format(new Date()), isIncremental);
 
         copiedTaskName = copiedTaskDetails.getTaskName();
-        this.listOfAllTasks.add(copiedTaskName);
-
-        addUserTask(copiedTaskDetails.getUploader().toLowerCase(), copiedTaskName);
+        this.allTaskDetailsMap.put(copiedTaskName.toLowerCase(), copiedTaskDetails);
 
         createNewGraphSummary(copiedTaskName, copiedTaskDetails.getGraphName(), graphsManager);
 
+        this.listOfAllTasks.add(copiedTaskName);
+        addUserTask(copiedTaskDetails.getUploader(), copiedTaskName);
+
         return copiedTaskDetails.getTaskName();
+    }
+
+    public boolean isTaskRunBefore(String taskName) {
+        String taskStatus = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus();
+        return taskStatus.equalsIgnoreCase("Finished") || taskStatus.equalsIgnoreCase("Stopped");
     }
 }

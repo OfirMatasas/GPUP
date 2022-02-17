@@ -16,7 +16,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import summaries.GraphSummary;
@@ -31,14 +34,14 @@ import java.util.Set;
 
 public class AdminTaskControlController {
 
-    private final ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
+    private ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
     private Integer finishedTargets = 0;
     private Integer totalTargets = 1;
     private String taskName = null;
     private String userName;
     private Boolean isTaskRunning = false;
     private TaskControlPullerThread taskControlPullerThread;
-    private Boolean isFirstRun = true;
+    private Boolean isFirstRun;
     
     @FXML private ScrollPane scrollPane;
     @FXML private BorderPane taskBorderPane;
@@ -80,8 +83,8 @@ public class AdminTaskControlController {
 
                 if(AdminTaskControlController.this.isTaskRunning)
                     getTargetCurrentInfo();
-                else
-                    checkForIncremental();
+//                else
+//                    checkForIncremental();
             }
         }
 
@@ -119,7 +122,10 @@ public class AdminTaskControlController {
                                 updateProgressBar(updatedInfo);
                             });
                     } else //Failure
-                        Platform.runLater(() -> System.out.println("couldn't pull task update from server!"));
+                    {
+                        String message = response.header("message");
+                        Platform.runLater(() -> System.out.println("couldn't pull task update from server!\n" + message));
+                    }
 
                     Objects.requireNonNull(response.body()).close();
                 }
@@ -417,10 +423,14 @@ public class AdminTaskControlController {
     @FXML void runPressed(ActionEvent event) {
         this.runButton.setDisable(true);
         disablePauseAndStopButtons(true);
-        sendRequestToStartTask();
+
+        if(this.fromScratchRadioButton.isSelected()) //From scratch
+            sendRequestToStartTaskFromScratch();
+        else //Incremental
+            sendRequestToStartTaskIncrementally();
     }
 
-    private void sendRequestToStartTask() {
+    private void sendRequestToStartTaskFromScratch() {
         String finalUrl = HttpUrl
                 .parse(Patterns.TASK_UPDATE)
                 .newBuilder()
@@ -441,10 +451,16 @@ public class AdminTaskControlController {
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
+                String returnedTaskName = response.header("task-name");
 
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
                     {
+                        if(returnedTaskName != null){
+                            AdminTaskControlController.this.taskName = returnedTaskName;
+                            AdminTaskControlController.this.TaskNameTextField.setText(returnedTaskName);
+                        }
+
                         AdminTaskControlController.this.isTaskRunning = true;
                         disablePauseAndStopButtons(false);
                         turnOnProgressBar();
@@ -460,6 +476,64 @@ public class AdminTaskControlController {
                 Objects.requireNonNull(response.body()).close();
             }
         });
+    }
+
+    private void sendRequestToStartTaskIncrementally() {
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK_UPDATE)
+                .newBuilder()
+                .addQueryParameter("start-task", AdminTaskControlController.this.taskName)
+                .addQueryParameter("username", this.userName)
+                .addQueryParameter("incremental", "yes")
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() ->
+                {
+                    AdminTaskControlController.this.runButton.setDisable(false);
+                    ShowPopup(Alert.AlertType.ERROR, "Failure In Run Task Incrementally!", null,
+                            "Failure on connecting to server for running incrementally!");
+                });
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                String message = response.header("message");
+                String returnedTaskName = response.header("task-name");
+
+                if (response.code() >= 200 && response.code() < 300) //Success
+                    Platform.runLater(() ->
+                    {
+                        if(returnedTaskName != null)
+                        {
+                            AdminTaskControlController.this.taskName = returnedTaskName;
+                            AdminTaskControlController.this.TaskNameTextField.setText(returnedTaskName);
+                        }
+
+                        AdminTaskControlController.this.isTaskRunning = true;
+                        disablePauseAndStopButtons(false);
+                        turnOnProgressBar();
+                        resetTaskTargetDetailsTableView();
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Copied Successfully!", null, message);
+                    });
+                else //Failure
+                    Platform.runLater(() ->
+                    {
+                        AdminTaskControlController.this.runButton.setDisable(false);
+                        ShowPopup(Alert.AlertType.ERROR, "Failure In Copying Task!", null, message);
+                    });
+
+                Objects.requireNonNull(response.body()).close();
+            }
+        });
+    }
+
+    private void resetTaskTargetDetailsTableView() {
+        this.taskTargetStatusesList = FXCollections.observableArrayList(this.taskTargetStatusesList
+                .filtered(p -> p.getResultStatus().equalsIgnoreCase("Success") ||
+                    p.getResultStatus().equalsIgnoreCase("Warning")));
+        this.taskTargetDetailsTableView.setItems(this.taskTargetStatusesList);
     }
 
     @FXML void pausePressed(ActionEvent event) {
@@ -572,7 +646,10 @@ public class AdminTaskControlController {
 
                 if (response.code() >= 200 && response.code() < 300) //Success
                     Platform.runLater(() ->
-                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message));
+                    {
+                        AdminTaskControlController.this.runButton.setDisable(false);
+                        ShowPopup(Alert.AlertType.INFORMATION, "Task Stopped Successfully!", null, message);
+                    });
                 else //Failure
                     Platform.runLater(() ->
                     {

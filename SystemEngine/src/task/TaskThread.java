@@ -5,7 +5,6 @@ import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -38,7 +37,7 @@ public class TaskThread extends Thread {
     private Boolean statusChanged;
 
     //-----------------------------------------------Constructor----------------------------------------------------//
-    public TaskThread(String taskName, Graph graph, GraphSummary graphSummary, SimulationTaskInformation simulationTask,
+    public TaskThread(String taskName, Graph graph, Set<String> targetsSet, GraphSummary graphSummary, SimulationTaskInformation simulationTask,
                       CompilationTaskInformation compilationTask, Boolean incremental) {
         this.taskName = taskName;
         this.graph = graph;
@@ -46,17 +45,16 @@ public class TaskThread extends Thread {
         this.compilationTask = compilationTask;
         this.graphSummary = graphSummary;
         this.incremental = incremental;
+        this.targetsSet = targetsSet;
 
-        if(simulationTask != null) //Simulation task
+        if(this.simulationTask != null) //Simulation task
         {
             this.taskType = TaskType.Simulation;
-            this.targetsSet = new HashSet<>(simulationTask.getTargetsToExecute());
-            this.creator = simulationTask.getTaskCreator();
+            this.creator = this.simulationTask.getTaskCreator();
         }
         else //Compilation task
         {
             this.taskType = TaskType.Compilation;
-            this.targetsSet = new HashSet<>(compilationTask.getTargetsToExecute());
             this.creator = compilationTask.getTaskCreator();
         }
 

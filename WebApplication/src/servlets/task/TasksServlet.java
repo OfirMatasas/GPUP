@@ -61,17 +61,18 @@ public class TasksServlet extends HttpServlet {
         if(tasksManager.isTaskExists(taskName)) //The task exists in the system
         {
             String infoAsString;
+            String taskOriginalName = tasksManager.getOriginalTaskName(taskName);
 
-            if(tasksManager.isSimulationTask(taskName)) //Requesting for simulation task
+            if(tasksManager.isSimulationTask(taskOriginalName)) //Requesting for simulation task
             {
-                SimulationTaskInformation simulationInfo = tasksManager.getSimulationTaskInformation(taskName);
+                SimulationTaskInformation simulationInfo = tasksManager.getSimulationTaskInformation(taskOriginalName);
                 infoAsString = new Gson().toJson(simulationInfo, SimulationTaskInformation.class);
 
                 resp.addHeader("task-type", "simulation");
             }
             else  //Requesting for compilation task
             {
-                CompilationTaskInformation compilationInfo = tasksManager.getCompilationTaskInformation(taskName);
+                CompilationTaskInformation compilationInfo = tasksManager.getCompilationTaskInformation(taskOriginalName);
                 infoAsString = new Gson().toJson(compilationInfo, CompilationTaskInformation.class);
 
                 resp.addHeader("task-type", "compilation");
@@ -103,12 +104,13 @@ public class TasksServlet extends HttpServlet {
 
     private void returnTargetToExecuteToWorker(HttpServletResponse resp, TasksManager tasksManager, String taskName, String workerName) throws IOException {
         String parametersAsString;
+        String originalTaskName = tasksManager.getOriginalTaskName(taskName);
 
         if(!tasksManager.isTaskRunning(taskName)) //Task not running
             responseMessageAndCode(resp, "Task not running at the moment.", HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        else if(tasksManager.isSimulationTask(taskName))  //Simulation task
+        else if(tasksManager.isSimulationTask(originalTaskName))  //Simulation task
         {
-            SimulationTaskInformation taskInfo = tasksManager.getSimulationTaskInformation(taskName);
+            SimulationTaskInformation taskInfo = tasksManager.getSimulationTaskInformation(originalTaskName);
             String targetName = tasksManager.getTaskThread(taskName).getWaitingTargetToExecute();
 
             if(targetName != null) //Returning target to execute
@@ -126,7 +128,7 @@ public class TasksServlet extends HttpServlet {
         }
         else if(tasksManager.isCompilationTask(taskName))//Compilation task
         {
-            CompilationTaskInformation taskInfo = tasksManager.getCompilationTaskInformation(taskName);
+            CompilationTaskInformation taskInfo = tasksManager.getCompilationTaskInformation(originalTaskName);
             String targetName = taskInfo.getTargetToExecute();
 
             if(targetName != null) //Returning target to execute
@@ -154,8 +156,8 @@ public class TasksServlet extends HttpServlet {
             doPostSimulation(req, resp, tasksManager, graphsManager);
         else if(req.getHeader("compilation") != null) //Uploaded compilation task
             doPostCompilation(req, resp, tasksManager, graphsManager);
-        else if(req.getParameter("rerun-task") != null)
-            doPostRerunTask(req, resp, tasksManager);
+//        else if(req.getParameter("rerun-task") != null)
+//            doPostRerunTask(req, resp, tasksManager);
         else //invalid header for uploading new task to system
             responseMessageAndCode(resp, "Error in uploading task to server!", HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -182,20 +184,20 @@ public class TasksServlet extends HttpServlet {
             responseMessageAndCode(resp, "The task " + newTaskInfo.getTaskName() + " already exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void doPostRerunTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
-        String taskName = req.getParameter("rerun-task");
-        String newTaskName;
-
-        if(tasksManager.isTaskExists(taskName))
-        {
-            newTaskName = tasksManager.copyAndRunTask(taskName, ServletUtils.getGraphsManager(getServletContext()));
-            resp.addHeader("taskName", newTaskName);
-            responseMessageAndCode(resp, "The task " + taskName + " was copied to " + newTaskName +
-                    " and successfully started!", HttpServletResponse.SC_ACCEPTED);
-        }
-        else
-            responseMessageAndCode(resp, "The task " + taskName + " not exists!", HttpServletResponse.SC_BAD_REQUEST);
-    }
+//    private void doPostRerunTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+//        String taskName = req.getParameter("rerun-task");
+//        String newTaskName;
+//
+//        if(tasksManager.isTaskExists(taskName))
+//        {
+//            newTaskName = tasksManager.copyAndRunTask(taskName, ServletUtils.getGraphsManager(getServletContext()));
+//            resp.addHeader("taskName", newTaskName);
+//            responseMessageAndCode(resp, "The task " + taskName + " was copied to " + newTaskName +
+//                    " and successfully started!", HttpServletResponse.SC_ACCEPTED);
+//        }
+//        else
+//            responseMessageAndCode(resp, "The task " + taskName + " not exists!", HttpServletResponse.SC_BAD_REQUEST);
+//    }
 
     private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {
         resp.addHeader("message", message);

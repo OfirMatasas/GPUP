@@ -9,6 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import managers.GraphsManager;
 import managers.TasksManager;
 import managers.UserManager;
 import tableItems.WorkerChosenTargetInformationTableItem;
@@ -114,7 +115,15 @@ public class TaskUpdateServlet extends HttpServlet {
         int index = fullName.indexOf(" - ");
 
         if(index != -1)
-            return fullName.substring(0, index);
+        {
+            TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
+            String taskNameFromChosenTarget =  fullName.substring(0, index);
+            AllTaskDetails taskDetails = tasksManager.getAllTaskDetails(taskNameFromChosenTarget);
+
+            if(taskDetails != null)
+                return taskDetails.getTaskName();
+            return null;
+        }
         return null;
     }
 
@@ -187,18 +196,52 @@ public class TaskUpdateServlet extends HttpServlet {
     }
 
     private void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
-        String taskName;
-        String userName;
-        taskName = req.getParameter("start-task");
-        userName = req.getParameter("username");
+        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        String taskName = req.getParameter("start-task");
+        String userName = req.getParameter("username");
 
-        if(tasksManager.isTaskExists(taskName))
-        {
-            tasksManager.startTask(taskName, userName, ServletUtils.getGraphsManager(getServletContext()));
-            responseMessageAndCode(resp, "The task " + taskName + " started successfully!", HttpServletResponse.SC_ACCEPTED);
-        }
-        else
+        if(!tasksManager.isTaskExists(taskName)) //Invalid task name
             responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(userName == null || !userManager.isUserExists(userName)) //Invalid username
+            responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(!userManager.isAdmin(userName)) //Invalid access
+            responseMessageAndCode(resp, "Only admins can run tasks!", HttpServletResponse.SC_BAD_REQUEST);
+        else //Valid Parameters for running task
+        {
+            GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
+            boolean runBefore = tasksManager.isTaskRunBefore(taskName);
+
+            if(req.getParameter("incremental") != null) //Incremental requested
+            {
+                if(runBefore) //Valid incremental request - creating a copy of the task and run incrementally
+                {
+                    String copiedTaskName = tasksManager.copyTask(taskName, graphsManager, true);
+                    tasksManager.startTask(copiedTaskName, userName, graphsManager);
+                    resp.addHeader("task-name", copiedTaskName);
+                    responseMessageAndCode(resp, "The task " + taskName + " was copied successfully under " + copiedTaskName + " and started!", HttpServletResponse.SC_ACCEPTED);
+                }
+                else //Invalid incremental request - first time running the task cannot be incrementally
+                    responseMessageAndCode(resp, "The task " + taskName + " cannot run incrementally for no previous runs!", HttpServletResponse.SC_BAD_REQUEST);
+            }
+            else //Run from scratch
+            {
+                String message;
+                if(runBefore) //Need to make a copy of the task
+                {
+                    String copiedTaskName = tasksManager.copyTask(taskName, graphsManager, false);
+                    tasksManager.startTask(copiedTaskName, userName, graphsManager);
+                    resp.addHeader("task-name", copiedTaskName);
+                    message = "The task " + taskName + " was copied successfully under " + copiedTaskName + " and started!";
+                }
+                else //First time running the task
+                {
+                    tasksManager.startTask(taskName, userName, ServletUtils.getGraphsManager(getServletContext()));
+                    resp.addHeader("task-name", taskName);
+                    message = "The task " + taskName + " started successfully!";
+                }
+                responseMessageAndCode(resp, message, HttpServletResponse.SC_ACCEPTED);
+            }
+        }
     }
 
     private void pauseTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {

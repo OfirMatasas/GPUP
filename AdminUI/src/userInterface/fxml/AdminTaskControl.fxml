@@ -55,12 +55,12 @@
                          <Pane fx:id="leftPane">
                            <HBox alignment="CENTER" layoutX="30.0" layoutY="225.0" prefHeight="40.0" prefWidth="207.0">
                               <children>
-                                 <RadioButton fx:id="fromScratchRadioButton" disable="true" mnemonicParsing="false" selected="true" text="From Scratch">
+                                 <RadioButton fx:id="fromScratchRadioButton" mnemonicParsing="false" selected="true" text="From Scratch">
                                     <toggleGroup>
                                        <ToggleGroup fx:id="scratchOrIncremental" />
                                     </toggleGroup>
                                  </RadioButton>
-                                 <RadioButton fx:id="incrementalRadioButton" disable="true" mnemonicParsing="false" text="Incremental" toggleGroup="$scratchOrIncremental">
+                                 <RadioButton fx:id="incrementalRadioButton" mnemonicParsing="false" text="Incremental" toggleGroup="$scratchOrIncremental">
                                     <HBox.margin>
                                        <Insets left="15.0" />
                                     </HBox.margin>
