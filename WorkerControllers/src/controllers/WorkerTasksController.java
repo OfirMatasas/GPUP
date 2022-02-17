@@ -24,9 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
-import task.CompilationParameters;
-import task.SimulationThread;
-import task.WorkerSimulationParameters;
+import task.*;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -566,14 +564,12 @@ public class WorkerTasksController {
 
         private void executeSimulationTarget(String body) {
             WorkerSimulationParameters parameters = new Gson().fromJson(body, WorkerSimulationParameters.class);
-
             WorkerTasksController.this.executor.execute(new SimulationThread(parameters));
         }
 
         private void executeCompilationTarget(String body) {
-            CompilationParameters parameters = new Gson().fromJson(body, CompilationParameters.class);
-
-//            WorkerTasksController.this.executor.execute(new CompilationThread(parameters));
+            WorkerCompilationParameters parameters = new Gson().fromJson(body, WorkerCompilationParameters.class);
+            WorkerTasksController.this.executor.execute(new CompilationThread(parameters));
         }
     }
 

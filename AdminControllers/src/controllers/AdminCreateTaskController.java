@@ -2,7 +2,6 @@ package controllers;
 
 import com.google.gson.Gson;
 import http.HttpClientUtil;
-import tableItems.AdminCreateTaskTargetsTableItem;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,13 +14,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
+import tableItems.AdminCreateTaskTargetsTableItem;
 import target.Graph;
 import target.Target;
 import task.*;
@@ -48,8 +47,8 @@ public class AdminCreateTaskController implements Initializable{
     private final String COMPILATION ="Compilation";
     private final ObservableList<AdminCreateTaskTargetsTableItem> taskTargetDetailsList = FXCollections.observableArrayList();
     private ObservableList<String> allTargetsList;
-    private File sourceCodeDirectory = null;
-    private File outputDirectory = null;
+    private String sourceCodeDirectoryPath = null;
+    private String outputDirectoryPath = null;
     private TaskThread.TaskType taskType;
 
     @FXML private ScrollPane scrollPane;
@@ -129,10 +128,10 @@ public class AdminCreateTaskController implements Initializable{
         else if(this.taskSelection.getValue().equals("Compilation"))
         {
             Integer pricing = this.graph.getTasksPricesMap().get(Graph.TaskType.Compilation);
-            CompilationParameters parameters = new CompilationParameters(new File("null"), new File("null"));
+            CompilationParameters parameters = new CompilationParameters(this.sourceCodeDirectoryPath, this.outputDirectoryPath);
 
             CompilationTaskInformation taskInfo = new CompilationTaskInformation(taskName, uploader, graphName, targets, pricing, parameters);
-            taskTypeRequest = "Simulation";
+            taskTypeRequest = "Compilation";
             stringObject = this.gson.toJson(taskInfo);
         }
 
@@ -172,7 +171,7 @@ public class AdminCreateTaskController implements Initializable{
 
         if(this.taskType.equals(TaskThread.TaskType.Compilation))
         {
-            if(this.outputDirectory != null && this.sourceCodeDirectory != null)
+            if(this.outputDirectoryPath != null && this.sourceCodeDirectoryPath != null)
                 this.CreateNewTaskButton.setDisable(false);
         }
         else
@@ -225,7 +224,7 @@ public class AdminCreateTaskController implements Initializable{
         }
         else //Compilation task
         {
-            if(this.sourceCodeDirectory == null || this.outputDirectory == null)
+            if(this.sourceCodeDirectoryPath == null || this.outputDirectoryPath == null)
                 errorMessage = "Please choose directories for compilation task!";
         }
 
@@ -264,23 +263,25 @@ public class AdminCreateTaskController implements Initializable{
         }
     }
 
-    @FXML void chooseOutputDirectory(ActionEvent event) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        this.outputDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
-        if(this.outputDirectory != null)
-            this.outputPathLabel.setText("Output Path : " + this.outputDirectory.getAbsolutePath());
-
-//        this.runButton.setDisable(this.sourceCodeDirectory == null || this.outputDirectory == null || this.taskTargetDetailsTableView.getItems().isEmpty());
-    }
-
     @FXML void chooseSourceCodeDirectoryToCompile(ActionEvent event)
     {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        this.sourceCodeDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
-        if(this.sourceCodeDirectory != null)
-            this.sourceCodePathLabel.setText("Source Code Path : " + this.sourceCodeDirectory.getAbsolutePath());
+        File sourceCodeDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
+        if(sourceCodeDirectory != null)
+        {
+            this.sourceCodeDirectoryPath = sourceCodeDirectory.toPath().toString();
+            this.sourceCodePathLabel.setText("Source Code Path: " + sourceCodeDirectory.getAbsolutePath());
+        }
+    }
 
-//        this.runButton.setDisable(this.sourceCodeDirectory == null || this.outputDirectory == null || this.taskTargetDetailsTableView.getItems().isEmpty());
+    @FXML void chooseOutputDirectory(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File outputDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
+        if(outputDirectory != null)
+        {
+            this.outputDirectoryPath = outputDirectory.toPath().toString();
+            this.outputPathLabel.setText("Output Path: " + outputDirectory.getAbsolutePath());
+        }
     }
 
     @FXML void deselectAllPressed(ActionEvent event) {
@@ -354,14 +355,11 @@ public class AdminCreateTaskController implements Initializable{
         this.taskDetailsOnTargetTextArea.setDisable(!flag);
     }
 
-
     private void disableButtons(Boolean flag) {
-
         this.targetSelection.setDisable(flag);
         this.affectedTargets.setDisable(flag);
         this.currentSelectedTargetLabel.setDisable(flag);
         this.currentSelectedTargetListView.setDisable(flag);
-
         this.selectAllButton.setDisable(flag);
     }
 
@@ -403,10 +401,7 @@ public class AdminCreateTaskController implements Initializable{
             taskParameters.setSuccessRate(successRate);
             taskParameters.setSuccessWithWarnings(successWithWarnings);
         }
-        catch(Exception ex)
-        {
-            ShowPopup("Invalid input in parameters.", "Invalid Parameters");
-        }
+        catch(Exception ex) {ShowPopup("Invalid input in parameters.", "Invalid Parameters");}
 
         return taskParameters;
     }

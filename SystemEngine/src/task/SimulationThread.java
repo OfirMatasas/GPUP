@@ -61,7 +61,7 @@ public class SimulationThread implements Runnable
     }
 
     private void checkForSuccess(Instant timeStarted) {
-        String resultStatus;
+        String resultStatus, log;
         double result = Math.random();
         if(Math.random() <= this.targetParameters.getSuccessRate())
             resultStatus = result <= this.targetParameters.getSuccessWithWarnings() ?
@@ -71,7 +71,10 @@ public class SimulationThread implements Runnable
 
         Duration sleepingTime = Duration.between(timeStarted, Instant.now());
 
-        this.updates.taskFinished(resultStatus, sleepingTime.toMillis());
-        this.updates.setSleepingTime(sleepingTime.toMillis());
+        log = "The worker " + this.workerName + " just finished working on target " + this.targetName + "!\n";
+        log += "The result: " + resultStatus + ", total time: " + sleepingTime.toMillis() + "m/s";
+
+        this.updates.setWorkingTime(sleepingTime.toMillis());
+        this.updates.taskFinished(resultStatus, log);
     }
 }

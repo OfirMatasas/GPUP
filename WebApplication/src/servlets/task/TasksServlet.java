@@ -115,12 +115,15 @@ public class TasksServlet extends HttpServlet {
 
             if(targetName != null) //Returning target to execute
             {
+                tasksManager.addTargetToWorkerTaskHistory(workerName, taskName, targetName);
+
                 WorkerSimulationParameters parameters = new WorkerSimulationParameters(taskName, targetName, workerName,
                         taskInfo.getSimulationParameters());
-                tasksManager.addTargetToWorkerTaskHistory(workerName, taskName, targetName);
+
                 parametersAsString = new Gson().toJson(parameters, WorkerSimulationParameters.class);
                 resp.getWriter().write(parametersAsString);
                 resp.addHeader("task-type", "Simulation");
+
                 responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
             }
             else //No targets to execute at the moment
@@ -130,15 +133,20 @@ public class TasksServlet extends HttpServlet {
         else if(tasksManager.isCompilationTask(taskName))//Compilation task
         {
             CompilationTaskInformation taskInfo = tasksManager.getCompilationTaskInformation(originalTaskName);
-            String targetName = taskInfo.getTargetToExecute();
+            String targetName = tasksManager.getTaskThread(taskName).getWaitingTargetToExecute();
 
             if(targetName != null) //Returning target to execute
             {
+                tasksManager.addTargetToWorkerTaskHistory(workerName, taskName, targetName);
+
+                String FQN = ServletUtils.getGraphsManager(getServletContext()).getGraph(taskInfo.getGraphName()).getTarget(targetName).getFQN();
                 WorkerCompilationParameters parameters = new WorkerCompilationParameters(taskName, targetName, workerName,
-                        taskInfo.getCompilationParameters());
+                        taskInfo.getCompilationParameters(), FQN);
+
                 parametersAsString = new Gson().toJson(parameters, WorkerCompilationParameters.class);
                 resp.getWriter().write(parametersAsString);
                 resp.addHeader("task-type", "Compilation");
+
                 responseMessageAndCode(resp, "Pulled target successfully!", HttpServletResponse.SC_ACCEPTED);
             }
             else //No targets to execute at the moment
@@ -157,8 +165,6 @@ public class TasksServlet extends HttpServlet {
             doPostSimulation(req, resp, tasksManager, graphsManager);
         else if(req.getHeader("compilation") != null) //Uploaded compilation task
             doPostCompilation(req, resp, tasksManager, graphsManager);
-//        else if(req.getParameter("rerun-task") != null)
-//            doPostRerunTask(req, resp, tasksManager);
         else //invalid header for uploading new task to system
             responseMessageAndCode(resp, "Error in uploading task to server!", HttpServletResponse.SC_BAD_REQUEST);
     }

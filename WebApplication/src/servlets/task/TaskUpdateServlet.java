@@ -204,6 +204,8 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(!tasksManager.isTaskExists(taskName)) //Invalid task name
             responseMessageAndCode(resp, "The task " + taskName + " doesn't exist in the system!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(tasksManager.isTaskRunning(taskName))
+            responseMessageAndCode(resp, "The task " + taskName + " is already running!", HttpServletResponse.SC_BAD_REQUEST);
         else if(userName == null || !userManager.isUserExists(userName)) //Invalid username
             responseMessageAndCode(resp, "Invalid username!", HttpServletResponse.SC_BAD_REQUEST);
         else if(!userManager.isAdmin(userName)) //Invalid access

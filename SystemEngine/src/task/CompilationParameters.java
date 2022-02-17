@@ -1,21 +1,19 @@
 package task;
 
-import java.io.File;
-
 public class CompilationParameters {
-    private final File sourceCodeDirectory;
-    private final File outputDirectory;
+    private final String sourceCodeDirectoryPath;
+    private final String outputDirectoryPath;
 
-    public CompilationParameters(File sourceCodeDirectory, File outputDirectory) {
-        this.sourceCodeDirectory = sourceCodeDirectory;
-        this.outputDirectory = outputDirectory;
+    public CompilationParameters(String sourceCodeDirectoryPath, String outputDirectoryPath) {
+        this.sourceCodeDirectoryPath = sourceCodeDirectoryPath;
+        this.outputDirectoryPath = outputDirectoryPath;
     }
 
-    public File getSourceCodeDirectory() {
-        return this.sourceCodeDirectory;
+    public String getSourceCodeDirectoryPath() {
+        return this.sourceCodeDirectoryPath;
     }
 
-    public File getOutputDirectory() {
-        return this.outputDirectory;
+    public String getOutputDirectoryPath() {
+        return this.outputDirectoryPath;
     }
 }

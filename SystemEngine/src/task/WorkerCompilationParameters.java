@@ -5,12 +5,14 @@ public class WorkerCompilationParameters {
     private final String targetName;
     private final String workerName;
     private final CompilationParameters parameters;
+    private final String targetFQN;
 
-    public WorkerCompilationParameters(String taskName, String targetName, String workerName, CompilationParameters parameters) {
+    public WorkerCompilationParameters(String taskName, String targetName, String workerName, CompilationParameters parameters, String targetFQN) {
         this.taskName = taskName;
         this.targetName = targetName;
         this.workerName = workerName;
         this.parameters = parameters;
+        this.targetFQN = targetFQN;
     }
 
     public String getTaskName() {
@@ -27,5 +29,9 @@ public class WorkerCompilationParameters {
 
     public CompilationParameters getParameters() {
         return this.parameters;
+    }
+
+    public String getTargetFQN() {
+        return this.targetFQN;
     }
 }

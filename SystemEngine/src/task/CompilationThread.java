@@ -1,55 +1,52 @@
 package task;
 
-import summaries.GraphSummary;
-import summaries.TargetSummary;
-import target.Target;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 
 public class CompilationThread implements Runnable
 {
-    private final GraphSummary graphSummary;
-    private final Target target;
+    private final String taskName;
+    private final String workerName;
     private final String targetName;
-    private final CompilationParameters compilationParameters;
-    private final TaskOutput taskOutput;
+    private final CompilationParameters targetParameters;
+    private final String FQN;
+    private final ExecutedTargetUpdates updates;
 
-    public CompilationThread(Target target, GraphSummary graphSummary, CompilationParameters compilationParameters, TaskOutput taskOutput) {
-
-        this.graphSummary = graphSummary;
-        this.target = target;
-        this.targetName = target.getTargetName();
-        this.compilationParameters = compilationParameters;
-        this.taskOutput = taskOutput;
+    public CompilationThread(WorkerCompilationParameters taskInfo) {
+        this.targetParameters = taskInfo.getParameters();
+        this.targetName = taskInfo.getTargetName();
+        this.workerName = taskInfo.getWorkerName();
+        this.taskName = taskInfo.getTaskName();
+        this.FQN = taskInfo.getTargetFQN();
+        this.updates = new ExecutedTargetUpdates(this.taskName, this.targetName, this.workerName);
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(this.targetName + " Thread");
-        TargetSummary targetSummary = this.graphSummary.getTargetsSummaryMap().get(this.targetName);
-        TargetSummary.ResultStatus resultStatus;
-        File sourceCodeDirectory = this.compilationParameters.getSourceCodeDirectory();
-        String outputDirectoryPath = this.compilationParameters.getOutputDirectory().getAbsolutePath();
-        String FQN = this.target.getFQN();
-        String userGive;
 
-        if(FQN.contains(sourceCodeDirectory.getName()))
-            userGive = sourceCodeDirectory + "/" + FQN.substring(FQN.indexOf(sourceCodeDirectory.getName())
+        File sourceCodeDirectory = new File(this.targetParameters.getSourceCodeDirectoryPath());
+        String outputDirectoryPath = this.targetParameters.getOutputDirectoryPath();
+        Instant timeStarted;
+        Duration workingTime;
+        String userGive, resultStatus, errorLog = "", log;
+
+        if(this.FQN.contains(sourceCodeDirectory.getName()))
+            userGive = sourceCodeDirectory + "/" + this.FQN.substring(this.FQN.indexOf(sourceCodeDirectory.getName())
                     + sourceCodeDirectory.getName().length() + 1).replace('.','/').concat(".java");
         else
-            userGive = (sourceCodeDirectory + "/" + FQN).replace('.','/').concat(".java");
+            userGive = (sourceCodeDirectory + "/" + this.FQN).replace('.','/').concat(".java");
 
         String[] c = {"javac", "-d", outputDirectoryPath, "-cp", outputDirectoryPath, userGive};
-        String failureCause = "";
 
         //Starting the clock
-        targetSummary.startTheClock();
-        this.taskOutput.outputStartingCompilationTaskOnTarget(this.targetName, this.compilationParameters);
-        this.graphSummary.UpdateTargetSummary(this.target, TargetSummary.ResultStatus.Undefined, TargetSummary.RuntimeStatus.InProcess);
+        this.updates.taskStarted();
+        timeStarted = Instant.now();
 
         Process process = null;
         try {
@@ -63,21 +60,31 @@ public class CompilationThread implements Runnable
             }
         }
         finally {
+            workingTime = Duration.between(timeStarted, Instant.now());
+            log = "The worker " + this.workerName + " just finished working on target " + this.targetName + "!\n";
             if(Objects.requireNonNull(process).exitValue() != 0) //Failure
             {
-                resultStatus = TargetSummary.ResultStatus.Failure;
+                resultStatus = "Failure";
+                log +="The result: " + resultStatus + ", cause:\n";
                 try {
-                    failureCause = new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
+                    log += new BufferedReader(new InputStreamReader(process.getErrorStream())).readLine() + "\n";
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                log += "Total time: " + workingTime.toMillis() + "m/s";
             }
             else //Success
-                resultStatus = TargetSummary.ResultStatus.Success;
+            {
+                resultStatus = "Success";
+                log += "The result: " + resultStatus + ", total time: " + workingTime.toMillis() + "m/s";
+            }
 
-            targetSummary.stopTheClock();
-            this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished);
-            this.taskOutput.outputEndingCompilationTaskOnTarget(this.targetName, failureCause);
+            this.updates.taskFinished(resultStatus, log);
+            this.updates.setWorkingTime(workingTime.toMillis());
+
+//            targetSummary.stopTheClock();
+//            this.graphSummary.UpdateTargetSummary(this.target, resultStatus, TargetSummary.RuntimeStatus.Finished);
+//            this.taskOutput.outputEndingCompilationTaskOnTarget(this.targetName, failureCause);
         }
     }
 }

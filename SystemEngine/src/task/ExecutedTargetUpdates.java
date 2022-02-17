@@ -16,7 +16,7 @@ public class ExecutedTargetUpdates {
     private final String targetName;
     private String runtimeStatus;
     private String resultStatus;
-    private long sleepingTime;
+    private long workingTime;
     private String taskLog;
 
     public ExecutedTargetUpdates(String taskName, String targetName, String username) {
@@ -52,8 +52,8 @@ public class ExecutedTargetUpdates {
         return this.username;
     }
 
-    public long getTotalTimeSlept() {
-        return this.sleepingTime;
+    public long getTotalWorkingTime() {
+        return this.workingTime;
     }
 
     //------------------------------------------------- Setters -------------------------------------------------//
@@ -66,7 +66,7 @@ public class ExecutedTargetUpdates {
         this.resultStatus = resultStatus;
     }
 
-    public void setSleepingTime(long sleepingTime) { this.sleepingTime = sleepingTime; }
+    public void setWorkingTime(long workingTime) { this.workingTime = workingTime; }
 
     //------------------------------------------------- Methods -------------------------------------------------//
     public void taskStarted() {
@@ -81,9 +81,8 @@ public class ExecutedTargetUpdates {
         updateServerOnUpdate();
     }
 
-    public void taskFinished(String resultStatus, long time) {
-        this.taskLog = "The worker " + this.username + " just finished working on target " + this.targetName + "!\n";
-        this.taskLog += "The result: " + resultStatus + ", total time: " + time + "m/s" ;
+    public void taskFinished(String resultStatus, String log) {
+        this.taskLog = log;
 
         setResultStatus(resultStatus);
         setRuntimeStatus("Finished");
