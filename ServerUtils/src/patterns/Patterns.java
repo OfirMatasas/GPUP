@@ -1,9 +1,13 @@
 package patterns;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Patterns
 {
     //----------------------------------------Main--------------------------------------//
     public static String LOCAL_HOST = "http://localhost:8080/WebApplication_Web_exploded";
+    public static Path WORKING_DIRECTORY_PATH = Paths.get("c:\\gpup-working-dir");
     //----------------------------------------Login--------------------------------------//
     public static String LOGIN = LOCAL_HOST + "/user/login";
     public static String USER_LIST = LOCAL_HOST + "/user/list";

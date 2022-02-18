@@ -102,34 +102,31 @@ public class TargetSummary implements Serializable
     }
 
     public void setResultStatus(ResultStatus resultStatus) {this.resultStatus = resultStatus; }
+
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void startTheClock()
     {
         this.timeStarted = Instant.now();
     }
 
-    public void stopTheClock()
-    {
+    public void stopTheClock() {
         Instant timeEnded = Instant.now();
         this.actualTime = Duration.between(this.timeStarted, timeEnded);
     }
 
-    public void addNewSkippedByTarget(String skippedByTargetName)
-    {
+    public void addNewSkippedByTarget(String skippedByTargetName) {
         if(this.skippedByTargets == null)
             this.skippedByTargets = new HashSet<>();
 
         this.skippedByTargets.add(skippedByTargetName);
     }
 
-    public void startWaitingTime()
-    {
+    public void startWaitingTime() {
         this.totalPausingTime = Duration.ZERO;
         this.waitingTimeStarted = Instant.now();
     }
 
-    public Duration currentWaitingTime()
-    {
+    public Duration currentWaitingTime() {
         Instant timeNow = Instant.now();
 
         if(this.pausingTime != null)
@@ -143,8 +140,7 @@ public class TargetSummary implements Serializable
         this.pausingTime = Instant.now();
     }
 
-    public void continuingWaitingTime()
-    {
+    public void continuingWaitingTime() {
         Instant resumeTime = Instant.now();
 
         this.totalPausingTime = Duration.between(this.pausingTime, resumeTime).plus(this.totalPausingTime);
@@ -155,8 +151,7 @@ public class TargetSummary implements Serializable
         return this.totalPausingTime;
     }
 
-    public void startProcessingTime()
-    {
+    public void startProcessingTime() {
         //stopping waiting time , the target is in processing time
         Instant waitingTimeEnded = Instant.now();
         this.waitingTime = Duration.between(this.waitingTimeStarted, waitingTimeEnded);
@@ -165,22 +160,19 @@ public class TargetSummary implements Serializable
         this.processingTimeStarted = Instant.now();
     }
 
-    public Duration currentProcessingTime()
-    {
+    public Duration currentProcessingTime() {
         Instant timeNow = Instant.now();
         return Duration.between(this.processingTimeStarted, timeNow);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    @Override public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TargetSummary that = (TargetSummary) o;
         return Objects.equals(this.targetName, that.targetName);
     }
 
-    @Override
-    public int hashCode() {
+    @Override public int hashCode() {
         return Objects.hash(this.targetName);
     }
 }

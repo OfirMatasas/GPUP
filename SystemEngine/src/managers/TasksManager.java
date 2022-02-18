@@ -160,11 +160,12 @@ public class TasksManager {
 
         if(this.allTaskDetailsMap.get(taskNameLowerCase).getTaskType().equals("Simulation")) //Simulation task
             taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName), taskDetails.getTargetsToExecute(),
-                    this.graphSummaryMap.get(taskNameLowerCase), this.simulationTasksMap.get(originalTaskNameLowerCase), null, false);
+                    this.graphSummaryMap.get(taskNameLowerCase), this.simulationTasksMap.get(originalTaskNameLowerCase),
+                    null, false, taskDetails);
         else //Compilation task
             taskThread = new TaskThread(taskName, graphsManager.getGraph(graphName), taskDetails.getTargetsToExecute(),
                     this.graphSummaryMap.get(taskNameLowerCase),
-                    null, this.compilationTasksMap.get(originalTaskNameLowerCase), false);
+                    null, this.compilationTasksMap.get(originalTaskNameLowerCase), false, taskDetails);
 
         taskThread.start();
         this.taskThreadMap.put(taskNameLowerCase, taskThread);
@@ -415,5 +416,14 @@ public class TasksManager {
 
             removeWorkerRegistrationFromTask(currTask, workerName);
         }
+    }
+
+    public boolean isTargetExist(String taskName, String targetName) {
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).getTargetsToExecute().contains(targetName);
+    }
+
+    public String getTargetRunningInfo(String taskName, Target target) {
+        Set<String> runningTarget = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTargetsToExecute();
+        return this.graphSummaryMap.get(taskName.toLowerCase()).getRunningTargetInfo(target, runningTarget);
     }
 }

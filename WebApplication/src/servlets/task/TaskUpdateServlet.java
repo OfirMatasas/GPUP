@@ -14,6 +14,7 @@ import managers.TasksManager;
 import managers.UserManager;
 import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
+import target.Target;
 import task.ExecutedTargetUpdates;
 import utils.ServletUtils;
 
@@ -42,8 +43,29 @@ public class TaskUpdateServlet extends HttpServlet {
             returnWorkerChosenTask(req, resp, tasksManager, userManager);
         else if(req.getParameter("chosen-target") != null)
             returnWorkerChosenTarget(req, resp, tasksManager, userManager);
+        else if(req.getParameter("admin-target-info") != null)
+            returnAdminTargetInfo(req, resp, tasksManager);
         else //Invalid request
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnAdminTargetInfo(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+        String targetName = req.getParameter("admin-target-info");
+        String taskName = req.getParameter("task");
+
+        if(taskName == null || !tasksManager.isTaskExists(taskName)) //Invalid task name
+            responseMessageAndCode(resp, "Invalid task name!", HttpServletResponse.SC_BAD_REQUEST);
+        else if(targetName == null || !tasksManager.isTargetExist(taskName, targetName)) //Invalid target name
+            responseMessageAndCode(resp, "Invalid target name!", HttpServletResponse.SC_BAD_REQUEST);
+        else //Valid request
+        {
+            String graphName = tasksManager.getAllTaskDetails(taskName).getGraphName();
+            Target target = ServletUtils.getGraphsManager(getServletContext()).getGraph(graphName).getTarget(targetName);
+
+            String targetInfo = tasksManager.getTargetRunningInfo(taskName, target);
+            resp.getWriter().write(new Gson().toJson(targetInfo, String.class));
+            responseMessageAndCode(resp, "Valid request for target running information!", HttpServletResponse.SC_ACCEPTED);
+        }
     }
 
     private void returnWorkerExecutedTargets(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, UserManager userManager) throws IOException {

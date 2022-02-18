@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import managers.GraphsManager;
+import patterns.Patterns;
 import resources.checker.ResourceChecker;
 import target.Graph;
 import utils.ServletUtils;
@@ -28,7 +29,6 @@ import java.util.Map;
 public class GraphsServlet extends HttpServlet {
     //-------------------------------------------- Members ---------------------------------------//
     public Gson gson = new Gson();
-    public static Path WORKING_DIRECTORY_PATH = Paths.get("c:\\gpup-working-dir");
     private final Map<String, DashboardGraphDetailsDTO> graphDetailsDTOMap = new HashMap<>();
 
     //-------------------------------------------- Dummies ---------------------------------------//
@@ -81,11 +81,11 @@ public class GraphsServlet extends HttpServlet {
         try {
             synchronized (creatingDirectory)
             {
-                if(!Files.exists(WORKING_DIRECTORY_PATH))
+                if(!Files.exists(Patterns.WORKING_DIRECTORY_PATH))
                     createWorkingDirectory();
             }
 
-            Path filePath = Paths.get(WORKING_DIRECTORY_PATH + "\\CurrentGraph.xml");
+            Path filePath = Paths.get(Patterns.WORKING_DIRECTORY_PATH + "\\CurrentGraph.xml");
 
             if(Files.exists(filePath))
                 Files.delete(filePath);
@@ -121,6 +121,6 @@ public class GraphsServlet extends HttpServlet {
     }
 
     private void createWorkingDirectory() throws IOException {
-        Files.createDirectory(WORKING_DIRECTORY_PATH);
+        Files.createDirectory(Patterns.WORKING_DIRECTORY_PATH);
     }
 }

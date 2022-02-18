@@ -238,4 +238,11 @@ public class AllTaskDetails {
     public void addToTargetLogHistory(String targetName, String addedInfo) {
         this.targetLogHistory.put(targetName.toLowerCase(), this.targetLogHistory.get(targetName.toLowerCase()) + addedInfo + "\n");
     }
+
+    public void updateTargetRuntimeStatus(String targetName, String runtimeStatus)
+    {
+        this.targetStatusSet.stream().
+                filter(p -> p.getTargetName().equalsIgnoreCase(targetName)).
+                findFirst().ifPresent(p -> p.setRuntimeStatus(runtimeStatus));
+    }
 }

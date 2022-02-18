@@ -1,5 +1,6 @@
 package task;
 
+import information.AllTaskDetails;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import target.Graph;
@@ -26,6 +27,7 @@ public class TaskThread extends Thread {
     private final String creator;
     private final Boolean incremental;
     private final String taskName;
+    private final AllTaskDetails taskDetails;
 
     //Local use
     private final BlockingQueue<String> targetsList;
@@ -39,7 +41,7 @@ public class TaskThread extends Thread {
 
     //-----------------------------------------------Constructor----------------------------------------------------//
     public TaskThread(String taskName, Graph graph, Set<String> targetsSet, GraphSummary graphSummary, SimulationTaskInformation simulationTask,
-                      CompilationTaskInformation compilationTask, Boolean incremental) {
+                      CompilationTaskInformation compilationTask, Boolean incremental, AllTaskDetails taskDetails) {
         this.taskName = taskName;
         this.graph = graph;
         this.simulationTask = simulationTask;
@@ -47,6 +49,7 @@ public class TaskThread extends Thread {
         this.graphSummary = graphSummary;
         this.incremental = incremental;
         this.targetsSet = targetsSet;
+        this.taskDetails = taskDetails;
 
         if(this.simulationTask != null) //Simulation task
         {
@@ -80,7 +83,7 @@ public class TaskThread extends Thread {
     public void run()
     {
         Thread.currentThread().setName(this.taskName);
-        String currTargetName = null;
+        String currTargetName;
         Target currTarget;
         taskPreparations();
         Boolean currentlyPaused = false, finished = false;
@@ -124,11 +127,20 @@ public class TaskThread extends Thread {
             }
 
             if(this.graphSummary.isSkipped(currTargetName)) //The target is skipped
+            {
+                this.taskDetails.updateTargetRuntimeStatus(currTargetName, "Skipped");
                 continue;
+            }
             else if(this.graphSummary.isTargetReadyToRun(currTarget, this.targetsSet)) //The target is ready to run!
+            {
+                this.taskDetails.updateTargetRuntimeStatus(currTargetName, "Waiting");
                 this.waitingTargetsList.add(currTargetName);
+            }
             else //The target is not ready to run yet, but not skipped either
+            {
+                this.taskDetails.updateTargetRuntimeStatus(currTargetName, "Frozen");
                 this.targetsList.add(currTargetName);
+            }
 
             currentlyPaused = getPaused();
             finished = this.targetsSet.size() == this.finishedTargets.size();
