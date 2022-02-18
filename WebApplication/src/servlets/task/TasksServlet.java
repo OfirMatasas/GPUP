@@ -191,21 +191,6 @@ public class TasksServlet extends HttpServlet {
             responseMessageAndCode(resp, "The task " + newTaskInfo.getTaskName() + " already exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-//    private void doPostRerunTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
-//        String taskName = req.getParameter("rerun-task");
-//        String newTaskName;
-//
-//        if(tasksManager.isTaskExists(taskName))
-//        {
-//            newTaskName = tasksManager.copyAndRunTask(taskName, ServletUtils.getGraphsManager(getServletContext()));
-//            resp.addHeader("taskName", newTaskName);
-//            responseMessageAndCode(resp, "The task " + taskName + " was copied to " + newTaskName +
-//                    " and successfully started!", HttpServletResponse.SC_ACCEPTED);
-//        }
-//        else
-//            responseMessageAndCode(resp, "The task " + taskName + " not exists!", HttpServletResponse.SC_BAD_REQUEST);
-//    }
-
     private void responseMessageAndCode(HttpServletResponse resp, String message, int code) {
         resp.addHeader("message", message);
         resp.setStatus(code);

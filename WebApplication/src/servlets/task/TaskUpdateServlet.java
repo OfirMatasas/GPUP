@@ -45,8 +45,24 @@ public class TaskUpdateServlet extends HttpServlet {
             returnWorkerChosenTarget(req, resp, tasksManager, userManager);
         else if(req.getParameter("admin-target-info") != null)
             returnAdminTargetInfo(req, resp, tasksManager);
+        else if(req.getParameter("task-log") != null)
+            returnAdminTaskLog(req, resp, tasksManager);
         else //Invalid request
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void returnAdminTaskLog(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+        String taskName = req.getParameter("task-log");
+        String log;
+
+        if(tasksManager.isTaskExists(taskName)) //Valid task name
+        {
+            log = tasksManager.getAllTaskDetails(taskName).getTaskLogHistory();
+            resp.getWriter().write(new Gson().toJson(log, String.class));
+            responseMessageAndCode(resp, taskName + " log pulled successfully!", HttpServletResponse.SC_ACCEPTED);
+        }
+        else //Invalid task name
+            responseMessageAndCode(resp, taskName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private void returnAdminTargetInfo(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
@@ -74,13 +90,19 @@ public class TaskUpdateServlet extends HttpServlet {
         if(userManager.isUserExists(workerName)) //Valid worker name
         {
             Map<String, WorkerTaskHistory> workerTasksHistory = tasksManager.getWorkerTaskHistory(workerName);
-            Set<String> executedTargets = new HashSet<>();
-            for(String currTask : workerTasksHistory.keySet())
-                for(String currTarget : workerTasksHistory.get(currTask).getTargets())
-                    executedTargets.add(currTask + " - " + currTarget);
 
-            resp.getWriter().write(new Gson().toJson(executedTargets, Set.class));
-            responseMessageAndCode(resp, "Successfully pulled worker's executed targets!", HttpServletResponse.SC_ACCEPTED);
+            if(workerTasksHistory != null)
+            {
+                Set<String> executedTargets = new HashSet<>();
+                for(String currTask : workerTasksHistory.keySet())
+                    for(String currTarget : workerTasksHistory.get(currTask).getTargets())
+                        executedTargets.add(currTask + " - " + currTarget);
+
+                resp.getWriter().write(new Gson().toJson(executedTargets, Set.class));
+                responseMessageAndCode(resp, "Successfully pulled worker's executed targets!", HttpServletResponse.SC_ACCEPTED);
+            }
+            else
+                responseMessageAndCode(resp, "The worker " + workerName + " is not registered to any task!", HttpServletResponse.SC_BAD_REQUEST);
         }
         else //Worker not exists
             responseMessageAndCode(resp, "The worker " + workerName + " not exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
@@ -356,10 +378,21 @@ public class TaskUpdateServlet extends HttpServlet {
     }
 
     private synchronized void taskFinished(String taskName, TasksManager tasksManager) {
+        tasksManager.getGraphSummary(taskName).stopTheClock();
         tasksManager.removeTaskThread(taskName);
         tasksManager.removeTaskFromActiveList(taskName);
         tasksManager.removeAllWorkersRegistrationsFromTask(taskName);
         tasksManager.removeWorkersWithNoHistoryFromTask(taskName);
+
+        String summary = createTaskSummary(taskName, tasksManager);
+        System.out.println(summary);
+    }
+
+    private synchronized String createTaskSummary(String taskName, TasksManager tasksManager) {
+        String summary = tasksManager.getTaskSummary(taskName);
+        tasksManager.getAllTaskDetails(taskName).addToTaskLogHistory(summary);
+
+        return summary;
     }
 
     //------------------------------------------------- General -------------------------------------------------//

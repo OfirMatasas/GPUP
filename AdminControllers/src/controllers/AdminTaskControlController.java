@@ -67,6 +67,8 @@ public class AdminTaskControlController {
 
                 if(AdminTaskControlController.this.isTaskRunning)
                     getTargetCurrentInfo();
+                else
+                    getLogInfo();
 
                 sendChosenTargetRunningInfoRequestToServer();
             }
@@ -115,7 +117,7 @@ public class AdminTaskControlController {
                 private void refreshInfo(AllTaskDetails updatedInfo) {
                     updateTargetStatusesTable(updatedInfo);
                     updateNumberOfWorkers(updatedInfo);
-                    updateTaskLogHistory(updatedInfo);
+                    updateTaskLogHistory(updatedInfo.getTaskLogHistory());
                     checkIfTaskIsOver(updatedInfo);
                 }
 
@@ -130,14 +132,6 @@ public class AdminTaskControlController {
 
                 private void updateNumberOfWorkers(AllTaskDetails updatedInfo) {
                     AdminTaskControlController.this.NumberOfWorkersTextField.setText(updatedInfo.getRegisteredWorkersNumber().toString());
-                }
-
-                private void updateTaskLogHistory(AllTaskDetails updatedInfo) {
-                    if(updatedInfo.getTaskLogHistory() != null)
-                    {
-                        AdminTaskControlController.this.logTextArea.clear();
-                        AdminTaskControlController.this.logTextArea.appendText(updatedInfo.getTaskLogHistory());
-                    }
                 }
 
                 private void checkIfTaskIsOver(AllTaskDetails updatedInfo) {
@@ -155,6 +149,47 @@ public class AdminTaskControlController {
                     }
                 }
             });
+        }
+
+        private void getLogInfo() {
+            String finalUrl = HttpUrl
+                    .parse(Patterns.TASK_UPDATE)
+                    .newBuilder()
+                    .addQueryParameter("task-log", AdminTaskControlController.this.taskName)
+                    .build()
+                    .toString();
+
+            HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    Platform.runLater(() -> System.out.println("Failure on connecting to server for task-log!"));
+                }
+
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    if (response.code() >= 200 && response.code() < 300) //Success
+                    {
+                        String body = Objects.requireNonNull(response.body()).string();
+                        Platform.runLater(() ->
+                        {
+                            String updatedLog = new Gson().fromJson(body, String.class);
+                            updateTaskLogHistory(updatedLog);
+                        });
+                    } else //Failure
+                    {
+                        String message = response.header("message");
+                        Platform.runLater(() -> System.out.println("couldn't pull task update from server!\n" + message));
+                    }
+
+                    Objects.requireNonNull(response.body()).close();
+                }
+            });
+        }
+
+        private void updateTaskLogHistory(String updatedLog) {
+            if(!AdminTaskControlController.this.logTextArea.getText().equals(updatedLog))
+            {
+                AdminTaskControlController.this.logTextArea.clear();
+                AdminTaskControlController.this.logTextArea.appendText(updatedLog);
+            }
         }
 
         private void updateProgressBar(AllTaskDetails updatedInfo) {
@@ -281,7 +316,6 @@ public class AdminTaskControlController {
                 Objects.requireNonNull(response.body()).close();
             }
         });
-
     }
 
     private void enableTargetInfoTextArea(boolean flag) {

@@ -101,8 +101,7 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
-    public synchronized void removeWorkerRegistrationFromAllTasks(String workerName)
-    {
+    public synchronized void removeWorkerRegistrationFromAllTasks(String workerName) {
         Set<String> registeredTasks = this.workerRegisteredTasksMap.get(workerName.toLowerCase());
         for(String currTask : registeredTasks)
             removeWorkerRegistrationFromTask(currTask, workerName);
@@ -116,8 +115,7 @@ public class TasksManager {
                 this.allTaskDetailsMap.get(taskNameLow).getSinglePayment());
     }
 
-    public synchronized void addTargetToWorkerTaskHistory(String workerName, String taskName, String targetName)
-    {
+    public synchronized void addTargetToWorkerTaskHistory(String workerName, String taskName, String targetName) {
         this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase()).newWorkedOnTarget(targetName);
     }
 
@@ -168,11 +166,13 @@ public class TasksManager {
                     null, this.compilationTasksMap.get(originalTaskNameLowerCase), false, taskDetails);
 
         taskThread.start();
+        this.graphSummaryMap.get(taskNameLowerCase).startTheClock();
         this.taskThreadMap.put(taskNameLowerCase, taskThread);
     }
 
     public synchronized void pauseTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).pauseTheTask();
+        this.graphSummaryMap.get(taskName.toLowerCase()).pauseTheClock();
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
 
@@ -182,6 +182,7 @@ public class TasksManager {
 
     public synchronized void resumeTask(String taskName, String adminName) {
         this.taskThreadMap.get(taskName.toLowerCase()).continueTheTask();
+        this.graphSummaryMap.get(taskName.toLowerCase()).continueTheClock();
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
 
@@ -193,6 +194,7 @@ public class TasksManager {
         this.taskThreadMap.get(taskName.toLowerCase()).stopTheTask();
         this.listOfActiveTasks.remove(taskName);
         this.workerRegisteredTasksMap.remove(taskName.toLowerCase());
+        this.graphSummaryMap.get(taskName.toLowerCase()).stopTheClock();
 
         AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
 
@@ -338,8 +340,7 @@ public class TasksManager {
         return this.allTaskDetailsMap.get(taskName.toLowerCase()).getOriginalTaskName();
     }
 
-    public String getWorkerChosenTargetStatus(String taskName, String targetName)
-    {
+    public String getWorkerChosenTargetStatus(String taskName, String targetName) {
         TargetSummary targetSummary = this.graphSummaryMap.get(taskName.toLowerCase()).getTargetsSummaryMap().get(targetName);
         TargetSummary.ResultStatus resultStatus = targetSummary.getResultStatus();
 
@@ -347,6 +348,11 @@ public class TasksManager {
             return "In process";
         else //Target finished
             return resultStatus.toString();
+    }
+
+    public GraphSummary getGraphSummary(String taskName)
+    {
+        return this.graphSummaryMap.get(taskName.toLowerCase());
     }
 
     //----------------------------------------------------- Methods -----------------------------------------------//
@@ -436,6 +442,42 @@ public class TasksManager {
 
     public boolean isIncrementalAnOption(String taskName) {
 
-        return allTaskDetailsMap.get(taskName.toLowerCase()).isIncrementalAnOption();
+        return this.allTaskDetailsMap.get(taskName.toLowerCase()).isIncrementalAnOption();
+    }
+
+    public String getTaskSummary(String taskName) {
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+        GraphSummary graphSummary = this.graphSummaryMap.get(taskName.toLowerCase());
+
+        String summary = taskName + " summary:\n";
+        graphSummary.calculateResults();
+        Map<TargetSummary.ResultStatus, Integer> results = graphSummary.getAllResultStatus();
+
+        summary += "Total time spent on task: " + graphSummary.getTime().toMillis() + "m/s\n";
+        summary += "Number of targets succeeded: " + results.get(TargetSummary.ResultStatus.Success) + "\n";
+        summary += "Number of targets succeeded with warnings: " + results.get(TargetSummary.ResultStatus.Warning) + "\n";
+        summary += "Number of targets failed: " + results.get(TargetSummary.ResultStatus.Failure) + "\n";
+        summary += "Number of targets skipped: " + graphSummary.getSkippedTargets() + "\n";
+
+        for(TargetSummary currentTarget : graphSummary.getTargetsSummaryMap().values())
+        {
+            if(currentTarget.isRunning())
+                summary += outputTargetTaskSummary(currentTarget.getTargetName(), graphSummary);
+        }
+
+        summary += "---------------------END OF SUMMARY---------------------\n";
+        return summary;
+    }
+
+    public String outputTargetTaskSummary(String targetName, GraphSummary graphSummary) {
+        TargetSummary targetSummary = graphSummary.getTargetsSummaryMap().get(targetName);
+        String targetOutput = "-----------------------\n";
+
+        targetOutput += "Target's name: " + targetName + "\n";
+        targetOutput += "Target's result status: ";
+        targetOutput += targetSummary.isSkipped() ?  "Skipped\n" : targetSummary.getResultStatus() + "\n";
+        targetOutput += !targetSummary.isSkipped() ? "Target's running time: " + targetSummary.getTime().toMillis() + "m/s\n" : "";
+
+        return targetOutput;
     }
 }

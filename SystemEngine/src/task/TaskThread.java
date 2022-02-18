@@ -79,18 +79,13 @@ public class TaskThread extends Thread {
     }
 
     //-------------------------------------------------Methods------------------------------------------------------//
-    @Override
-    public void run()
-    {
+    @Override public void run() {
         Thread.currentThread().setName(this.taskName);
         String currTargetName;
         Target currTarget;
         taskPreparations();
         Boolean currentlyPaused = false, finished = false;
 
-        //Starting task on graph
-//        this.taskOutput.printStartOfTaskOnGraph(this.taskType);
-        this.graphSummary.startTheClock();
 
         //Continuing polling targets while there are some left, and the "Stop" button didn't hit
         while(!finished && !getStopped())
@@ -146,12 +141,10 @@ public class TaskThread extends Thread {
             finished = this.targetsSet.size() == this.finishedTargets.size();
         }
 
-        this.graphSummary.stopTheClock();
 //        this.taskOutput.outputGraphSummary();
     }
 
-    private void taskPreparations()
-    {
+    private void taskPreparations() {
         TargetSummary currentTargetSummary;
         Target currentTarget;
         boolean targetFrozen;
@@ -266,8 +259,7 @@ public class TaskThread extends Thread {
         this.finishedTargets.add(targetName);
     }
 
-    public void returnTargetToWaitingList(String targetName)
-    {
+    public void returnTargetToWaitingList(String targetName) {
         this.sentTargetsList.remove(targetName);
         this.waitingTargetsList.add(targetName);
     }
