@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import managers.GraphsManager;
 import managers.TasksManager;
 import managers.UserManager;
+import myExceptions.OpeningFileCrash;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
 import task.WorkerCompilationParameters;
@@ -162,14 +163,26 @@ public class TasksServlet extends HttpServlet {
         GraphsManager graphsManager = ServletUtils.getGraphsManager(getServletContext());
 
         if(req.getHeader("simulation") != null) //Uploaded simulation task
-            doPostSimulation(req, resp, tasksManager, graphsManager);
+        {
+            try {
+                doPostSimulation(req, resp, tasksManager, graphsManager);
+            } catch (OpeningFileCrash e) {
+                e.printStackTrace();
+            }
+        }
         else if(req.getHeader("compilation") != null) //Uploaded compilation task
-            doPostCompilation(req, resp, tasksManager, graphsManager);
+        {
+            try {
+                doPostCompilation(req, resp, tasksManager, graphsManager);
+            } catch (OpeningFileCrash e) {
+                e.printStackTrace();
+            }
+        }
         else //invalid header for uploading new task to system
             responseMessageAndCode(resp, "Error in uploading task to server!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void doPostSimulation(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, GraphsManager graphsManager) throws IOException {
+    private void doPostSimulation(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, GraphsManager graphsManager) throws IOException, OpeningFileCrash {
         SimulationTaskInformation newTaskInfo = new Gson().fromJson(req.getReader(), SimulationTaskInformation.class);
         if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
         {
@@ -180,7 +193,7 @@ public class TasksServlet extends HttpServlet {
             responseMessageAndCode(resp, "The task " + newTaskInfo.getTaskName() + " already exists in the system!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void doPostCompilation(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, GraphsManager graphsManager) throws IOException {
+    private void doPostCompilation(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager, GraphsManager graphsManager) throws IOException, OpeningFileCrash {
         CompilationTaskInformation newTaskInfo = new Gson().fromJson(req.getReader(), CompilationTaskInformation.class);
         if(!tasksManager.isTaskExists(newTaskInfo.getTaskName())) //No task with the same name was found
         {

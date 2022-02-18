@@ -30,6 +30,7 @@ public class AllTaskDetails {
     private final Map<String, String> targetLogHistory; //(target, log)
     private Integer finishedTargets;
     private final Set<String> targetsToExecute;
+    private String directoryPath;
 
     //--------------------------------------------- Constructors ------------------------------------------------//
     public AllTaskDetails(String taskName, String originalTaskName, String creatorName, Set<String> targetsToExecute,
@@ -185,12 +186,18 @@ public class AllTaskDetails {
         return this.targetsToExecute;
     }
 
+    public String getDirectoryPath() { return this.directoryPath; }
+
     //------------------------------------------------ Setters ---------------------------------------------------//
     public synchronized void setTaskStatus(String status) {
         this.taskStatus = status;
     }
 
     public synchronized void setTaskName(String taskName) { this.taskName = taskName; }
+
+    public void setDirectoryPath(String directoryPath) {
+        this.directoryPath = directoryPath;
+    }
 
     //------------------------------------------------ Methods ---------------------------------------------------//
     public synchronized void updateInfo(GraphSummary graphSummary, String log) {

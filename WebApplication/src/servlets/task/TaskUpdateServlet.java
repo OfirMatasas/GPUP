@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import managers.GraphsManager;
 import managers.TasksManager;
 import managers.UserManager;
+import myExceptions.OpeningFileCrash;
 import tableItems.WorkerChosenTargetInformationTableItem;
 import tableItems.WorkerChosenTaskInformationTableItem;
 import target.Target;
@@ -228,7 +229,13 @@ public class TaskUpdateServlet extends HttpServlet {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
         if(req.getParameter("start-task") != null) //Requesting to start a task
-            startTask(req, resp, tasksManager);
+        {
+            try {
+                startTask(req, resp, tasksManager);
+            } catch (OpeningFileCrash e) {
+                e.printStackTrace();
+            }
+        }
         else if(req.getParameter("pause-task") != null)
             pauseTask(req, resp, tasksManager);
         else if(req.getParameter("resume-task") != null)
@@ -241,7 +248,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private synchronized void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+    private synchronized void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws OpeningFileCrash {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName = req.getParameter("start-task");
         String userName = req.getParameter("username");
@@ -366,6 +373,7 @@ public class TaskUpdateServlet extends HttpServlet {
             {
                 tasksManager.addCreditsToWorker(updates.getUsername(), taskName);
                 tasksManager.getTaskThread(taskName).taskOnTargetFinished(targetName);
+                tasksManager.writeTargetSummaryToFile(taskName, targetName);
             }
 
             if(tasksManager.isTaskFinished(taskName)) //The task is over
@@ -385,7 +393,7 @@ public class TaskUpdateServlet extends HttpServlet {
         tasksManager.removeWorkersWithNoHistoryFromTask(taskName);
 
         String summary = createTaskSummary(taskName, tasksManager);
-        System.out.println(summary);
+        tasksManager.writeTaskSummaryToFile(taskName);
     }
 
     private synchronized String createTaskSummary(String taskName, TasksManager tasksManager) {

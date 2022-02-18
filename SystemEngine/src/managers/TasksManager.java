@@ -2,6 +2,8 @@ package managers;
 
 import information.AllTaskDetails;
 import information.WorkerTaskHistory;
+import myExceptions.OpeningFileCrash;
+import patterns.Patterns;
 import summaries.GraphSummary;
 import summaries.TargetSummary;
 import tableItems.TaskTargetCurrentInfoTableItem;
@@ -12,6 +14,13 @@ import task.ExecutedTargetUpdates;
 import task.SimulationTaskInformation;
 import task.TaskThread;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -33,7 +42,7 @@ public class TasksManager {
     private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
 
     //--------------------------------------------------- New Tasks ----------------------------------------------//
-    public synchronized void addSimulationTask(SimulationTaskInformation newTask, GraphsManager graphsManager) {
+    public synchronized void addSimulationTask(SimulationTaskInformation newTask, GraphsManager graphsManager) throws OpeningFileCrash {
         this.simulationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
         this.listOfAllTasks.add(newTask.getTaskName());
 
@@ -43,9 +52,11 @@ public class TasksManager {
                 newTask.getTargetsToExecute(), "Simulation", graphsManager);
 
         createNewGraphSummary(newTask.getTaskName(), newTask.getGraphName(), graphsManager);
+
+        createNewDirectoryOfTaskLogs(newTask.getTaskName());
     }
 
-    public synchronized void addCompilationTask(CompilationTaskInformation newTask, GraphsManager graphsManager) {
+    public synchronized void addCompilationTask(CompilationTaskInformation newTask, GraphsManager graphsManager) throws OpeningFileCrash {
         this.compilationTasksMap.put(newTask.getTaskName().toLowerCase(), newTask);
         this.listOfAllTasks.add(newTask.getTaskName());
 
@@ -55,6 +66,8 @@ public class TasksManager {
                 newTask.getTargetsToExecute(), "Compilation", graphsManager);
 
         createNewGraphSummary(newTask.getTaskName(), newTask.getGraphName(), graphsManager);
+
+        createNewDirectoryOfTaskLogs(newTask.getTaskName());
     }
 
     private void createNewGraphSummary(String taskName, String graphName, GraphsManager graphsManager) {
@@ -254,6 +267,18 @@ public class TasksManager {
         return TargetSummary.ResultStatus.Undefined;
     }
 
+    public void createNewDirectoryOfTaskLogs(String taskName) throws OpeningFileCrash {
+        String directoryPath = Patterns.WORKING_DIRECTORY_PATH.toString() + "\\" + taskName + " - " + this.formatter.format(new Date());
+
+        Path path = Paths.get(directoryPath);
+        try {
+            Files.createDirectories(path);
+            this.allTaskDetailsMap.get(taskName.toLowerCase()).setDirectoryPath(directoryPath);
+        } catch (IOException e) {
+            throw new OpeningFileCrash(Paths.get(directoryPath));
+        }
+    }
+
     //----------------------------------------------------- Checks -----------------------------------------------//
     public synchronized boolean isTaskExists(String taskName) {
         return getAllTasksList().contains(taskName);
@@ -372,7 +397,7 @@ public class TasksManager {
         removeAllWorkersRegistrationsFromTask(taskName);
     }
 
-    public synchronized String copyTask(String taskName, GraphsManager graphsManager, Boolean isIncremental) {
+    public synchronized String copyTask(String taskName, GraphsManager graphsManager, Boolean isIncremental) throws OpeningFileCrash {
         String taskNameLowerCase = taskName.toLowerCase();
         String copiedTaskName;
         AllTaskDetails originalTaskDetails = this.allTaskDetailsMap.get(taskNameLowerCase);
@@ -391,6 +416,7 @@ public class TasksManager {
         }
 
         this.allTaskDetailsMap.put(copiedTaskName.toLowerCase(), copiedTaskDetails);
+        createNewDirectoryOfTaskLogs(copiedTaskName);
 
         createNewGraphSummary(copiedTaskName, copiedTaskDetails.getGraphName(), graphsManager);
 
@@ -479,5 +505,33 @@ public class TasksManager {
         targetOutput += !targetSummary.isSkipped() ? "Target's running time: " + targetSummary.getTime().toMillis() + "m/s\n" : "";
 
         return targetOutput;
+    }
+
+    public void writeTargetSummaryToFile(String taskName, String targetName) {
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+        String log = taskDetails.getTargetLogHistory(targetName);
+
+        createLogFile(taskName, targetName, log);
+    }
+
+    public void writeTaskSummaryToFile(String taskName) {
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+        String log = taskDetails.getTaskLogHistory();
+
+        createLogFile(taskName, taskName + " Task Summary", log);
+    }
+
+    public void createLogFile(String taskName, String fileName, String log) {
+        AllTaskDetails taskDetails = this.allTaskDetailsMap.get(taskName.toLowerCase());
+        String directoryPath = taskDetails.getDirectoryPath();
+        Path filePath = Paths.get(directoryPath + "\\" + fileName + ".log");
+
+        try {
+            Files.createFile(filePath);
+            OutputStream targetFile = new FileOutputStream(filePath.toString(), true);
+            targetFile.write(log.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
