@@ -32,7 +32,7 @@ public class AllTaskDetails {
     private String taskLogHistory;
     private final Map<String, String> targetLogHistory; //(target, log)
     private Integer finishedTargets;
-    private Set<String> targetsToExecute;
+    private final Set<String> targetsToExecute;
 
     //--------------------------------------------- Constructors ------------------------------------------------//
     public AllTaskDetails(String taskName, String originalTaskName, String creatorName, Set<String> targetsToExecute,

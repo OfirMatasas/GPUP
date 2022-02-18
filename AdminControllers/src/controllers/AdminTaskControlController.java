@@ -105,13 +105,11 @@ public class AdminTaskControlController {
                     .toString();
 
             HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Platform.runLater(() -> System.out.println("Failure on connecting to server for task-update!"));
                 }
 
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     if (response.code() >= 200 && response.code() < 300) //Success
                     {
                         String body = Objects.requireNonNull(response.body()).string();
@@ -560,13 +558,11 @@ public class AdminTaskControlController {
                 .toString();
 
         HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for pausing task!"));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
 
                 if (response.code() >= 200 && response.code() < 300) //Success
@@ -594,13 +590,11 @@ public class AdminTaskControlController {
                 .toString();
 
         HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for resuming task!"));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
 
                 if (response.code() >= 200 && response.code() < 300) //Success
@@ -635,13 +629,11 @@ public class AdminTaskControlController {
                 .toString();
 
         HttpClientUtil.runAsyncWithEmptyBody(finalUrl, "POST", new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for stopping task!"));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String message = response.header("message");
 
                 if (response.code() >= 200 && response.code() < 300) //Success

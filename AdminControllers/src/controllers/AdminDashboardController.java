@@ -202,13 +202,11 @@ public class AdminDashboardController {
                 .toString();
 
         HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() >= 200 && response.code() < 300) //Success
                 {
                     String body = Objects.requireNonNull(response.body()).string();

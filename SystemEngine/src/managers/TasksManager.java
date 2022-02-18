@@ -101,6 +101,13 @@ public class TasksManager {
         removeRegisteredTaskFromWorker(workerName, taskName);
     }
 
+    public synchronized void removeWorkerRegistrationFromAllTasks(String workerName)
+    {
+        Set<String> registeredTasks = this.workerRegisteredTasksMap.get(workerName.toLowerCase());
+        for(String currTask : registeredTasks)
+            removeWorkerRegistrationFromTask(currTask, workerName);
+    }
+
     public synchronized void addCreditsToWorker(String workerName, String taskName) {
         String workerNameLow = workerName.toLowerCase();
         String taskNameLow = taskName.toLowerCase();
@@ -382,5 +389,31 @@ public class TasksManager {
     public boolean isTaskRunBefore(String taskName) {
         String taskStatus = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTaskStatus();
         return taskStatus.equalsIgnoreCase("Finished") || taskStatus.equalsIgnoreCase("Stopped");
+    }
+
+    public void workerAbortedTasks(String workerName) {
+        String workerNameLowerCase = workerName.toLowerCase();
+        String currTaskLowerCase;
+        WorkerTaskHistory currTaskHistory;
+        Set<String> abortedTargets;
+        AllTaskDetails currTaskDetails;
+        String addedLog;
+
+        for(String currTask : this.workerRegisteredTasksMap.get(workerNameLowerCase)) //Scanning all worker's registered task, for targets he's working on
+        {
+            currTaskLowerCase = currTask.toLowerCase();
+            currTaskHistory = this.workersTasksHistoryMap.get(workerNameLowerCase).get(currTaskLowerCase);
+            abortedTargets = this.taskThreadMap.get(currTaskLowerCase).returnTargetsToWaitingList(currTaskHistory.getTargets());
+            currTaskDetails = this.allTaskDetailsMap.get(currTaskLowerCase);
+
+            for(String abortedTarget : abortedTargets) //Added abortion log for each aborted target
+            {
+                addedLog = "The worker " + workerName + " aborted the task on " + abortedTarget + " on " + this.formatter.format(new Date());
+                currTaskDetails.addToTargetLogHistory(abortedTarget, addedLog);
+                currTaskDetails.addToTaskLogHistory(addedLog);
+            }
+
+            removeWorkerRegistrationFromTask(currTask, workerName);
+        }
     }
 }

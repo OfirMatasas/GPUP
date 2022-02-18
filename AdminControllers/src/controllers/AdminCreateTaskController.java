@@ -415,8 +415,7 @@ public class AdminCreateTaskController implements Initializable{
         return currentRunTargets;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    @Override public void initialize(URL location, ResourceBundle resources) {
         ObservableList<String> taskSelectionList = FXCollections.observableArrayList(this.SIMULATION, this.COMPILATION);
         this.taskSelection.setItems(taskSelectionList);
 
@@ -538,8 +537,7 @@ public class AdminCreateTaskController implements Initializable{
     private void addListenersToButtons()
     {
         this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<AdminCreateTaskTargetsTableItem>() {
-            @Override
-            public void onChanged(Change<? extends AdminCreateTaskTargetsTableItem> c) {
+            @Override public void onChanged(Change<? extends AdminCreateTaskTargetsTableItem> c) {
                 AdminCreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
                 // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
             }
@@ -549,8 +547,7 @@ public class AdminCreateTaskController implements Initializable{
     private void addListenersForCompilationButtons() {
 
         this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 setVisibilityOfTask(AdminCreateTaskController.this.taskSelection.getValue().equals(AdminCreateTaskController.this.COMPILATION));
             }
         });

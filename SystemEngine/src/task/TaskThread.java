@@ -5,6 +5,7 @@ import summaries.TargetSummary;
 import target.Graph;
 import target.Target;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -221,6 +222,21 @@ public class TaskThread extends Thread {
     public String getCreator() { return this.creator; }
 
     public BlockingQueue<String> getWaitingTargetsList() { return this.targetsList; }
+
+    public synchronized Set<String> returnTargetsToWaitingList(Set<String> targets) {
+        Set<String> abortedTargets = new HashSet<>();
+
+        for(String currTarget : targets)
+        {
+            if(this.sentTargetsList.contains(currTarget))
+            {
+                abortedTargets.add(currTarget);
+                returnTargetToWaitingList(currTarget);
+            }
+        }
+
+        return abortedTargets;
+    }
 
     public synchronized String getWaitingTargetToExecute() {
         String targetName = null;

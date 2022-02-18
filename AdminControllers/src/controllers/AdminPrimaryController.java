@@ -160,14 +160,12 @@ public class AdminPrimaryController {
                 .build();
 
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 System.out.println("got graph response - failed");
                 Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in loading file!", null, e.getMessage()));
             }
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 System.out.println("got graph response - success");
                 if(response.code() >= 200 && response.code() < 300)
                     Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "File loaded successfully!", null, response.header("message")));
