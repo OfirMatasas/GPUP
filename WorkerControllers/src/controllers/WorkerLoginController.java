@@ -29,12 +29,11 @@ public class WorkerLoginController {
     private String username;
     private Integer numOfThreads;
     //----------------------------------------------- FXML Members -------------------------------------------------//
-    @FXML private Button loginButton;
     @FXML private Spinner ThreadSpinner;
     @FXML private TextField userNameTextField;
     @FXML private Label errorMessageLabel;
 
-    //------------------------------------------------- Settings ----------------------------------------------------//
+    //------------------------------------------------- Settings ---------------------------------------------------//
     @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         initializeThreadSpinner();
@@ -44,7 +43,9 @@ public class WorkerLoginController {
         this.ThreadSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 1));
     }
 
-    //------------------------------------------------ Logging in ---------------------------------------------------//
+    public void setPrimaryStage(Stage primaryStage) { this.primaryStage = primaryStage; }
+
+    //-------------------------------------------------- Login -----------------------------------------------------//
     @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
         if(keyEvent.getCode()== KeyCode.ENTER)
             loginButtonClicked(new ActionEvent());
@@ -111,12 +112,12 @@ public class WorkerLoginController {
         this.errorMessageLabel.setText(errorMessage);
     }
 
+    //--------------------------------------------------- Exit -----------------------------------------------------//
     @FXML private void quitButtonClicked(ActionEvent e) {
         Platform.exit();
     }
 
-    public void setPrimaryStage(Stage primaryStage) { this.primaryStage = primaryStage; }
-
+    //-------------------------------------------------- General ---------------------------------------------------//
     public String getCurrentUser() {
         return this.username;
     }

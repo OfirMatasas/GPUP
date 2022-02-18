@@ -377,6 +377,13 @@ public class TasksManager {
                         " on " + this.formatter.format(new Date()), isIncremental);
 
         copiedTaskName = copiedTaskDetails.getTaskName();
+
+        while(this.allTaskDetailsMap.containsKey(copiedTaskName.toLowerCase()))
+        {
+            copiedTaskName = originalTaskDetails.generateNewTaskName();
+            copiedTaskDetails.setTaskName(copiedTaskName);
+        }
+
         this.allTaskDetailsMap.put(copiedTaskName.toLowerCase(), copiedTaskDetails);
 
         createNewGraphSummary(copiedTaskName, copiedTaskDetails.getGraphName(), graphsManager);

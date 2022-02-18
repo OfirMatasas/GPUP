@@ -8,9 +8,6 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import target.Graph;
 import target.Target;
 
@@ -18,49 +15,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AdminConnectionsController {
-    //--------------------------------------------------Members-----------------------------------------------------//
+    //------------------------------------------------- Members ----------------------------------------------------//
     public ToggleGroup whatIfValue;
     private Graph graph = null;
     private final ObservableList<String> allTargetsList = FXCollections.observableArrayList();
     private final ObservableList<String> relationsList = FXCollections.observableArrayList();
-    private final ObservableList<String> destinationTargets = FXCollections.observableArrayList();
-    private String originTargetName;
-    private String relation;
 
-    @FXML private ScrollPane scrollPane;
-    @FXML private Pane pane;
-    @FXML private GridPane ConnectionsGridPane;
-    @FXML private AnchorPane TargetsConnectionAnchorPane;
-    @FXML private Label ShowConnectionLabel;
-    @FXML private Label OriginTargetLabel;
+    //----------------------------------------------- FXML Members --------------------------------------------------//
     @FXML private ChoiceBox<String> OriginTargetChoiceBox;
-    @FXML private Label RelationLabel;
     @FXML private ChoiceBox<String> RelationChoiceBox;
-    @FXML private Label DestinationTargetLabel;
     @FXML private ChoiceBox<String> DestinationTargetChoiceBox;
-    @FXML private ScrollPane ListViewScrollPane;
-    @FXML private AnchorPane CheckCirclesAnchorPane;
     @FXML private ChoiceBox<String> CircleTargetChoiceBox;
-    @FXML private Label CheckCirclesLabel;
-    @FXML private Label ChooseCheckCircleLabel;
     @FXML private ListView<String> CirclesListView;
-    @FXML private AnchorPane WhatIfAnchorPane;
     @FXML private ChoiceBox<String> WhatIfChoiceBox;
-    @FXML private Label WhatIFLabel;
-    @FXML private Label ChooseWhatIfTarget;
     @FXML private ListView<String> WhatIfListView;
     @FXML private RadioButton DependsOnRadioButton;
     @FXML private ListView<String> showConnectionBetweenListView;
-    @FXML private ToggleGroup What_If_Value;
     @FXML private RadioButton RequiredForRadioButton;
     @FXML private Button calculatePathsButton;
-    @FXML private AnchorPane connectionsAnchorPane;
-    @FXML private AnchorPane AnchorPane;
-
 
     //--------------------------------------------------Settings-----------------------------------------------------//
-    public void setGraph(Graph graph)
-    {
+    public void setGraph(Graph graph) {
         this.graph = graph;
 
         setAllTargetsList();
@@ -92,16 +67,14 @@ public class AdminConnectionsController {
         this.showConnectionBetweenListView.setItems(pathsTargets);
     }
 
-    private void setRelationChoiceBox()
-    {
+    private void setRelationChoiceBox() {
         this.relationsList.add(0, "Depends on");
         this.relationsList.add(1, "Required for");
 
         this.RelationChoiceBox.setItems(this.relationsList);
     }
 
-    private void setAllTargetsList()
-    {
+    private void setAllTargetsList() {
         int i = 0;
         for(Target currentTargetName : this.graph.getGraphTargets().values())
             this.allTargetsList.add(i++, currentTargetName.getTargetName());
@@ -114,8 +87,7 @@ public class AdminConnectionsController {
         this.WhatIfChoiceBox.setItems(sorted);
     }
 
-    private void SetTooltips()
-    {
+    private void SetTooltips() {
         this.OriginTargetChoiceBox.setTooltip(new Tooltip("Choose an origin target"));
         this.RelationChoiceBox.setTooltip(new Tooltip("Choose a relation between the targets"));
         this.DestinationTargetChoiceBox.setTooltip(new Tooltip("Choose a destination target"));
@@ -155,8 +127,7 @@ public class AdminConnectionsController {
 
     }
 
-    public void WhatIfTargetSelected(ActionEvent actionEvent)
-    {
+    public void WhatIfTargetSelected(ActionEvent actionEvent) {
         String selectedTarget = this.WhatIfChoiceBox.getValue();
         ObservableList<String> otherTargets = FXCollections.observableArrayList();
 

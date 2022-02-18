@@ -4,11 +4,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.Alert;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import paths.BodyComponentsPaths;
 
@@ -17,7 +15,7 @@ import java.net.URL;
 import java.util.Objects;
 
 public class WorkerPrimaryController {
-    //--------------------------------------------------Members-----------------------------------------------------//
+    //------------------------------------------------- Members ----------------------------------------------------//
     private Stage primaryStage;
     private WorkerDashboardController workerDashboardController = null;
     private WorkerTasksController workerTasksController = null;
@@ -26,29 +24,10 @@ public class WorkerPrimaryController {
     private String userName;
     private Integer numOfThreads;
 
-    @FXML private ToggleGroup templates;
+    //----------------------------------------------- FXML Members -------------------------------------------------//
     @FXML private BorderPane mainBorderPane;
-    @FXML private HBox HboxForLogo;
-    @FXML private ImageView PrimaryLogo;
-    @FXML private ScrollPane statusBar;
-    @FXML private Button DashboardButton;
-    @FXML private Button graphDetailsButton;
-    @FXML private Button connectionsButton;
-    @FXML private Button CreateTaskButton;
-    @FXML private Button TaskControlButton;
-    @FXML private Menu file;
-    @FXML private MenuItem loadXMLButton;
-    @FXML private MenuItem saveProgressButton;
-    @FXML private MenuItem exitButton;
-    @FXML private Menu themes;
-    @FXML private RadioMenuItem defaultTheme;
-    @FXML private RadioMenuItem darkModeTheme;
-    @FXML private RadioMenuItem rainbowTheme;
-    @FXML private Menu Help;
-    @FXML private MenuItem about;
-    @FXML private AnchorPane StatusBar;
 
-    //--------------------------------------------------Settings-----------------------------------------------------//
+    //------------------------------------------------- Settings ---------------------------------------------------//
     public void initialize(Stage primaryStage, String userName, Integer numOfThreads) {
         setUserName(userName);
         setNumOfThreads(numOfThreads);
@@ -70,7 +49,7 @@ public class WorkerPrimaryController {
         this.primaryStage = stage;
     }
 
-    //--------------------------------------------------Themes-----------------------------------------------------//
+    //------------------------------------------------- Themes ----------------------------------------------------//
     @FXML void defaultThemePressed(ActionEvent event) {
         Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
@@ -102,7 +81,8 @@ public class WorkerPrimaryController {
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(themePath);
     }
-    //--------------------------------------------------Sidebar-----------------------------------------------------//
+
+    //------------------------------------------------- Sidebar ----------------------------------------------------//
     private void UpdateDashboardControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
@@ -137,7 +117,7 @@ public class WorkerPrimaryController {
         this.mainBorderPane.setCenter(this.TasksPane);
     }
 
-    //--------------------------------------------------Methods-----------------------------------------------------//
+    //------------------------------------------------- General ----------------------------------------------------//
     public static void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);

@@ -12,9 +12,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
@@ -27,7 +24,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class AdminTaskControlController {
-
+    //------------------------------------------------- Members ----------------------------------------------------//
     private ObservableList<TaskTargetCurrentInfoTableItem> taskTargetStatusesList = FXCollections.observableArrayList();
     private Integer finishedTargets = 0;
     private Integer totalTargets = 1;
@@ -37,17 +34,12 @@ public class AdminTaskControlController {
     private TaskControlPullerThread taskControlPullerThread;
     private Boolean isFirstRun;
     private String chosenTarget = null;
-    
-    @FXML private ScrollPane scrollPane;
-    @FXML private BorderPane taskBorderPane;
-    @FXML private ToolBar toolBar;
-    @FXML private HBox toolBarHBox;
+
+    //---------------------------------------------- FXML Members --------------------------------------------------//
     @FXML private Button runButton;
     @FXML private Button PauseButton;
     @FXML private Button stopButton;
-    @FXML private Pane leftPane;
     @FXML private RadioButton fromScratchRadioButton;
-    @FXML private ToggleGroup scratchOrIncremental;
     @FXML private RadioButton incrementalRadioButton;
     @FXML private TextField TaskNameTextField;
     @FXML private TextField GraphNameTextField;
@@ -61,10 +53,9 @@ public class AdminTaskControlController {
     @FXML private ProgressBar progressBar;
     @FXML private Label targetsFinishedLabel;
     @FXML private Label progressBarPercentage;
-    @FXML private Pane zeroSuccessRate;
     @FXML private TextArea logTextArea;
 
-    //----------------------------------------------Puller Thread--------------------------------------------//
+    //------------------------------------------------ Puller Thread -----------------------------------------------//
     public class TaskControlPullerThread extends Thread {
         @Override public void run()
         {
@@ -83,7 +74,7 @@ public class AdminTaskControlController {
 
         private void sendingThreadToSleep() {
             try {
-                sleep(1000);
+                sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -187,7 +178,7 @@ public class AdminTaskControlController {
         this.fromScratchRadioButton.setDisable(flag);
     }
 
-    //-------------------------------------------------Initialize-----------------------------------------------//
+    //------------------------------------------------ Initialize ----------------------------------------------//
     public void initialize(String taskName, String userName) {
         this.taskName = taskName;
         this.userName = userName;
@@ -233,13 +224,13 @@ public class AdminTaskControlController {
         });
     }
 
-    //---------------------------------------------Task information-----------------------------------------------//
+    //-------------------------------------------- Task information ----------------------------------------------//
     public void setTaskStaticInformation(String taskName, String graphName) {
         this.TaskNameTextField.setText(taskName);
         this.GraphNameTextField.setText(graphName);
     }
 
-    //--------------------------------------------Target information----------------------------------------------//
+    //------------------------------------------- Target information ---------------------------------------------//
     @FXML void getSelectedRow() {
         TaskTargetCurrentInfoTableItem selectedItem = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
 
@@ -302,7 +293,7 @@ public class AdminTaskControlController {
         this.taskDetailsOnTargetTextArea.setText(targetRunningInfo);
     }
 
-    //------------------------------------------Preparations For Launch-------------------------------------------//
+    //----------------------------------------- Preparations For Launch ------------------------------------------//
     private boolean incrementalIsOptional() {
         if(this.isTaskRunning)
             return false;
@@ -310,7 +301,7 @@ public class AdminTaskControlController {
         return !this.isFirstRun;
     }
 
-    //------------------------------------------------Progress Bar------------------------------------------------//
+    //----------------------------------------------- Progress Bar -----------------------------------------------//
     private void turnOnProgressBar() {
         this.progressBar.setDisable(false);
         this.progressBarPercentage.setDisable(false);
@@ -576,7 +567,7 @@ public class AdminTaskControlController {
         });
     }
 
-    //----------------------------------------------------Other---------------------------------------------------//
+    //---------------------------------------------------- General -------------------------------------------------//
     public static void ShowPopup(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);

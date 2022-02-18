@@ -26,15 +26,27 @@ import java.net.URL;
 import java.util.Objects;
 
 public class AdminLoginController {
+    //------------------------------------------------- Members ----------------------------------------------------//
     public Button loginButton;
     private Stage primaryStage;
     private AdminPrimaryController primaryController;
     private String username;
+
+    //---------------------------------------------- FXML Members --------------------------------------------------//
     @FXML public TextField userNameTextField;
     @FXML public Label errorMessageLabel;
 
+    //------------------------------------------------ Settings ----------------------------------------------------//
     @FXML public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) { this.primaryStage = primaryStage; }
+
+    //------------------------------------------------- Login ------------------------------------------------------//
+    @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
+        if(keyEvent.getCode()== KeyCode.ENTER)
+            loginButtonClicked(new ActionEvent());
     }
 
     @FXML private void loginButtonClicked(ActionEvent event) {
@@ -92,18 +104,13 @@ public class AdminLoginController {
         this.errorMessageLabel.setText(errorMessage);
     }
 
+    //-------------------------------------------------- Exit ------------------------------------------------------//
     @FXML private void quitButtonClicked(ActionEvent e) {
         Platform.exit();
     }
 
-    public void setPrimaryStage(Stage primaryStage) { this.primaryStage = primaryStage; }
-
+    //------------------------------------------------- General ----------------------------------------------------//
     public String getCurrentUser() {
         return this.username;
-    }
-
-    @FXML public void userNameTextFieldKeyPressed(KeyEvent keyEvent) {
-        if(keyEvent.getCode()== KeyCode.ENTER)
-            loginButtonClicked(new ActionEvent());
     }
 }

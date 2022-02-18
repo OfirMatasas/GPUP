@@ -25,8 +25,7 @@ import java.util.logging.Logger;
 
 public class AdminMain extends Application
 {
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    @Override public void start(Stage primaryStage) throws Exception {
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         primaryStage.setTitle("G.P.U.P Login");
         FXMLLoader loader = new FXMLLoader(getClass().getResource(BodyComponentsPaths.LOGIN));

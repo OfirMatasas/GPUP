@@ -11,7 +11,7 @@ import java.util.*;
 public class AllTaskDetails {
     //------------------------------------------------ Members ---------------------------------------------------//
     private final String taskType;
-    private final String taskName;
+    private String taskName;
     private final String originalTaskName;
     private Integer copies;
     private final String graphName;
@@ -186,9 +186,11 @@ public class AllTaskDetails {
     }
 
     //------------------------------------------------ Setters ---------------------------------------------------//
-    public void setTaskStatus(String status) {
+    public synchronized void setTaskStatus(String status) {
         this.taskStatus = status;
     }
+
+    public synchronized void setTaskName(String taskName) { this.taskName = taskName; }
 
     //------------------------------------------------ Methods ---------------------------------------------------//
     public synchronized void updateInfo(GraphSummary graphSummary, String log) {
@@ -218,33 +220,36 @@ public class AllTaskDetails {
             this.taskStatus = "Finished";
     }
 
-    public void addWorker(String workerName) {
+    public synchronized void addWorker(String workerName) {
         this.registeredWorkers.add(workerName);
     }
 
-    public void removeWorker(String workerName) {
+    public synchronized void removeWorker(String workerName) {
         this.registeredWorkers.remove(workerName);
     }
 
-    public void removeAllWorkersRegistrationsFromTask() { this.registeredWorkers.clear(); }
+    public synchronized void removeAllWorkersRegistrationsFromTask() { this.registeredWorkers.clear(); }
 
-    public void addToTaskLogHistory(String addedInfo) {
+    public synchronized void addToTaskLogHistory(String addedInfo) {
         this.taskLogHistory += addedInfo + "\n\n";
     }
 
-    public void addToTargetLogHistory(String targetName, String addedInfo) {
+    public synchronized void addToTargetLogHistory(String targetName, String addedInfo) {
         this.targetLogHistory.put(targetName.toLowerCase(), this.targetLogHistory.get(targetName.toLowerCase()) + addedInfo + "\n");
     }
 
-    public void updateTargetRuntimeStatus(String targetName, String runtimeStatus) {
+    public synchronized void updateTargetRuntimeStatus(String targetName, String runtimeStatus) {
         this.targetStatusSet.stream().
                 filter(p -> p.getTargetName().equalsIgnoreCase(targetName)).
                 findFirst().ifPresent(p -> p.setRuntimeStatus(runtimeStatus));
     }
 
-    public boolean isIncrementalAnOption()
-    {
+    public boolean isIncrementalAnOption() {
         return this.targetStatusSet.stream()
                 .anyMatch(p-> p.getResultStatus().equalsIgnoreCase("Undefined") || p.getResultStatus().equalsIgnoreCase("Failure"));
+    }
+
+    public synchronized String generateNewTaskName() {
+        return this.taskName + ++this.copies;
     }
 }

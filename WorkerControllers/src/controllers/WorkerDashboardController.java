@@ -1,8 +1,8 @@
 package controllers;
 
 import com.google.gson.Gson;
-import information.AllTaskDetails;
 import http.HttpClientUtil;
+import information.AllTaskDetails;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -11,9 +11,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
 import tableItems.SelectedGraphTableItem;
@@ -40,20 +41,12 @@ public class WorkerDashboardController {
     private boolean register = true;
 
     //---------------------------------------------- FXML Members -------------------------------------------//
-    @FXML private SplitPane SplitPane;
-    @FXML private TitledPane OnlineTasksTiltedPane;
     @FXML private ListView<String> TasksListView;
     @FXML private Button RegisterToTaskButton;
-    @FXML private TitledPane AdminsListView;
     @FXML private ListView<String> onlineAdminsListView;
-    @FXML private TitledPane OnlineWorkersTiltedPane;
     @FXML private ListView<String> onlineWorkersListView;
-    @FXML private Font x11;
-    @FXML private Color x21;
     @FXML private TextField UserNameTextField;
     @FXML private TextField TotalCreditsTextField;
-    @FXML private Font x1;
-    @FXML private Color x2;
     @FXML private TextField TaskNameTextField;
     @FXML private TextField CreatedByTextField;
     @FXML private TableView<SelectedGraphTableItem> TaskTargetsTableView;
@@ -70,18 +63,17 @@ public class WorkerDashboardController {
     @FXML private TableColumn<WorkerTaskStatusTableItem, String> Registered;
 
     //---------------------------------------------- Initialize -------------------------------------------//
-    public void initialize(WorkerPrimaryController workerPrimaryController, String userName)
-    {
+    public void initialize(WorkerPrimaryController workerPrimaryController, String userName) {
         initializeTaskTargetDetailsTable();
         initializeTaskDetailsTable();
         setupListeners();
         createPullingThread();
-        applyUserName(userName);
+        setUserName(userName);
 
         this.workerPrimaryController = workerPrimaryController;
     }
 
-    private void applyUserName(String userName) {
+    private void setUserName(String userName) {
         this.username = userName;
         this.UserNameTextField.setText(userName);
     }
@@ -118,14 +110,13 @@ public class WorkerDashboardController {
     }
 
     //--------------------------------------------- Puller Thread ------------------------------------------//
-    public class DashboardPullerThread extends Thread
-    {
+    public class DashboardPullerThread extends Thread {
         @Override public void run()
         {
             while(true)
             {
                 try {
-                    sleep(2000);
+                    sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

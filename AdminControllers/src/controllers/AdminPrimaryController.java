@@ -34,16 +34,14 @@ public class AdminPrimaryController {
     private AdminTaskControlController adminTaskControlController;
     private AdminCreateTaskController adminCreateTaskController;
     private AdminConnectionsController adminConnectionsController;
-    private Object chatController;
     private SplitPane DashboardPane = null;
     private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
     private ScrollPane createTaskPane = null;
     private ScrollPane taskControlPane = null;
-    private ScrollPane chatPane = null;
-    private GraphSummary graphSummary;
     private String userName;
 
+    //---------------------------------------------- FXML Members --------------------------------------------------//
     @FXML private BorderPane mainBorderPane;
     @FXML private Button graphDetailsButton;
     @FXML private Button connectionsButton;
@@ -52,13 +50,8 @@ public class AdminPrimaryController {
     @FXML private Button ChatButton;
     @FXML private RadioMenuItem defaultTheme;
     @FXML private RadioMenuItem darkModeTheme;
-    @FXML private RadioMenuItem rainbowTheme;
 
-    //--------------------------------------------------Settings-----------------------------------------------------//
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
+    //------------------------------------------------- Settings ----------------------------------------------------//
     public void initialize(Stage primaryStage, String userName) {
         setUserName(userName);
         setPrimaryStage(primaryStage);
@@ -68,9 +61,15 @@ public class AdminPrimaryController {
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
 
-    //--------------------------------------------------Toolbar-----------------------------------------------------//
-    @FXML void aboutPressed(ActionEvent event) {}
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
+    public void setPrimaryStage(Stage stage){
+        this.primaryStage = stage;
+    }
+
+    //------------------------------------------------- Toolbar ----------------------------------------------------//
     @FXML void loadXMLButtonPressed(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select a file");
@@ -122,7 +121,7 @@ public class AdminPrimaryController {
 
             //Loading the graph from the xml file
             this.graph = rc.extractFromXMLToGraph(file.toPath());
-            this.graphSummary = new GraphSummary(graph);
+            GraphSummary graphSummary = new GraphSummary(graph);
 
             //Updating the panes and controllers for the loaded graph
             updatePanesAndControllers();
@@ -133,7 +132,7 @@ public class AdminPrimaryController {
             RefreshCurrentCenterPane();
 
             //Knowing the user the file loaded successfully
-            FileLoadedSuccessfully();
+            ShowPopUp(Alert.AlertType.INFORMATION, "File loaded Successfully", null, "The graph " + this.graph.getGraphName() + " loaded successfully!");
         }
         catch(Exception ex)
         {
@@ -142,7 +141,7 @@ public class AdminPrimaryController {
     }
 
     private void setGraphOnControllers() throws FileNotFoundException {
-        this.adminGraphDetailsController.setGraph(this.graph, this.graphSummary);
+        this.adminGraphDetailsController.setGraph(this.graph);
         this.adminConnectionsController.setGraph(this.graph);
     }
 
@@ -150,9 +149,7 @@ public class AdminPrimaryController {
         graphDetailsButtonPressed(new ActionEvent());
     }
 
-    @FXML void saveProgressPressed(ActionEvent event) { }
-
-    //--------------------------------------------------Themes-----------------------------------------------------//
+    //------------------------------------------------- Themes ----------------------------------------------------//
     @FXML void defaultThemePressed(ActionEvent event) {
         Scene scene = this.primaryStage.getScene();
         scene.getStylesheets().clear();
@@ -206,7 +203,17 @@ public class AdminPrimaryController {
             this.taskControlPane.getStylesheets().add(themePath);
         }
     }
-    //--------------------------------------------------Sidebar-----------------------------------------------------//
+
+    private void UpdatePanesStyles() {
+        if(this.defaultTheme.isSelected())
+            defaultThemePressed(new ActionEvent());
+        else if(this.darkModeTheme.isSelected())
+            darkModeThemePressed(new ActionEvent());
+        else //this.rainbowModeTheme.isSelected()
+            rainbowThemePressed(new ActionEvent());
+    }
+
+    //------------------------------------------------- Sidebar ----------------------------------------------------//
     private void EnableSidebarButtons() {
         this.graphDetailsButton.setDisable(false);
         this.connectionsButton.setDisable(false);
@@ -247,47 +254,7 @@ public class AdminPrimaryController {
         this.mainBorderPane.setCenter(this.taskControlPane);
     }
 
-    @FXML void ChatButtonPressed(ActionEvent event) {
-        this.mainBorderPane.setCenter(this.ChatButton);
-    }
-
-    //--------------------------------------------------Methods-----------------------------------------------------//
-    public void setPrimaryStage(Stage stage){
-        this.primaryStage = stage;
-    }
-
-    private Boolean OverrideGraph() {
-        if(this.graph == null)
-            return true;
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Override existed graph");
-        alert.setHeaderText(null);
-        alert.setContentText("Are you sure you want to override the graph " + this.graph.getGraphName() + "?");
-        ButtonType yesButton = new ButtonType("Yes");
-        ButtonType noButton = new ButtonType("No");
-        alert.getButtonTypes().setAll(yesButton, noButton );
-        Optional<ButtonType> result = alert.showAndWait();
-
-        return result.get() == yesButton;
-    }
-
-    private void FileLoadedSuccessfully() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("File loaded Successfully");
-        alert.setHeaderText(null);
-        alert.setContentText("The graph " + this.graph.getGraphName() + " loaded successfully!");
-        alert.showAndWait();
-    }
-
-    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
+    //------------------------------------------------ Load Panes --------------------------------------------------//
     private void updatePanesAndControllers() {
         UpdateGraphDetailsControllerAndPane();
         UpdateConnectionsControllerAndPane();
@@ -362,25 +329,37 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdateChatControllerAndPane() {
-        FXMLLoader loader = new FXMLLoader();
-        URL url = getClass().getResource(BodyComponentsPaths.CHAT);
-        loader.setLocation(url);
-        try {
-            this.chatPane = loader.load(url.openStream());
-            this.chatController = loader.getController();
-//            this.chatController.initialize(this, this.userName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    //------------------------------------------------- General ----------------------------------------------------//
+    private Boolean OverrideGraph() {
+        if(this.graph == null)
+            return true;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Override existed graph");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to override the graph " + this.graph.getGraphName() + "?");
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No");
+        alert.getButtonTypes().setAll(yesButton, noButton );
+        Optional<ButtonType> result = alert.showAndWait();
+
+        return result.get() == yesButton;
     }
 
-    private void UpdatePanesStyles() {
-        if(this.defaultTheme.isSelected())
-            defaultThemePressed(new ActionEvent());
-        else if(this.darkModeTheme.isSelected())
-            darkModeThemePressed(new ActionEvent());
-        else //this.rainbowModeTheme.isSelected()
-            rainbowThemePressed(new ActionEvent());
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    //------------------------------------------------ Not Used ----------------------------------------------------//
+    private void FileLoadedSuccessfully() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("File loaded Successfully");
+        alert.setHeaderText(null);
+        alert.setContentText("The graph " + this.graph.getGraphName() + " loaded successfully!");
+        alert.showAndWait();
     }
 }

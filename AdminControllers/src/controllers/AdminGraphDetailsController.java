@@ -1,7 +1,5 @@
 package controllers;
 
-import tableItems.AdminGraphPositionsTableItem;
-import tableItems.AdminGraphDetailsTableItem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -15,7 +13,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
-import summaries.GraphSummary;
+import tableItems.AdminGraphDetailsTableItem;
+import tableItems.AdminGraphPositionsTableItem;
 import target.Graph;
 import target.Target;
 
@@ -23,18 +22,37 @@ import javax.imageio.ImageIO;
 import java.io.*;
 
 public class AdminGraphDetailsController {
+    //------------------------------------------------- Members ----------------------------------------------------//
     private Graph graph = null;
     private final ObservableList<AdminGraphDetailsTableItem> adminGraphDetailsTableItemList = FXCollections.observableArrayList();
     private final ObservableList<AdminGraphPositionsTableItem> graphPositionsList = FXCollections.observableArrayList();
-    private final ObservableList<String> serialSetsNameList = FXCollections.observableArrayList();
     private final ObservableList<String> serialSetsInformationList = FXCollections.observableArrayList();
     private String directoryPath;
-    private  GraphSummary graphSummary;
 
+    //---------------------------------------------- FXML Members --------------------------------------------------//
+    @FXML private AnchorPane AnchorPane;
+    @FXML private TableView<AdminGraphDetailsTableItem> TargetsDetailsTable;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetNumber;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetName;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetPosition;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectDependsOn;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllDependsOn;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectRequiredFor;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllRequiredFor;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetSerialSets;
+    @FXML private TableView<AdminGraphPositionsTableItem> TargetPositionsTable;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> RootsPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> MiddlesPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> LeavesPosition;
+    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> IndependentsPosition;
+    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetExtraInformation;
+    @FXML private PieChart PositionsPie;
+    @FXML private ImageView graphImage;
+
+    //------------------------------------------------ Settings ----------------------------------------------------//
     @FXML public void initialize() {
         initializeGraphDetails();
         initializeGraphPositions();
-        initializeSerialSetChoiceBox();
     }
 
     private void initializeGraphDetails() {
@@ -56,41 +74,10 @@ public class AdminGraphDetailsController {
         this.IndependentsPosition.setCellValueFactory(new PropertyValueFactory<AdminGraphPositionsTableItem, Integer>("independents"));
     }
 
-    private void initializeSerialSetChoiceBox() {
-        this.TargetSerialSetChoiceBox.setOnAction((event) -> {
-            this.serialSetsInformationList.clear();
-            this.SerialSetsListsView.setItems(this.serialSetsInformationList.sorted());
-        });
-    }
-
-    @FXML private AnchorPane AnchorPane;
-    @FXML private ChoiceBox<String> TargetSerialSetChoiceBox;
-    @FXML private ListView<String> SerialSetsListsView;
-    @FXML private TableView<AdminGraphDetailsTableItem> TargetsDetailsTable;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetNumber;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetName;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetPosition;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectDependsOn;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllDependsOn;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetDirectRequiredFor;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetAllRequiredFor;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, Integer> TargetSerialSets;
-    @FXML private TableView<AdminGraphPositionsTableItem> TargetPositionsTable;
-    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> RootsPosition;
-    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> MiddlesPosition;
-    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> LeavesPosition;
-    @FXML private TableColumn<AdminGraphPositionsTableItem, Integer> IndependentsPosition;
-    @FXML private TableColumn<AdminGraphDetailsTableItem, String> TargetExtraInformation;
-    @FXML private Label SerialSetsLabel;
-    @FXML private Label GraphPositions;
-    @FXML private PieChart PositionsPie;
-    @FXML private ImageView graphImage;
-    @FXML private ScrollPane graphImageScrollPane;
-
+    //------------------------------------------------ Graphviz ----------------------------------------------------//
     @FXML private Button saveGraphButton;
 
-    @FXML private void saveGraphButtonToUserSelection(ActionEvent event)
-    {
+    @FXML private void saveGraphButtonToUserSelection(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Image");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file (*.PNG)", "*.PNG"));
@@ -108,9 +95,8 @@ public class AdminGraphDetailsController {
         }
     }
 
-    public void setGraph(Graph graph, GraphSummary graphSummary) throws FileNotFoundException {
+    public void setGraph(Graph graph) throws FileNotFoundException {
         this.graph = graph;
-        this.graphSummary = graphSummary;
         setTargetDetailsTable();
         setGraphPositionsTable();
         initializePie();
@@ -123,60 +109,6 @@ public class AdminGraphDetailsController {
         Image image = new Image(stream);
         this.graphImage.fitWidthProperty().bind(this.AnchorPane.widthProperty());
         this.graphImage.setImage(image);
-    }
-
-    private void setTargetDetailsTable() {
-        AdminGraphDetailsTableItem currentAdminGraphDetailsTableItem;
-        int i = 1;
-
-        for (Target currentTarget : this.graph.getGraphTargets().values()) {
-            currentAdminGraphDetailsTableItem = new AdminGraphDetailsTableItem(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
-                    currentTarget.getDependsOnTargets().size(), currentTarget.getAllDependsOnTargets().size(),
-                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getExtraInformation());
-
-            this.adminGraphDetailsTableItemList.add(currentAdminGraphDetailsTableItem);
-            ++i;
-        }
-
-        this.TargetsDetailsTable.setItems(this.adminGraphDetailsTableItemList);
-    }
-
-    private void setGraphPositionsTable() {
-        AdminGraphPositionsTableItem adminGraphPositionsTableItem = new AdminGraphPositionsTableItem(
-                this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT),
-                this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE),
-                this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF),
-                this.graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT)
-        );
-
-        this.graphPositionsList.clear();
-        this.graphPositionsList.add(adminGraphPositionsTableItem);
-        this.TargetPositionsTable.setItems(this.graphPositionsList);
-    }
-
-    public void initializePie() {
-
-        double roots,middles,independents,leaf;
-        roots= this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT);
-        middles= this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE);
-        independents= this.graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT);
-        leaf= this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF);
-        final double sum = roots + middles + independents + leaf;
-
-        ObservableList<Data> pieChartData= FXCollections.observableArrayList(
-        new Data("Roots" , roots),
-        new Data("Middles" ,middles),
-        new Data("Independents" , independents),
-        new Data("Leaves" ,leaf));
-
-        this.PositionsPie.setData(pieChartData);
-        this.PositionsPie.setTitle("Graph Position Pie");
-        final String[] percentage = new String[1];
-        this.PositionsPie.getData().forEach(data -> {
-                    percentage[0] = (String.format("%.2f%%", data.getPieValue()/sum*100));
-                    Tooltip tooltip = new Tooltip(percentage[0]);
-                    Tooltip.install(data.getNode(), tooltip);
-                });
     }
 
     public void convertXMLToDot(boolean waitForProcess) {
@@ -238,13 +170,67 @@ public class AdminGraphDetailsController {
         }
     }
 
-    private String printAllDependsOnTarget(Target curTarget)
-    {
+    private String printAllDependsOnTarget(Target curTarget) {
         String DependedTarget = "";
         for (Target dependsOnTarget : curTarget.getDependsOnTargets())
         {
             DependedTarget = DependedTarget + dependsOnTarget.getTargetName() + " ";
         }
         return DependedTarget;
+    }
+
+    //-------------------------------------------- Graph Tableview -------------------------------------------------//
+    private void setTargetDetailsTable() {
+        AdminGraphDetailsTableItem currentAdminGraphDetailsTableItem;
+        int i = 1;
+
+        for (Target currentTarget : this.graph.getGraphTargets().values()) {
+            currentAdminGraphDetailsTableItem = new AdminGraphDetailsTableItem(i, currentTarget.getTargetName(), currentTarget.getTargetPosition().toString(),
+                    currentTarget.getDependsOnTargets().size(), currentTarget.getAllDependsOnTargets().size(),
+                    currentTarget.getRequiredForTargets().size(), currentTarget.getAllRequiredForTargets().size(), currentTarget.getExtraInformation());
+
+            this.adminGraphDetailsTableItemList.add(currentAdminGraphDetailsTableItem);
+            ++i;
+        }
+
+        this.TargetsDetailsTable.setItems(this.adminGraphDetailsTableItemList);
+    }
+
+    //------------------------------------------ Positions Tableview -----------------------------------------------//
+    private void setGraphPositionsTable() {
+        AdminGraphPositionsTableItem adminGraphPositionsTableItem = new AdminGraphPositionsTableItem(
+                this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT),
+                this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE),
+                this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF),
+                this.graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT)
+        );
+
+        this.graphPositionsList.clear();
+        this.graphPositionsList.add(adminGraphPositionsTableItem);
+        this.TargetPositionsTable.setItems(this.graphPositionsList);
+    }
+
+    //-------------------------------------------------- Pie -------------------------------------------------------//
+    public void initializePie() {
+        final double roots = this.graph.numberOfTargetsByProperty(Target.TargetPosition.ROOT);
+        final double middles = this.graph.numberOfTargetsByProperty(Target.TargetPosition.MIDDLE);
+        final double independents = this.graph.numberOfTargetsByProperty(Target.TargetPosition.INDEPENDENT);
+        final double leaves = this.graph.numberOfTargetsByProperty(Target.TargetPosition.LEAF);
+        final double sum = roots + middles + independents + leaves;
+
+        ObservableList<Data> pieChartData= FXCollections.observableArrayList(
+        new Data("Roots" , roots),
+        new Data("Middles" ,middles),
+        new Data("Independents" , independents),
+        new Data("Leaves" ,leaves));
+
+        this.PositionsPie.setData(pieChartData);
+        this.PositionsPie.setTitle("Graph Position Pie");
+        final String[] percentage = new String[1];
+        this.PositionsPie.getData().forEach(data -> {
+                    percentage[0] = (String.format("%.2f%%", data.getPieValue()/sum*100));
+                    Tooltip tooltip = new Tooltip(percentage[0]);
+                    Tooltip.install(data.getNode(), tooltip);
+                });
     }
 }

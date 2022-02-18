@@ -14,7 +14,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AdminCreateTaskController {
+    //------------------------------------------------- Members ----------------------------------------------------//
     public TextArea taskDetailsOnTargetTextArea;
     private Graph graph;
     private String userName;
@@ -52,9 +52,8 @@ public class AdminCreateTaskController {
     private String outputDirectoryPath = null;
     private TaskThread.TaskType taskType;
 
-    @FXML private ScrollPane scrollPane;
+    //---------------------------------------------- FXML Members --------------------------------------------------//
     @FXML private BorderPane taskBorderPane;
-    @FXML private Pane leftPane;
     @FXML private ComboBox<String> taskSelection;
     @FXML private ComboBox<String> targetSelection;
     @FXML private ComboBox<String> affectedTargets;
@@ -65,7 +64,6 @@ public class AdminCreateTaskController {
     @FXML private Label successRateLabel;
     @FXML private Label successRateWithWarnings;
     @FXML private RadioButton limitedRadioButton;
-    @FXML private ToggleGroup limitedOrPermanent;
     @FXML private RadioButton permanentRadioButton;
     @FXML private Slider successRateSlider;
     @FXML private Slider successRateWithWarningsSlider;
@@ -91,10 +89,11 @@ public class AdminCreateTaskController {
     @FXML private Button CreateNewTaskButton;
     @FXML private TextField TaskNameTextField;
 
+    //------------------------------------------------ Settings ----------------------------------------------------//
     public void initialize(String userName, Graph graph) {
         setUserName(userName);
         setGraph(graph);
-        setTaskTypes(graph.getTasksPricesMap().keySet());
+        setTaskTypes();
 
         addListenersForSliders();
         addListenersForTextFields();
@@ -109,7 +108,24 @@ public class AdminCreateTaskController {
         initializeGraphDetails();
     }
 
-    private void setTaskTypes(Set<Graph.TaskType> keySet) {
+    private void setTaskTargetDetailsTable() {
+        int i = this.taskTargetDetailsTableView.getItems().size() + 1;
+        String targetPosition, targetRuntimeStatus, targetResultStatus;
+        AdminCreateTaskTargetsTableItem taskTargetInformation;
+        ObservableList<AdminCreateTaskTargetsTableItem> tableList = this.taskTargetDetailsTableView.getItems();
+
+        for(String currentTarget : this.currentSelectedTargetListView.getItems())
+        {
+            if(!targetExistedInTable(tableList, currentTarget)) {
+                targetPosition = this.graph.getTarget(currentTarget).getTargetPosition().toString();
+                taskTargetInformation = new AdminCreateTaskTargetsTableItem(i++, currentTarget, targetPosition);
+                this.taskTargetDetailsList.add(taskTargetInformation);
+            }
+        }
+        this.taskTargetDetailsTableView.setItems(this.taskTargetDetailsList);
+    }
+
+    private void setTaskTypes() {
         Set<String> taskTypesSet = new HashSet<>();
 
         this.graph.getTasksPricesMap().keySet().forEach(p-> taskTypesSet.add(p.toString()));
@@ -118,11 +134,326 @@ public class AdminCreateTaskController {
         this.taskSelection.setItems(taskSelectionList);
     }
 
+    private void initializeGraphDetails() {
+        this.numberColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, Integer>("number"));
+        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("targetName"));
+        this.positionColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("position"));
+    }
+
+    private void addListenersForSelectedTargets() {
+        //Enable/Disable incremental, selectAll, deselectAll button
+        this.currentSelectedTargets.addListener((ListChangeListener<String>) c -> {
+            boolean containAll = AdminCreateTaskController.this.currentSelectedTargets.containsAll(AdminCreateTaskController.this.allTargetsList);
+            AdminCreateTaskController.this.selectAllButton.setDisable(containAll);
+            AdminCreateTaskController.this.deselectAllButton.setDisable(!containAll);
+
+            while (c.next()) {
+                for (String remitem : c.getRemoved()) {
+                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().remove(remitem);
+                    AdminCreateTaskController.this.addSelectedButton.setDisable(true);
+                }
+                for (String additem : c.getAddedSubList()) {
+                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().add(additem);
+                    AdminCreateTaskController.this.addSelectedButton.setDisable(false);
+                }
+            }
+
+            if(AdminCreateTaskController.this.currentSelectedTargets.isEmpty())
+                AdminCreateTaskController.this.addSelectedButton.setDisable(true);
+        });
+    }
+
+    private void addListenersForTextFields() {
+        this.successRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if(newValue.equals(""))
+                    return;
+
+                if(Double.parseDouble(newValue) > 1.0)
+                {
+                    this.successRateText.setText(String.valueOf(1.0));
+                    this.successRateSlider.setValue(1.0);
+                }
+                else if(Double.parseDouble(newValue) < 0.0)
+                {
+                    this.successRateText.setText(String.valueOf(0.0));
+                    this.successRateSlider.setValue(0.0);
+                }
+                else
+                    this.successRateSlider.setValue(Double.parseDouble(newValue));
+            } catch(Exception ex)
+            {
+                ShowPopUp(Alert.AlertType.ERROR, "Invalid input", null,"Invalid input in task parameters!");
+                this.successRateText.clear();
+            }
+        });
+
+        this.successWithWarningRateText.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if(newValue.equals(""))
+                    return;
+
+                if(Double.parseDouble(newValue) > 1.0)
+                {
+                    this.successRateWithWarningsSlider.setValue(1.0);
+                    this.successWithWarningRateText.setText(String.valueOf(1.0));
+                }
+                else if(Double.parseDouble(newValue) < 0.0)
+                {
+                    this.successRateWithWarningsSlider.setValue(0.0);
+                    this.successWithWarningRateText.setText(String.valueOf(0.0));
+                }
+                else
+                    this.successRateWithWarningsSlider.setValue(Double.parseDouble(newValue));
+            } catch(Exception ex)
+            {
+                ShowPopUp(Alert.AlertType.ERROR, "Invalid input", null, "Invalid input in task parameters!");
+                this.successWithWarningRateText.clear();
+            }
+        });
+    }
+
+    private void addListenersForSliders() {
+        this.successRateSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successRateText.setText(String.format("%.3f", newValue)));
+        this.successRateWithWarningsSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successWithWarningRateText.setText(String.format("%.3f", newValue)));
+    }
+
+    private void addListenersToButtons() {
+        this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<AdminCreateTaskTargetsTableItem>() {
+            @Override public void onChanged(Change<? extends AdminCreateTaskTargetsTableItem> c) {
+                AdminCreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
+                // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
+            }
+        });
+    }
+
+    private void addListenersForCompilationButtons() {
+        this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
+            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                setVisibilityOfTask(AdminCreateTaskController.this.taskSelection.getValue().equals(AdminCreateTaskController.this.COMPILATION));
+            }
+        });
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+        setAllTargetsList();
+        setTaskTargetDetailsTable();
+    }
+
+    //----------------------------------------------- Simulation ---------------------------------------------------//
     @FXML void ApplyParametersToTask(ActionEvent event) {
         this.taskParameters = getSimulationTaskParametersFromUser();
 
         if(this.taskParameters.getProcessingTime() != null) // Checking only on the processing time, because other parameters are already initialized
             this.CreateNewTaskButton.setDisable(false);
+    }
+
+    private void setForSimulationTask(boolean flag) {
+        this.processingTimeLabel.setDisable(flag);
+        this.limitedPermanentLabel.setDisable(flag);
+        this.successRateLabel.setDisable(flag);
+        this.successRateWithWarnings.setDisable(flag);
+
+        this.processingTimeTextField.setDisable(flag);
+        this.limitedRadioButton.setDisable(flag);
+        this.permanentRadioButton.setDisable(flag);
+
+        this.successRateSlider.setDisable(flag);
+        this.successRateWithWarningsSlider.setDisable(flag);
+
+        this.successRateText.setDisable(flag);
+        this.successWithWarningRateText.setDisable(flag);
+        this.ApplyParametersButton.setDisable(flag);
+    }
+
+    public SimulationParameters getSimulationTaskParametersFromUser() {
+        SimulationParameters taskParameters = new SimulationParameters();
+        Duration processingTime;
+        long timeInMS;
+        boolean isRandom;
+        double successRate, successWithWarnings;
+
+        try {
+            timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
+            processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
+
+            isRandom = this.limitedRadioButton.isSelected();
+            successRate = this.successRateSlider.getValue();
+            successWithWarnings = this.successRateWithWarningsSlider.getValue();
+
+            taskParameters.setProcessingTime(processingTime);
+            taskParameters.setRandom(isRandom);
+            taskParameters.setSuccessRate(successRate);
+            taskParameters.setSuccessWithWarnings(successWithWarnings);
+        }
+        catch(Exception ex) {ShowPopUp(Alert.AlertType.ERROR, "Invalid Parameters", null,"Invalid input in parameters.");}
+
+        return taskParameters;
+    }
+
+    private void applyTaskParametersForAllTargets(SimulationParameters taskParameters) {
+        this.taskParametersMap = new HashMap<>();
+        SimulationParameters currTaskParameters;
+        Duration processingTime;
+        long randomTime;
+        double successRate = taskParameters.getSuccessRate(), successRateWithWarnings = taskParameters.getSuccessWithWarnings();
+        Boolean isRandom = taskParameters.isRandom();
+
+        //permanent time for all targets
+        if(!isRandom)
+        {
+            for(Target target : this.graph.getGraphTargets().values())
+                this.taskParametersMap.put(target.getTargetName(), taskParameters);
+
+            return;
+        }
+
+        //Random time for each target
+        for(Target target : this.graph.getGraphTargets().values())
+        {
+            processingTime = taskParameters.getProcessingTime();
+            randomTime = (long)(Math.random() * (processingTime.toMillis())) + 1;
+            processingTime = (Duration.of(randomTime, ChronoUnit.MILLIS));
+
+            currTaskParameters = new SimulationParameters(processingTime, isRandom, successRate, successRateWithWarnings);
+            this.taskParametersMap.put(target.getTargetName(), currTaskParameters);
+        }
+    }
+
+    //---------------------------------------------- Compilation ---------------------------------------------------//
+    @FXML void chooseSourceCodeDirectoryToCompile(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File sourceCodeDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
+        if(sourceCodeDirectory != null)
+        {
+            this.sourceCodeDirectoryPath = sourceCodeDirectory.toPath().toString();
+            this.sourceCodePathLabel.setText("Source Code Path: " + sourceCodeDirectory.getAbsolutePath());
+        }
+    }
+
+    @FXML void chooseOutputDirectory(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File outputDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
+        if(outputDirectory != null)
+        {
+            this.outputDirectoryPath = outputDirectory.toPath().toString();
+            this.outputPathLabel.setText("Output Path: " + outputDirectory.getAbsolutePath());
+        }
+    }
+
+    //-------------------------------------------- Choosing Targets ------------------------------------------------//
+    private void setAllTargetsList() {
+        int i = 0;
+        this.allTargetsList = FXCollections.observableArrayList();
+
+        for(Target currentTargetName : this.graph.getGraphTargets().values())
+            this.allTargetsList.add(i++, currentTargetName.getTargetName());
+
+        final SortedList<String> sorted = this.allTargetsList.sorted();
+        this.targetSelection.getItems().addAll(sorted);
+    }
+
+    @FXML void affectedTargetsPressed(ActionEvent event) {
+        Set<String> affectedTargetsSet = null;
+
+        switch (this.affectedTargets.getValue())
+        {
+            case DEPENDED:
+            {
+                affectedTargetsSet = this.graph.getTarget(this.targetSelection.getValue()).getAllDependsOnTargets();
+                break;
+            }
+            case REQUIRED:
+            {
+                affectedTargetsSet = this.graph.getTarget(this.targetSelection.getValue()).getAllRequiredForTargets();
+                break;
+            }
+            default:
+                break;
+        }
+
+        if(affectedTargetsSet != null)
+        {
+            this.currentSelectedTargets.clear();
+            this.currentSelectedTargets.add(this.targetSelection.getValue());
+            this.currentSelectedTargets.addAll(affectedTargetsSet);
+        }
+    }
+
+    @FXML void addSelectedTargetsToTable(ActionEvent event) {
+        setTaskTargetDetailsTable();
+
+        if(this.taskType.equals(TaskThread.TaskType.Compilation))
+        {
+            if(this.outputDirectoryPath != null && this.sourceCodeDirectoryPath != null)
+                this.CreateNewTaskButton.setDisable(false);
+        }
+        else
+        {
+            if(this.taskParameters != null)
+                this.CreateNewTaskButton.setDisable(false);
+        }
+        this.clearTableButton.setDisable(false);
+    }
+
+    @FXML void selectAllPressed(ActionEvent event) {
+        this.currentSelectedTargets.clear();
+        this.graph.getGraphTargets().values().forEach(targetName -> this.currentSelectedTargets.add(targetName.getTargetName()));
+    }
+
+    private boolean targetExistedInTable(ObservableList<AdminCreateTaskTargetsTableItem> tableList, String currentTargetName) {
+        for(AdminCreateTaskTargetsTableItem currInfo : tableList)
+        {
+            if(currInfo.getTargetName().equals(currentTargetName))
+                return true;
+        }
+        return false;
+    }
+
+    @FXML void deselectAllPressed(ActionEvent event) {
+        this.currentSelectedTargets.clear();
+    }
+
+    @FXML void removeSelectedRowFromTable(ActionEvent event) {
+        if(this.taskTargetDetailsTableView.getItems().size()>0)
+        {
+            AdminCreateTaskTargetsTableItem chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
+            if(chosenTarget!=null) {
+                int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
+
+                this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
+
+                while (size - 1 > index) {
+                    chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
+                    chosenTarget.setNumber(++index);
+                }
+
+                if (size - 1 == 0) {
+//                    this.runButton.setDisable(true);
+                    this.clearTableButton.setDisable(false);
+                }
+            }
+        }
+        if(this.taskTargetDetailsTableView.getItems().isEmpty())
+        {
+            this.removeSelectedButton.setDisable(true);
+            this.clearTableButton.setDisable(true);
+        }
+    }
+
+    @FXML void targetSelectionPressed(ActionEvent event) {
+        this.affectedTargets.setDisable(false);
+
+        this.currentSelectedTargets.clear();
+        this.currentSelectedTargets.add(this.targetSelection.getValue());
+
+        if(this.affectedTargets.getValue() != null)
+            affectedTargetsPressed(event);
     }
 
     @FXML void ClearTable(ActionEvent event) {
@@ -132,6 +463,7 @@ public class AdminCreateTaskController {
         this.removeSelectedButton.setDisable(true);
     }
 
+    //---------------------------------------------- Create Task ---------------------------------------------------//
     @FXML void CreateNewTaskButtonPressed(ActionEvent event) {
         String taskName = this.TaskNameTextField.getText();
         String uploader = this.userName;
@@ -193,52 +525,7 @@ public class AdminCreateTaskController {
         });
     }
 
-    @FXML void addSelectedTargetsToTable(ActionEvent event)
-    {
-        setTaskTargetDetailsTable();
-
-        if(this.taskType.equals(TaskThread.TaskType.Compilation))
-        {
-            if(this.outputDirectoryPath != null && this.sourceCodeDirectoryPath != null)
-                this.CreateNewTaskButton.setDisable(false);
-        }
-        else
-        {
-            if(this.taskParameters != null)
-                this.CreateNewTaskButton.setDisable(false);
-        }
-        this.clearTableButton.setDisable(false);
-    }
-
-    private void setTaskTargetDetailsTable()
-    {
-        int i = this.taskTargetDetailsTableView.getItems().size() + 1;
-        String targetPosition, targetRuntimeStatus, targetResultStatus;
-        AdminCreateTaskTargetsTableItem taskTargetInformation;
-        ObservableList<AdminCreateTaskTargetsTableItem> tableList = this.taskTargetDetailsTableView.getItems();
-
-        for(String currentTarget : this.currentSelectedTargetListView.getItems())
-        {
-            if(!targetExistedInTable(tableList, currentTarget)) {
-                targetPosition = this.graph.getTarget(currentTarget).getTargetPosition().toString();
-                taskTargetInformation = new AdminCreateTaskTargetsTableItem(i++, currentTarget, targetPosition);
-                this.taskTargetDetailsList.add(taskTargetInformation);
-            }
-        }
-        this.taskTargetDetailsTableView.setItems(this.taskTargetDetailsList);
-    }
-
-    private boolean targetExistedInTable(ObservableList<AdminCreateTaskTargetsTableItem> tableList, String currentTargetName) {
-        for(AdminCreateTaskTargetsTableItem currInfo : tableList)
-        {
-            if(currInfo.getTargetName().equals(currentTargetName))
-                return true;
-        }
-        return false;
-    }
-
-    private Boolean checkForValidCreationOfTask()
-    {
+    private Boolean checkForValidCreationOfTask() {
         String errorMessage = "";
 
         if(this.taskTargetDetailsTableView.getItems().isEmpty())
@@ -258,315 +545,14 @@ public class AdminCreateTaskController {
 
         if(!errorMessage.equals(""))
         {
-            ShowPopup(errorMessage, "Can't start task");
+            ShowPopUp(Alert.AlertType.ERROR, "Can't Start Task", null, errorMessage);
             return false;
         }
         return true;
     }
 
-    @FXML void affectedTargetsPressed(ActionEvent event) {
-        Set<String> affectedTargetsSet = null;
-
-        switch (this.affectedTargets.getValue())
-        {
-            case DEPENDED:
-            {
-                affectedTargetsSet = this.graph.getTarget(this.targetSelection.getValue()).getAllDependsOnTargets();
-                break;
-            }
-            case REQUIRED:
-            {
-                affectedTargetsSet = this.graph.getTarget(this.targetSelection.getValue()).getAllRequiredForTargets();
-                break;
-            }
-            default:
-                break;
-        }
-
-        if(affectedTargetsSet != null)
-        {
-            this.currentSelectedTargets.clear();
-            this.currentSelectedTargets.add(this.targetSelection.getValue());
-            this.currentSelectedTargets.addAll(affectedTargetsSet);
-        }
-    }
-
-    @FXML void chooseSourceCodeDirectoryToCompile(ActionEvent event)
-    {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File sourceCodeDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
-        if(sourceCodeDirectory != null)
-        {
-            this.sourceCodeDirectoryPath = sourceCodeDirectory.toPath().toString();
-            this.sourceCodePathLabel.setText("Source Code Path: " + sourceCodeDirectory.getAbsolutePath());
-        }
-    }
-
-    @FXML void chooseOutputDirectory(ActionEvent event) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File outputDirectory = directoryChooser.showDialog(this.taskBorderPane.getParent().getScene().getWindow());
-        if(outputDirectory != null)
-        {
-            this.outputDirectoryPath = outputDirectory.toPath().toString();
-            this.outputPathLabel.setText("Output Path: " + outputDirectory.getAbsolutePath());
-        }
-    }
-
-    @FXML void deselectAllPressed(ActionEvent event) {
-        this.currentSelectedTargets.clear();
-    }
-
-    @FXML void removeSelectedRowFromTable(ActionEvent event)
-    {
-        if(this.taskTargetDetailsTableView.getItems().size()>0)
-        {
-            AdminCreateTaskTargetsTableItem chosenTarget = this.taskTargetDetailsTableView.getSelectionModel().getSelectedItem();
-            if(chosenTarget!=null) {
-                int index = chosenTarget.getNumber() - 1, size = this.taskTargetDetailsTableView.getItems().size();
-
-                this.taskTargetDetailsTableView.getItems().remove(chosenTarget);
-
-                while (size - 1 > index) {
-                    chosenTarget = this.taskTargetDetailsTableView.getItems().get(index);
-                    chosenTarget.setNumber(++index);
-                }
-
-                if (size - 1 == 0) {
-//                    this.runButton.setDisable(true);
-                    this.clearTableButton.setDisable(false);
-                }
-            }
-        }
-        if(this.taskTargetDetailsTableView.getItems().isEmpty())
-        {
-            this.removeSelectedButton.setDisable(true);
-            this.clearTableButton.setDisable(true);
-        }
-    }
-
-    @FXML void selectAllPressed(ActionEvent event) {
-        this.currentSelectedTargets.clear();
-        this.graph.getGraphTargets().values().forEach(targetName -> this.currentSelectedTargets.add(targetName.getTargetName()));
-    }
-
-    @FXML void targetSelectionPressed(ActionEvent event) {
-        this.affectedTargets.setDisable(false);
-
-        this.currentSelectedTargets.clear();
-        this.currentSelectedTargets.add(this.targetSelection.getValue());
-
-        if(this.affectedTargets.getValue() != null)
-            affectedTargetsPressed(event);
-    }
-
-    @FXML
-    void taskSelectionPressed(ActionEvent event) {
-        if(!this.taskSelection.getSelectionModel().isEmpty())
-        {
-            setForSimulationTask(!this.taskSelection.getValue().equals(this.SIMULATION));
-            disableButtons(false);
-        }
-
-        this.taskType = this.taskSelection.getValue().equals("Simulation") ? TaskThread.TaskType.Simulation : TaskThread.TaskType.Compilation;
-    }
-
-    private void ShowPopup(String message, String title) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void enableTargetInfoTextArea(boolean flag) {
-        this.taskDetailsOnTargetTextArea.setVisible(flag);
-        this.taskDetailsOnTargetTextArea.setDisable(!flag);
-    }
-
-    private void disableButtons(Boolean flag) {
-        this.targetSelection.setDisable(flag);
-        this.affectedTargets.setDisable(flag);
-        this.currentSelectedTargetLabel.setDisable(flag);
-        this.currentSelectedTargetListView.setDisable(flag);
-        this.selectAllButton.setDisable(flag);
-    }
-
-    private void setForSimulationTask(boolean flag) {
-        this.processingTimeLabel.setDisable(flag);
-        this.limitedPermanentLabel.setDisable(flag);
-        this.successRateLabel.setDisable(flag);
-        this.successRateWithWarnings.setDisable(flag);
-
-        this.processingTimeTextField.setDisable(flag);
-        this.limitedRadioButton.setDisable(flag);
-        this.permanentRadioButton.setDisable(flag);
-
-        this.successRateSlider.setDisable(flag);
-        this.successRateWithWarningsSlider.setDisable(flag);
-
-        this.successRateText.setDisable(flag);
-        this.successWithWarningRateText.setDisable(flag);
-        this.ApplyParametersButton.setDisable(flag);
-    }
-
-    public SimulationParameters getSimulationTaskParametersFromUser() {
-        SimulationParameters taskParameters = new SimulationParameters();
-        Duration processingTime;
-        long timeInMS;
-        boolean isRandom;
-        double successRate, successWithWarnings;
-
-        try {
-            timeInMS = Integer.parseInt(this.processingTimeTextField.getText());
-            processingTime = Duration.of(timeInMS, ChronoUnit.MILLIS);
-
-            isRandom = this.limitedRadioButton.isSelected();
-            successRate = this.successRateSlider.getValue();
-            successWithWarnings = this.successRateWithWarningsSlider.getValue();
-
-            taskParameters.setProcessingTime(processingTime);
-            taskParameters.setRandom(isRandom);
-            taskParameters.setSuccessRate(successRate);
-            taskParameters.setSuccessWithWarnings(successWithWarnings);
-        }
-        catch(Exception ex) {ShowPopup("Invalid input in parameters.", "Invalid Parameters");}
-
-        return taskParameters;
-    }
-
-    private Set<String> setCurrentRunTargets() {
-        Set<String> currentRunTargets = new HashSet<>();
-
-        for(AdminCreateTaskTargetsTableItem curr : this.taskTargetDetailsTableView.getItems())
-            currentRunTargets.add(curr.getTargetName());
-
-        return currentRunTargets;
-    }
-
-
-
-    private void initializeGraphDetails() {
-        this.numberColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, Integer>("number"));
-        this.targetNameColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("targetName"));
-        this.positionColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, String>("position"));
-    }
-
-    private void addListenersForSelectedTargets() {
-        //Enable/Disable incremental, selectAll, deselectAll button
-        this.currentSelectedTargets.addListener((ListChangeListener<String>) c -> {
-            boolean containAll = AdminCreateTaskController.this.currentSelectedTargets.containsAll(AdminCreateTaskController.this.allTargetsList);
-            AdminCreateTaskController.this.selectAllButton.setDisable(containAll);
-            AdminCreateTaskController.this.deselectAllButton.setDisable(!containAll);
-
-            while (c.next()) {
-                for (String remitem : c.getRemoved()) {
-                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().remove(remitem);
-                    AdminCreateTaskController.this.addSelectedButton.setDisable(true);
-                }
-                for (String additem : c.getAddedSubList()) {
-                    AdminCreateTaskController.this.currentSelectedTargetListView.getItems().add(additem);
-                    AdminCreateTaskController.this.addSelectedButton.setDisable(false);
-                }
-            }
-
-            if(AdminCreateTaskController.this.currentSelectedTargets.isEmpty())
-                AdminCreateTaskController.this.addSelectedButton.setDisable(true);
-        });
-    }
-
-    private void addListenersForTextFields() {
-        this.successRateText.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                if(newValue.equals(""))
-                    return;
-
-                if(Double.parseDouble(newValue) > 1.0)
-                {
-                    this.successRateText.setText(String.valueOf(1.0));
-                    this.successRateSlider.setValue(1.0);
-                }
-                else if(Double.parseDouble(newValue) < 0.0)
-                {
-                    this.successRateText.setText(String.valueOf(0.0));
-                    this.successRateSlider.setValue(0.0);
-                }
-                else
-                    this.successRateSlider.setValue(Double.parseDouble(newValue));
-            } catch(Exception ex)
-            {
-                ShowPopup("Invalid input in task parameters!", "Invalid input");
-                this.successRateText.clear();
-            }
-        });
-
-        this.successWithWarningRateText.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                if(newValue.equals(""))
-                    return;
-
-                if(Double.parseDouble(newValue) > 1.0)
-                {
-                    this.successRateWithWarningsSlider.setValue(1.0);
-                    this.successWithWarningRateText.setText(String.valueOf(1.0));
-                }
-                else if(Double.parseDouble(newValue) < 0.0)
-                {
-                    this.successRateWithWarningsSlider.setValue(0.0);
-                    this.successWithWarningRateText.setText(String.valueOf(0.0));
-                }
-                else
-                    this.successRateWithWarningsSlider.setValue(Double.parseDouble(newValue));
-            } catch(Exception ex)
-            {
-                ShowPopup("Invalid input in task parameters!", "Invalid input");
-                this.successWithWarningRateText.clear();
-            }
-        });
-    }
-
-    private void addListenersForSliders() {
-        this.successRateSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successRateText.setText(String.format("%.3f", newValue)));
-        this.successRateWithWarningsSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successWithWarningRateText.setText(String.format("%.3f", newValue)));
-    }
-
-    private void disableTaskOptions(Boolean flag)
-    {
-        this.CreateNewTaskButton.setDisable(flag);
-
-        this.currentSelectedTargetLabel.setDisable(flag);
-        this.taskSelection.setDisable(flag);
-        this.targetSelection.setDisable(flag);
-        this.affectedTargets.setDisable(flag);
-
-        this.currentSelectedTargetListView.setDisable(flag);
-        this.selectAllButton.setDisable(flag);
-        this.deselectAllButton.setDisable(flag);
-        this.addSelectedButton.setDisable(flag);
-
-        setForSimulationTask(flag);
-    }
-
-    private void addListenersToButtons()
-    {
-        this.taskTargetDetailsTableView.getItems().addListener(new ListChangeListener<AdminCreateTaskTargetsTableItem>() {
-            @Override public void onChanged(Change<? extends AdminCreateTaskTargetsTableItem> c) {
-                AdminCreateTaskController.this.removeSelectedButton.setDisable(c.getList().isEmpty());
-                // TaskController.this.clearTableButton.setDisable(c.getList().isEmpty());
-            }
-        });
-    }
-
-    private void addListenersForCompilationButtons() {
-
-        this.taskSelection.valueProperty().addListener(new ChangeListener<String>() {
-            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                setVisibilityOfTask(AdminCreateTaskController.this.taskSelection.getValue().equals(AdminCreateTaskController.this.COMPILATION));
-            }
-        });
-    }
-
-    private void setVisibilityOfTask(boolean flag)
-    {
+    //------------------------------------------------ Visibility -----------------------------------------------------//
+    private void setVisibilityOfTask(boolean flag) {
         //Compilation
         this.compilationOutputLabel.setVisible(flag);
         this.compilationSourceCodeLabel.setVisible(flag);
@@ -590,62 +576,61 @@ public class AdminCreateTaskController {
         this.successRateWithWarnings.setVisible(!flag);
     }
 
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-        setAllTargetsList();
-        setTaskTargetDetailsTable();
+    private void disableButtons(Boolean flag) {
+        this.targetSelection.setDisable(flag);
+        this.affectedTargets.setDisable(flag);
+        this.currentSelectedTargetLabel.setDisable(flag);
+        this.currentSelectedTargetListView.setDisable(flag);
+        this.selectAllButton.setDisable(flag);
     }
 
-    private void applyTaskParametersForAllTargets(SimulationParameters taskParameters) {
-        this.taskParametersMap = new HashMap<>();
-        SimulationParameters currTaskParameters;
-        Duration processingTime;
-        long randomTime;
-        double successRate = taskParameters.getSuccessRate(), successRateWithWarnings = taskParameters.getSuccessWithWarnings();
-        Boolean isRandom = taskParameters.isRandom();
-
-        //permanent time for all targets
-        if(!isRandom)
-        {
-            for(Target target : this.graph.getGraphTargets().values())
-                this.taskParametersMap.put(target.getTargetName(), taskParameters);
-
-            return;
-        }
-
-        //Random time for each target
-        for(Target target : this.graph.getGraphTargets().values())
-        {
-            processingTime = taskParameters.getProcessingTime();
-            randomTime = (long)(Math.random() * (processingTime.toMillis())) + 1;
-            processingTime = (Duration.of(randomTime, ChronoUnit.MILLIS));
-
-            currTaskParameters = new SimulationParameters(processingTime, isRandom, successRate, successRateWithWarnings);
-            this.taskParametersMap.put(target.getTargetName(), currTaskParameters);
-        }
-    }
-
-    private void setAllTargetsList() {
-        int i = 0;
-        this.allTargetsList = FXCollections.observableArrayList();
-
-        for(Target currentTargetName : this.graph.getGraphTargets().values())
-            this.allTargetsList.add(i++, currentTargetName.getTargetName());
-
-        final SortedList<String> sorted = this.allTargetsList.sorted();
-        this.targetSelection.getItems().addAll(sorted);
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
-    {
+    //------------------------------------------------ General -----------------------------------------------------//
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    //----------------------------------------------- Not Used -----------------------------------------------------//
+    @FXML void taskSelectionPressed(ActionEvent event) {
+        if(!this.taskSelection.getSelectionModel().isEmpty())
+        {
+            setForSimulationTask(!this.taskSelection.getValue().equals(this.SIMULATION));
+            disableButtons(false);
+        }
+
+        this.taskType = this.taskSelection.getValue().equals("Simulation") ? TaskThread.TaskType.Simulation : TaskThread.TaskType.Compilation;
+    }
+
+    private void enableTargetInfoTextArea(boolean flag) {
+        this.taskDetailsOnTargetTextArea.setVisible(flag);
+        this.taskDetailsOnTargetTextArea.setDisable(!flag);
+    }
+
+    private Set<String> setCurrentRunTargets() {
+        Set<String> currentRunTargets = new HashSet<>();
+
+        for(AdminCreateTaskTargetsTableItem curr : this.taskTargetDetailsTableView.getItems())
+            currentRunTargets.add(curr.getTargetName());
+
+        return currentRunTargets;
+    }
+
+    private void disableTaskOptions(Boolean flag) {
+        this.CreateNewTaskButton.setDisable(flag);
+
+        this.currentSelectedTargetLabel.setDisable(flag);
+        this.taskSelection.setDisable(flag);
+        this.targetSelection.setDisable(flag);
+        this.affectedTargets.setDisable(flag);
+
+        this.currentSelectedTargetListView.setDisable(flag);
+        this.selectAllButton.setDisable(flag);
+        this.deselectAllButton.setDisable(flag);
+        this.addSelectedButton.setDisable(flag);
+
+        setForSimulationTask(flag);
     }
 }

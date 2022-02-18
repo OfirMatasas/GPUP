@@ -2,10 +2,8 @@ package controllers;
 
 import com.google.gson.Gson;
 import dtos.DashboardGraphDetailsDTO;
-import information.AllTaskDetails;
 import http.HttpClientUtil;
-import tableItems.SelectedGraphTableItem;
-import tableItems.SelectedTaskStatusTableItem;
+import information.AllTaskDetails;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -15,11 +13,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import patterns.Patterns;
+import tableItems.SelectedGraphTableItem;
+import tableItems.SelectedTaskStatusTableItem;
 import task.CompilationTaskInformation;
 import task.SimulationTaskInformation;
 import users.UsersLists;
@@ -31,29 +32,29 @@ import java.util.Objects;
 import java.util.Set;
 
 public class AdminDashboardController {
-
+    //------------------------------------------------- Members ----------------------------------------------------//
     private final ObservableList<String> onlineAdminsList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineWorkersList = FXCollections.observableArrayList();
-    @FXML private TitledPane OnlineGraphsTiltedPane;
-    @FXML private ListView<String> OnlineGraphsListView;
     private final ObservableList<String> onlineGraphsList = FXCollections.observableArrayList();
     private final ObservableList<String> onlineTasksList = FXCollections.observableArrayList();
     private final ObservableList<String> myTasksList = FXCollections.observableArrayList();
     private final ObservableList<SelectedGraphTableItem> selectedGraphTargetsList = FXCollections.observableArrayList();
     private final ObservableList<SelectedGraphTableItem> selectedTaskTargetsList = FXCollections.observableArrayList();
     private final ObservableList<SelectedTaskStatusTableItem> selectedTaskStatusList = FXCollections.observableArrayList();
-    @FXML private Button AddNewGraphButton;
+    private AdminPrimaryController primaryController;
+    private String username;
+    private PullerThread pullerThread;
+    private String chosenAllTask = null;
+    private String chosenMyTask = null;
+
+    //---------------------------------------------- FXML Members --------------------------------------------------//
+    @FXML private ListView<String> OnlineGraphsListView;
     @FXML private Button LoadGraphButton;
-    @FXML private TitledPane OnlineAdminsTiltedPane;
     @FXML private ListView<String> onlineAdminsListView;
-    @FXML private TitledPane OnlineWorkersTiltedPane;
     @FXML private ListView<String> onlineWorkersListView;
-    @FXML private TitledPane OnlineTasksTiltedPane;
     @FXML private ListView<String> AllTasksListView;
     @FXML private ListView<String> myTasksListView;
     @FXML private Button ControlSelectedTaskButton;
-    @FXML private Font x11;
-    @FXML private Color x21;
     @FXML private TextField GraphNameTextField;
     @FXML private TextField uploadedByTextField;
     @FXML private TextField SimulationPriceTextField;
@@ -64,8 +65,6 @@ public class AdminDashboardController {
     @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphLeafAmount;
     @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphMiddleAmount;
     @FXML private TableColumn<SelectedGraphTableItem, Integer> GraphRootAmount;
-    @FXML private Font x1;
-    @FXML private Color x2;
     @FXML private TextField TaskNameTextField;
     @FXML private TextField CreatedByTextField;
     @FXML private TextField TaskOnGraphTextField;
@@ -79,12 +78,8 @@ public class AdminDashboardController {
     @FXML private TableColumn<SelectedTaskStatusTableItem, String> TaskStatus;
     @FXML private TableColumn<SelectedTaskStatusTableItem, Integer> currentWorkers;
     @FXML private TableColumn<SelectedTaskStatusTableItem, Integer> TaskWorkPayment;
-    private AdminPrimaryController primaryController;
-    private String username;
-    private PullerThread pullerThread;
-    private String chosenAllTask = null;
-    private String chosenMyTask = null;
 
+    //------------------------------------------------ Settings ----------------------------------------------------//
     public void initialize(AdminPrimaryController primaryController, String username) {
         setPrimaryController(primaryController);
         setUsername(username);
@@ -93,13 +88,6 @@ public class AdminDashboardController {
         initializeGraphTargetDetailsTable();
         initializeTaskTargetDetailsTable();
         initializeTaskStatusTable();
-    }
-
-    private void updateUsersLists(UsersLists usersLists) {
-        this.onlineAdminsList.clear();
-        this.onlineWorkersList.clear();
-        this.onlineAdminsList.addAll(usersLists.getAdminsList());
-        this.onlineWorkersList.addAll(usersLists.getWorkersList());
     }
 
     public void initializeGraphTargetDetailsTable() {
@@ -124,145 +112,58 @@ public class AdminDashboardController {
         this.TaskWorkPayment.setCellValueFactory(new PropertyValueFactory<SelectedTaskStatusTableItem, Integer>("totalPayment"));
     }
 
-    public void GraphSelectedFromListView(MouseEvent mouseEvent) {
-        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
-
-        if(selectedGraphName == null)
-            return;
-
-        this.LoadGraphButton.setDisable(false);
-
-        String finalUrl = HttpUrl
-                .parse(Patterns.GRAPH)
-                .newBuilder()
-                .addQueryParameter("graph-details-DTO", selectedGraphName)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> System.out.println("Failure on connecting to server for graph-dto!"));
-            }
-
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() >= 200 && response.code() < 300) //Success
+    private void setupListeners() {
+        this.onlineGraphsList.addListener(new ListChangeListener<String>() {
+            @Override public void onChanged(Change<? extends String> c) {
+                for(String curr : c.getList())
                 {
-                    String body = Objects.requireNonNull(response.body()).string();
-                    Platform.runLater(() ->
-                    {
-                        DashboardGraphDetailsDTO graphDetailsDTO = new Gson().fromJson(body, DashboardGraphDetailsDTO.class);
-                        refreshGraphDetailsDTO(graphDetailsDTO);
-                    });
-                } else //Failed
-                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
-
-                Objects.requireNonNull(response.body()).close();
+                    if(!AdminDashboardController.this.OnlineGraphsListView.getItems().contains(curr))
+                        AdminDashboardController.this.OnlineGraphsListView.getItems().add(curr);
+                }
             }
-
-            private void refreshGraphDetailsDTO(DashboardGraphDetailsDTO graphDetailsDTO) {
-                AdminDashboardController.this.GraphNameTextField.setText(graphDetailsDTO.getGraphName());
-                AdminDashboardController.this.uploadedByTextField.setText(graphDetailsDTO.getUploader());
-                AdminDashboardController.this.SimulationPriceTextField.setText(graphDetailsDTO.getSimulationPrice().toString());
-                AdminDashboardController.this.CompilationPriceTextField.setText(graphDetailsDTO.getCompilationPrice().toString());
-
-                updateTargetDetailsTable(graphDetailsDTO);
-            }
-
-            private void updateTargetDetailsTable(DashboardGraphDetailsDTO graphDetailsDTO) {
-
-                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(graphDetailsDTO.getRoots(),
-                        graphDetailsDTO.getMiddles(), graphDetailsDTO.getLeaves(), graphDetailsDTO.getIndependents());
-
-                AdminDashboardController.this.selectedGraphTargetsList.clear();
-                AdminDashboardController.this.selectedGraphTargetsList.add(selectedGraphTableItem);
-
-                AdminDashboardController.this.GraphTargetsTableView.setItems(AdminDashboardController.this.selectedGraphTargetsList);
-            }
-
         });
-    }
 
-    public void AddNewGraphButtonPressed() throws IOException {
-        this.primaryController.loadXMLButtonPressed(new ActionEvent());
-    }
-
-    public void TaskSelectedFromAllListView() {
-        String selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
-
-        if(selectedTaskName == null)
-            return;
-
-        this.chosenAllTask = selectedTaskName;
-
-        String finalUrl = HttpUrl
-                .parse(Patterns.TASK)
-                .newBuilder()
-                .addQueryParameter("task-info", selectedTaskName)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
-            }
-
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() >= 200 && response.code() < 300) //Success
+        this.onlineTasksList.addListener(new ListChangeListener<String>() {
+            @Override public void onChanged(Change<? extends String> c) {
+                for(String curr : c.getList())
                 {
-                    String body = Objects.requireNonNull(response.body()).string();
-
-                    Platform.runLater(() ->
-                    {
-                        AllTaskDetails taskDetailsDTO = new Gson().fromJson(body, AllTaskDetails.class);
-                        refreshTaskDetailsDTO(taskDetailsDTO);
-                    });
-                } else //Failed
-                    Platform.runLater(() -> System.out.println("couldn't pull task-info from server!"));
-
-                Objects.requireNonNull(response.body()).close();
+                    if(!AdminDashboardController.this.AllTasksListView.getItems().contains(curr))
+                        AdminDashboardController.this.AllTasksListView.getItems().add(curr);
+                }
             }
+        });
 
-            private void refreshTaskDetailsDTO(AllTaskDetails taskDetailsDTO) {
-                AdminDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
-                AdminDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
-                AdminDashboardController.this.TaskOnGraphTextField.setText(taskDetailsDTO.getGraphName());
-
-                updateTaskTargetDetailsTable(taskDetailsDTO);
-                updateTaskStatusTable(taskDetailsDTO);
-            }
-
-            private void updateTaskTargetDetailsTable(AllTaskDetails taskDetailsDTO) {
-
-                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
-                        taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
-
-                AdminDashboardController.this.selectedTaskTargetsList.clear();
-                AdminDashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
-
-                AdminDashboardController.this.TaskTargetsTableView.setItems(AdminDashboardController.this.selectedTaskTargetsList);
-            }
-
-            private void updateTaskStatusTable(AllTaskDetails taskDetailsDTO) {
-
-                SelectedTaskStatusTableItem selectedTaskStatusTableItem = new SelectedTaskStatusTableItem(taskDetailsDTO.getTaskStatus(),
-                        taskDetailsDTO.getRegisteredWorkers().size(), taskDetailsDTO.getTotalPayment());
-
-                AdminDashboardController.this.selectedTaskStatusList.clear();
-                AdminDashboardController.this.selectedTaskStatusList.add(selectedTaskStatusTableItem);
-
-                AdminDashboardController.this.TaskStatusTableView.setItems(AdminDashboardController.this.selectedTaskStatusList);
+        this.myTasksList.addListener(new ListChangeListener<String>() {
+            @Override public void onChanged(Change<? extends String> c) {
+                for(String curr : c.getList())
+                {
+                    if(!AdminDashboardController.this.myTasksListView.getItems().contains(curr))
+                        AdminDashboardController.this.myTasksListView.getItems().add(curr);
+                }
             }
         });
     }
 
-    public void TaskSelectedFromMyListView(MouseEvent mouseEvent) {
-        this.ControlSelectedTaskButton.setDisable(false);
-        String selectedTask = this.myTasksListView.getSelectionModel().getSelectedItem();
-
-        if(selectedTask != null)
-            this.chosenMyTask = selectedTask;
+    public void setPrimaryController(AdminPrimaryController primaryController) {
+        this.primaryController = primaryController;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    private void createPullingThread() {
+        this.pullerThread = new PullerThread();
+
+        this.onlineAdminsListView.setItems(this.onlineAdminsList);
+        this.onlineWorkersListView.setItems(this.onlineWorkersList);
+
+        this.pullerThread.setDaemon(true);
+        this.pullerThread.start();
+
+    }
+
+    //--------------------------------------------- Puller Thread ---------------------------------------------------//
     public class PullerThread extends Thread {
         @Override
         public void run()
@@ -270,7 +171,7 @@ public class AdminDashboardController {
             while(true)
             {
                 try {
-                    sleep(2000);
+                    sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -304,10 +205,10 @@ public class AdminDashboardController {
                     {
                         String body = Objects.requireNonNull(response.body()).string();
                         Platform.runLater(() ->
-                        {
-                            Set graphList = new Gson().fromJson(body, Set.class);
-                            refreshGraphList(graphList);
-                        }
+                                {
+                                    Set graphList = new Gson().fromJson(body, Set.class);
+                                    refreshGraphList(graphList);
+                                }
                         );
                     } else //Failed
                         Platform.runLater(() -> System.out.println("couldn't pull graph-list from server!"));
@@ -442,55 +343,197 @@ public class AdminDashboardController {
         }
     }
 
-    private void setupListeners() {
-        this.onlineGraphsList.addListener(new ListChangeListener<String>() {
-            @Override public void onChanged(Change<? extends String> c) {
-                for(String curr : c.getList())
-                {
-                    if(!AdminDashboardController.this.OnlineGraphsListView.getItems().contains(curr))
-                        AdminDashboardController.this.OnlineGraphsListView.getItems().add(curr);
-                }
-            }
-        });
+    //----------------------------------------------- Users List ----------------------------------------------------//
+    private void updateUsersLists(UsersLists usersLists) {
+        this.onlineAdminsList.clear();
+        this.onlineWorkersList.clear();
+        this.onlineAdminsList.addAll(usersLists.getAdminsList());
+        this.onlineWorkersList.addAll(usersLists.getWorkersList());
+    }
 
-        this.onlineTasksList.addListener(new ListChangeListener<String>() {
-            @Override public void onChanged(Change<? extends String> c) {
-                for(String curr : c.getList())
-                {
-                    if(!AdminDashboardController.this.AllTasksListView.getItems().contains(curr))
-                        AdminDashboardController.this.AllTasksListView.getItems().add(curr);
-                }
-            }
-        });
+    //------------------------------------------------- Graphs ------------------------------------------------------//
+    public void LoadGraphButtonPressed() {
+        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
 
-        this.myTasksList.addListener(new ListChangeListener<String>() {
-            @Override public void onChanged(Change<? extends String> c) {
-                for(String curr : c.getList())
+        if(selectedGraphName == null)
+            return;
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.GRAPH)
+                .newBuilder()
+                .addQueryParameter("graph", selectedGraphName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() ->
+                        ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
                 {
-                    if(!AdminDashboardController.this.myTasksListView.getItems().contains(curr))
-                        AdminDashboardController.this.myTasksListView.getItems().add(curr);
+                    String body = Objects.requireNonNull(response.body()).string();
+                    File graphFile = new Gson().fromJson(body, File.class);
+                    System.out.println("Just got " +  graphFile.getName() + " file from server!");
+                    Platform.runLater(()-> AdminDashboardController.this.primaryController.loadGraph(graphFile));
+                } else //Failed
+                {
+                    String message = response.header("message");
+                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, message));
                 }
+
+                Objects.requireNonNull(response.body()).close();
             }
         });
     }
 
-    private void createPullingThread() {
-        this.pullerThread = new PullerThread();
-
-        this.onlineAdminsListView.setItems(this.onlineAdminsList);
-        this.onlineWorkersListView.setItems(this.onlineWorkersList);
-
-        this.pullerThread.setDaemon(true);
-        this.pullerThread.start();
-
+    public void newGraphUploaded() {
+        LoadGraphButtonPressed();
     }
 
-    public void setPrimaryController(AdminPrimaryController primaryController) {
-        this.primaryController = primaryController;
+    public void GraphSelectedFromListView(MouseEvent mouseEvent) {
+        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
+
+        if(selectedGraphName == null)
+            return;
+
+        this.LoadGraphButton.setDisable(false);
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.GRAPH)
+                .newBuilder()
+                .addQueryParameter("graph-details-DTO", selectedGraphName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for graph-dto!"));
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    String body = Objects.requireNonNull(response.body()).string();
+                    Platform.runLater(() ->
+                    {
+                        DashboardGraphDetailsDTO graphDetailsDTO = new Gson().fromJson(body, DashboardGraphDetailsDTO.class);
+                        refreshGraphDetailsDTO(graphDetailsDTO);
+                    });
+                } else //Failed
+                    Platform.runLater(() -> System.out.println("couldn't pull graph-dto from server!"));
+
+                Objects.requireNonNull(response.body()).close();
+            }
+
+            private void refreshGraphDetailsDTO(DashboardGraphDetailsDTO graphDetailsDTO) {
+                AdminDashboardController.this.GraphNameTextField.setText(graphDetailsDTO.getGraphName());
+                AdminDashboardController.this.uploadedByTextField.setText(graphDetailsDTO.getUploader());
+                AdminDashboardController.this.SimulationPriceTextField.setText(graphDetailsDTO.getSimulationPrice().toString());
+                AdminDashboardController.this.CompilationPriceTextField.setText(graphDetailsDTO.getCompilationPrice().toString());
+
+                updateTargetDetailsTable(graphDetailsDTO);
+            }
+
+            private void updateTargetDetailsTable(DashboardGraphDetailsDTO graphDetailsDTO) {
+
+                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(graphDetailsDTO.getRoots(),
+                        graphDetailsDTO.getMiddles(), graphDetailsDTO.getLeaves(), graphDetailsDTO.getIndependents());
+
+                AdminDashboardController.this.selectedGraphTargetsList.clear();
+                AdminDashboardController.this.selectedGraphTargetsList.add(selectedGraphTableItem);
+
+                AdminDashboardController.this.GraphTargetsTableView.setItems(AdminDashboardController.this.selectedGraphTargetsList);
+            }
+
+        });
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void AddNewGraphButtonPressed() throws IOException {
+        this.primaryController.loadXMLButtonPressed(new ActionEvent());
+    }
+
+    //------------------------------------------------- Tasks -------------------------------------------------------//
+    public void TaskSelectedFromAllListView() {
+        String selectedTaskName = this.AllTasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTaskName == null)
+            return;
+
+        this.chosenAllTask = selectedTaskName;
+
+        String finalUrl = HttpUrl
+                .parse(Patterns.TASK)
+                .newBuilder()
+                .addQueryParameter("task-info", selectedTaskName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Platform.runLater(() -> System.out.println("Failure on connecting to server for task-info!"));
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() >= 200 && response.code() < 300) //Success
+                {
+                    String body = Objects.requireNonNull(response.body()).string();
+
+                    Platform.runLater(() ->
+                    {
+                        AllTaskDetails taskDetailsDTO = new Gson().fromJson(body, AllTaskDetails.class);
+                        refreshTaskDetailsDTO(taskDetailsDTO);
+                    });
+                } else //Failed
+                    Platform.runLater(() -> System.out.println("couldn't pull task-info from server!"));
+
+                Objects.requireNonNull(response.body()).close();
+            }
+
+            private void refreshTaskDetailsDTO(AllTaskDetails taskDetailsDTO) {
+                AdminDashboardController.this.TaskNameTextField.setText(taskDetailsDTO.getTaskName());
+                AdminDashboardController.this.CreatedByTextField.setText(taskDetailsDTO.getUploader());
+                AdminDashboardController.this.TaskOnGraphTextField.setText(taskDetailsDTO.getGraphName());
+
+                updateTaskTargetDetailsTable(taskDetailsDTO);
+                updateTaskStatusTable(taskDetailsDTO);
+            }
+
+            private void updateTaskTargetDetailsTable(AllTaskDetails taskDetailsDTO) {
+
+                SelectedGraphTableItem selectedGraphTableItem = new SelectedGraphTableItem(taskDetailsDTO.getRoots(),
+                        taskDetailsDTO.getMiddles(), taskDetailsDTO.getLeaves(), taskDetailsDTO.getIndependents());
+
+                AdminDashboardController.this.selectedTaskTargetsList.clear();
+                AdminDashboardController.this.selectedTaskTargetsList.add(selectedGraphTableItem);
+
+                AdminDashboardController.this.TaskTargetsTableView.setItems(AdminDashboardController.this.selectedTaskTargetsList);
+            }
+
+            private void updateTaskStatusTable(AllTaskDetails taskDetailsDTO) {
+
+                SelectedTaskStatusTableItem selectedTaskStatusTableItem = new SelectedTaskStatusTableItem(taskDetailsDTO.getTaskStatus(),
+                        taskDetailsDTO.getRegisteredWorkers().size(), taskDetailsDTO.getTotalPayment());
+
+                AdminDashboardController.this.selectedTaskStatusList.clear();
+                AdminDashboardController.this.selectedTaskStatusList.add(selectedTaskStatusTableItem);
+
+                AdminDashboardController.this.TaskStatusTableView.setItems(AdminDashboardController.this.selectedTaskStatusList);
+            }
+        });
+    }
+
+    public void TaskSelectedFromMyListView(MouseEvent mouseEvent) {
+        this.ControlSelectedTaskButton.setDisable(false);
+        String selectedTask = this.myTasksListView.getSelectionModel().getSelectedItem();
+
+        if(selectedTask != null)
+            this.chosenMyTask = selectedTask;
     }
 
     @FXML void ControlSelectedTaskButtonClicked(ActionEvent event) {
@@ -541,6 +584,16 @@ public class AdminDashboardController {
         });
     }
 
+    //------------------------------------------------ General ------------------------------------------------------//
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    //----------------------------------------------- Not Used ------------------------------------------------------//
     private File convertResponseBodyToTempFile(Response response) {
         try {
             File tempFile = File.createTempFile("graph", ".xml");
@@ -555,58 +608,5 @@ public class AdminDashboardController {
         }
 
         return null;
-    }
-
-    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
-    {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    public void LoadGraphButtonPressed() {
-        String selectedGraphName = this.OnlineGraphsListView.getSelectionModel().getSelectedItem();
-
-        if(selectedGraphName == null)
-            return;
-
-        String finalUrl = HttpUrl
-                .parse(Patterns.GRAPH)
-                .newBuilder()
-                .addQueryParameter("graph", selectedGraphName)
-                .build()
-                .toString();
-
-        HttpClientUtil.runAsync(finalUrl, "GET", null, new Callback() {
-
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() ->
-                        ShowPopUp(Alert.AlertType.ERROR, "Error", null, e.getMessage()));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() >= 200 && response.code() < 300) //Success
-                {
-                    String body = Objects.requireNonNull(response.body()).string();
-                    File graphFile = new Gson().fromJson(body, File.class);
-                    System.out.println("Just got " +  graphFile.getName() + " file from server!");
-                    Platform.runLater(()-> AdminDashboardController.this.primaryController.loadGraph(graphFile));
-                } else //Failed
-                {
-                    String message = response.header("message");
-                    Platform.runLater(() -> ShowPopUp(Alert.AlertType.ERROR, "Loading File Failure", null, message));
-                }
-
-                Objects.requireNonNull(response.body()).close();
-            }
-        });
-    }
-
-    public void newGraphUploaded() {
-        LoadGraphButtonPressed();
     }
 }
