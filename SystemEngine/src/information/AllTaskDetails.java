@@ -6,10 +6,7 @@ import tableItems.TaskTargetCurrentInfoTableItem;
 import target.Graph;
 import target.Target;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AllTaskDetails {
     //------------------------------------------------ Members ---------------------------------------------------//
@@ -239,10 +236,15 @@ public class AllTaskDetails {
         this.targetLogHistory.put(targetName.toLowerCase(), this.targetLogHistory.get(targetName.toLowerCase()) + addedInfo + "\n");
     }
 
-    public void updateTargetRuntimeStatus(String targetName, String runtimeStatus)
-    {
+    public void updateTargetRuntimeStatus(String targetName, String runtimeStatus) {
         this.targetStatusSet.stream().
                 filter(p -> p.getTargetName().equalsIgnoreCase(targetName)).
                 findFirst().ifPresent(p -> p.setRuntimeStatus(runtimeStatus));
+    }
+
+    public boolean isIncrementalAnOption()
+    {
+        return this.targetStatusSet.stream()
+                .anyMatch(p-> p.getResultStatus().equalsIgnoreCase("Undefined") || p.getResultStatus().equalsIgnoreCase("Failure"));
     }
 }

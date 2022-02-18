@@ -219,7 +219,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+    private synchronized void startTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName = req.getParameter("start-task");
         String userName = req.getParameter("username");
@@ -239,7 +239,9 @@ public class TaskUpdateServlet extends HttpServlet {
 
             if(req.getParameter("incremental") != null) //Incremental requested
             {
-                if(runBefore) //Valid incremental request - creating a copy of the task and run incrementally
+                if(!tasksManager.isIncrementalAnOption(taskName)) //No failed targets
+                    responseMessageAndCode(resp, "The task " + taskName + " cannot run incrementally for no failed targets!", HttpServletResponse.SC_BAD_REQUEST);
+                else if(runBefore) //Valid incremental request - creating a copy of the task and run incrementally
                 {
                     String copiedTaskName = tasksManager.copyTask(taskName, graphsManager, true);
                     tasksManager.startTask(copiedTaskName, userName, graphsManager);
@@ -270,7 +272,7 @@ public class TaskUpdateServlet extends HttpServlet {
         }
     }
 
-    private void pauseTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+    private synchronized void pauseTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName = req.getParameter("pause-task");
         String adminName = req.getParameter("username");
@@ -289,7 +291,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void resumeTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+    private synchronized void resumeTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName = req.getParameter("resume-task");
         String adminName = req.getParameter("username");
@@ -308,7 +310,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void stopTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
+    private synchronized void stopTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) {
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
         String taskName = req.getParameter("stop-task");
         String adminName = req.getParameter("username");
@@ -327,7 +329,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void updateTargetOnTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
+    private synchronized void updateTargetOnTask(HttpServletRequest req, HttpServletResponse resp, TasksManager tasksManager) throws IOException {
         ExecutedTargetUpdates updates = new Gson().fromJson(req.getReader(), ExecutedTargetUpdates.class);
         String taskName;
         String targetName;
@@ -353,7 +355,7 @@ public class TaskUpdateServlet extends HttpServlet {
             responseMessageAndCode(resp, "Invalid upload of updates!", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void taskFinished(String taskName, TasksManager tasksManager) {
+    private synchronized void taskFinished(String taskName, TasksManager tasksManager) {
         tasksManager.removeTaskThread(taskName);
         tasksManager.removeTaskFromActiveList(taskName);
         tasksManager.removeAllWorkersRegistrationsFromTask(taskName);

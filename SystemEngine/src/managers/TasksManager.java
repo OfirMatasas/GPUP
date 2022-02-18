@@ -426,4 +426,9 @@ public class TasksManager {
         Set<String> runningTarget = this.allTaskDetailsMap.get(taskName.toLowerCase()).getTargetsToExecute();
         return this.graphSummaryMap.get(taskName.toLowerCase()).getRunningTargetInfo(target, runningTarget);
     }
+
+    public boolean isIncrementalAnOption(String taskName) {
+
+        return allTaskDetailsMap.get(taskName.toLowerCase()).isIncrementalAnOption();
+    }
 }

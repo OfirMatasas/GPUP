@@ -11,7 +11,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -27,12 +26,14 @@ import task.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class AdminCreateTaskController implements Initializable{
+public class AdminCreateTaskController {
     public TextArea taskDetailsOnTargetTextArea;
     private Graph graph;
     private String userName;
@@ -89,6 +90,33 @@ public class AdminCreateTaskController implements Initializable{
     @FXML private Button clearTableButton;
     @FXML private Button CreateNewTaskButton;
     @FXML private TextField TaskNameTextField;
+
+    public void initialize(String userName, Graph graph) {
+        setUserName(userName);
+        setGraph(graph);
+        setTaskTypes(graph.getTasksPricesMap().keySet());
+
+        addListenersForSliders();
+        addListenersForTextFields();
+        addListenersForSelectedTargets();
+        addListenersToButtons();
+        addListenersForCompilationButtons();
+
+        this.affectedTargetsOptions.addAll("none", this.DEPENDED, this.REQUIRED);
+        this.affectedTargets.setItems(this.affectedTargetsOptions);
+        this.gson = new Gson();
+
+        initializeGraphDetails();
+    }
+
+    private void setTaskTypes(Set<Graph.TaskType> keySet) {
+        Set<String> taskTypesSet = new HashSet<>();
+
+        this.graph.getTasksPricesMap().keySet().forEach(p-> taskTypesSet.add(p.toString()));
+        ObservableList<String> taskSelectionList = FXCollections.observableArrayList(taskTypesSet);
+
+        this.taskSelection.setItems(taskSelectionList);
+    }
 
     @FXML void ApplyParametersToTask(ActionEvent event) {
         this.taskParameters = getSimulationTaskParametersFromUser();
@@ -415,22 +443,7 @@ public class AdminCreateTaskController implements Initializable{
         return currentRunTargets;
     }
 
-    @Override public void initialize(URL location, ResourceBundle resources) {
-        ObservableList<String> taskSelectionList = FXCollections.observableArrayList(this.SIMULATION, this.COMPILATION);
-        this.taskSelection.setItems(taskSelectionList);
 
-        addListenersForSliders();
-        addListenersForTextFields();
-        addListenersForSelectedTargets();
-        addListenersToButtons();
-        addListenersForCompilationButtons();
-
-        this.affectedTargetsOptions.addAll("none", this.DEPENDED, this.REQUIRED);
-        this.affectedTargets.setItems(this.affectedTargetsOptions);
-        this.gson = new Gson();
-
-        initializeGraphDetails();
-    }
 
     private void initializeGraphDetails() {
         this.numberColumn.setCellValueFactory(new PropertyValueFactory<AdminCreateTaskTargetsTableItem, Integer>("number"));
@@ -515,7 +528,6 @@ public class AdminCreateTaskController implements Initializable{
         this.successRateSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successRateText.setText(String.format("%.3f", newValue)));
         this.successRateWithWarningsSlider.valueProperty().addListener((observable, oldValue, newValue) -> this.successWithWarningRateText.setText(String.format("%.3f", newValue)));
     }
-
 
     private void disableTaskOptions(Boolean flag)
     {

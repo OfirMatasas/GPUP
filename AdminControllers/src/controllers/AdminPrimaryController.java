@@ -1,25 +1,15 @@
 package controllers;
 
 import http.HttpClientUtil;
-import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import paths.BodyComponentsPaths;
@@ -30,7 +20,6 @@ import target.Graph;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
@@ -45,6 +34,7 @@ public class AdminPrimaryController {
     private AdminTaskControlController adminTaskControlController;
     private AdminCreateTaskController adminCreateTaskController;
     private AdminConnectionsController adminConnectionsController;
+    private Object chatController;
     private SplitPane DashboardPane = null;
     private ScrollPane graphDetailsPane = null;
     private ScrollPane connectionsPane = null;
@@ -52,39 +42,17 @@ public class AdminPrimaryController {
     private ScrollPane taskControlPane = null;
     private ScrollPane chatPane = null;
     private GraphSummary graphSummary;
-    private FadeTransition fadeTransition;
-    private ScaleTransition scaleTransition;
     private String userName;
 
-    @FXML private ToggleGroup templates;
     @FXML private BorderPane mainBorderPane;
-    @FXML private ImageView fireWorksImageView;
-    @FXML private HBox HboxForLogo;
-    @FXML private ImageView PrimaryLogo;
-    @FXML private ScrollPane statusBar;
-    @FXML private Button DashboardButton;
     @FXML private Button graphDetailsButton;
     @FXML private Button connectionsButton;
     @FXML private Button CreateTaskButton;
     @FXML private Button TaskControlButton;
     @FXML private Button ChatButton;
-    @FXML private Menu file;
-    @FXML private MenuItem loadXMLButton;
-    @FXML private MenuItem saveProgressButton;
-    @FXML private MenuItem exitButton;
-    @FXML private Menu animations;
-    @FXML private CheckBox enableAnimations;
-    @FXML private Menu themes;
     @FXML private RadioMenuItem defaultTheme;
     @FXML private RadioMenuItem darkModeTheme;
     @FXML private RadioMenuItem rainbowTheme;
-    @FXML private Menu Help;
-    @FXML private MenuItem about;
-    @FXML private AnchorPane StatusBar;
-    private SimpleStringProperty selectedFileProperty;
-    private SimpleBooleanProperty isFileSelected;
-    private FileWriter dotFile;
-    private Object chatController;
 
     //--------------------------------------------------Settings-----------------------------------------------------//
     public void setUserName(String userName) {
@@ -102,43 +70,6 @@ public class AdminPrimaryController {
 
     //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML void aboutPressed(ActionEvent event) {}
-
-    @FXML void enableAnimationsPressed(ActionEvent event) {
-        if (!this.enableAnimations.isSelected()) {
-            this.fadeTransition.stop();
-            this.scaleTransition.stop();
-            this.fireWorksImageView.setVisible(false);
-
-            this.fadeTransition.setDuration(Duration.millis(0));
-            this.fadeTransition.setCycleCount(1);
-            this.fadeTransition.setAutoReverse(false);
-            this.fadeTransition.setInterpolator(Interpolator.LINEAR);
-
-            this.fadeTransition.play();
-            this.scaleTransition.play();
-
-            return;
-        }
-
-        this.fadeTransition = new FadeTransition();
-        this.scaleTransition = new ScaleTransition(Duration.seconds(1), this.fireWorksImageView);
-
-        this.fadeTransition.setNode(this.PrimaryLogo);
-        this.fadeTransition.setDuration(Duration.millis(2000));
-        this.fadeTransition.setCycleCount(Animation.INDEFINITE);
-        this.fadeTransition.setAutoReverse(true);
-        this.fadeTransition.setInterpolator(Interpolator.LINEAR);
-        this.fadeTransition.setFromValue(0);
-        this.fadeTransition.setToValue(1);
-
-        this.fireWorksImageView.setVisible(true);
-        this.scaleTransition.setCycleCount(100);
-        this.scaleTransition.setToX(-1);
-        this.scaleTransition.setToY(-1);
-
-        this.fadeTransition.play();
-        this.scaleTransition.play();
-    }
 
     @FXML void loadXMLButtonPressed(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
@@ -409,8 +340,10 @@ public class AdminPrimaryController {
         try {
             this.createTaskPane = loader.load(url.openStream());
             this.adminCreateTaskController = loader.getController();
+            this.adminCreateTaskController.initialize(this.userName, this.graph);
             this.adminCreateTaskController.setUserName(this.userName);
             this.adminCreateTaskController.setGraph(this.graph);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -447,7 +380,7 @@ public class AdminPrimaryController {
             defaultThemePressed(new ActionEvent());
         else if(this.darkModeTheme.isSelected())
             darkModeThemePressed(new ActionEvent());
-        else
+        else //this.rainbowModeTheme.isSelected()
             rainbowThemePressed(new ActionEvent());
     }
 }
