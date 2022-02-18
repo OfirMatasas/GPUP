@@ -36,7 +36,12 @@ public class LoginServlet extends HttpServlet {
 //        }
         if(!userManager.isValidLogin(userName, isAdmin))
         {
-            resp.getWriter().println("This user name is already taken by " + (isAdmin ? "a worker" : "an admin") + "!");
+            resp.getWriter().println("This username is already taken by " + (isAdmin ? "a worker" : "an admin") + "!");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
+        else if(userManager.isAlreadyLoggedIn(userName))
+        {
+            resp.getWriter().println("There's another user using that name!");
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         else {

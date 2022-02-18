@@ -59,4 +59,8 @@ public class UserManager {
     }
 
     public UsersLists getUsersLists() { return this.usersLists; }
+
+    public boolean isAlreadyLoggedIn(String username) {
+        return (this.usersLists.getAdminsList().contains(username) || this.usersLists.getWorkersList().contains(username));
+    }
 }

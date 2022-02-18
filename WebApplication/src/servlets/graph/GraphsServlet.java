@@ -78,6 +78,13 @@ public class GraphsServlet extends HttpServlet {
 
     //---------------------------------------------- Post -----------------------------------------//
     @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        if(req.getHeader("upload-graph") != null)
+            doPostUploadGraphFile(req, resp);
+        else
+            responseMessageAndCode(resp, "Invalid request!", HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void doPostUploadGraphFile(HttpServletRequest req, HttpServletResponse resp) {
         try {
             synchronized (creatingDirectory)
             {

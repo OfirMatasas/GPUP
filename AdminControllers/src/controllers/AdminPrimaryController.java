@@ -50,6 +50,7 @@ public class AdminPrimaryController {
     private ScrollPane connectionsPane = null;
     private ScrollPane createTaskPane = null;
     private ScrollPane taskControlPane = null;
+    private ScrollPane chatPane = null;
     private GraphSummary graphSummary;
     private FadeTransition fadeTransition;
     private ScaleTransition scaleTransition;
@@ -66,6 +67,7 @@ public class AdminPrimaryController {
     @FXML private Button connectionsButton;
     @FXML private Button CreateTaskButton;
     @FXML private Button TaskControlButton;
+    @FXML private Button ChatButton;
     @FXML private Menu file;
     @FXML private MenuItem loadXMLButton;
     @FXML private MenuItem saveProgressButton;
@@ -82,14 +84,14 @@ public class AdminPrimaryController {
     private SimpleStringProperty selectedFileProperty;
     private SimpleBooleanProperty isFileSelected;
     private FileWriter dotFile;
+    private Object chatController;
 
     //--------------------------------------------------Settings-----------------------------------------------------//
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
-    public void initialize(Stage primaryStage, String userName)
-    {
+    public void initialize(Stage primaryStage, String userName) {
         setUserName(userName);
         setPrimaryStage(primaryStage);
         UpdateDashboardControllerAndPane();
@@ -97,6 +99,7 @@ public class AdminPrimaryController {
         this.DashboardPane.getStylesheets().clear();
         this.DashboardPane.getStylesheets().add(BodyComponentsPaths.LIGHT_CENTER_THEME);
     }
+
     //--------------------------------------------------Toolbar-----------------------------------------------------//
     @FXML void aboutPressed(ActionEvent event) {}
 
@@ -157,6 +160,7 @@ public class AdminPrimaryController {
         Request request = new Request.Builder()
                 .url(url)
                 .post(body).addHeader("username", this.userName)
+                .addHeader("upload-graph", "upload-graph")
                 .build();
 
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
@@ -175,8 +179,7 @@ public class AdminPrimaryController {
         });
     }
 
-    public void loadGraph(File file)
-    {
+    public void loadGraph(File file) {
         if(file == null)
             return;
 
@@ -252,8 +255,7 @@ public class AdminPrimaryController {
         updateThemeOnAllPanes(BodyComponentsPaths.RAINBOW_CENTER_THEME);
     }
 
-    private void updateThemeOnAllPanes(String themePath)
-    {
+    private void updateThemeOnAllPanes(String themePath) {
         if(this.graph != null) {
             this.graphDetailsPane.getStylesheets().clear();
             this.graphDetailsPane.getStylesheets().add(themePath);
@@ -288,8 +290,7 @@ public class AdminPrimaryController {
         this.mainBorderPane.setCenter(this.DashboardPane);
     }
 
-    public void TaskPulledFromServer(String taskName, String graphName)
-    {
+    public void TaskPulledFromServer(String taskName, String graphName) {
         UpdateTaskControlControllerAndPane(taskName);
         UpdatePanesStyles();
 
@@ -315,13 +316,16 @@ public class AdminPrimaryController {
         this.mainBorderPane.setCenter(this.taskControlPane);
     }
 
+    @FXML void ChatButtonPressed(ActionEvent event) {
+        this.mainBorderPane.setCenter(this.ChatButton);
+    }
+
     //--------------------------------------------------Methods-----------------------------------------------------//
     public void setPrimaryStage(Stage stage){
         this.primaryStage = stage;
     }
 
-    private Boolean OverrideGraph()
-    {
+    private Boolean OverrideGraph() {
         if(this.graph == null)
             return true;
 
@@ -337,8 +341,7 @@ public class AdminPrimaryController {
         return result.get() == yesButton;
     }
 
-    private void FileLoadedSuccessfully()
-    {
+    private void FileLoadedSuccessfully() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("File loaded Successfully");
         alert.setHeaderText(null);
@@ -346,8 +349,7 @@ public class AdminPrimaryController {
         alert.showAndWait();
     }
 
-    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message)
-    {
+    private void ShowPopUp(Alert.AlertType alertType, String title, String header, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -363,8 +365,7 @@ public class AdminPrimaryController {
         UpdatePanesStyles();
     }
 
-    private void UpdateConnectionsControllerAndPane()
-    {
+    private void UpdateConnectionsControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.CONNECTIONS);
         loader.setLocation(url);
@@ -376,8 +377,7 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdateGraphDetailsControllerAndPane()
-    {
+    private void UpdateGraphDetailsControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.GRAPH_DETAILS);
         loader.setLocation(url);
@@ -389,8 +389,7 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdateTaskControlControllerAndPane(String taskName)
-    {
+    private void UpdateTaskControlControllerAndPane(String taskName) {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.TASK_CONTROL);
         loader.setLocation(url);
@@ -403,8 +402,7 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdateCreateTaskControllerAndPane()
-    {
+    private void UpdateCreateTaskControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.CREATE_TASK);
         loader.setLocation(url);
@@ -418,8 +416,7 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdateDashboardControllerAndPane()
-    {
+    private void UpdateDashboardControllerAndPane() {
         FXMLLoader loader = new FXMLLoader();
         URL url = getClass().getResource(BodyComponentsPaths.DASHBOARD);
         loader.setLocation(url);
@@ -432,8 +429,20 @@ public class AdminPrimaryController {
         }
     }
 
-    private void UpdatePanesStyles()
-    {
+    private void UpdateChatControllerAndPane() {
+        FXMLLoader loader = new FXMLLoader();
+        URL url = getClass().getResource(BodyComponentsPaths.CHAT);
+        loader.setLocation(url);
+        try {
+            this.chatPane = loader.load(url.openStream());
+            this.chatController = loader.getController();
+//            this.chatController.initialize(this, this.userName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void UpdatePanesStyles() {
         if(this.defaultTheme.isSelected())
             defaultThemePressed(new ActionEvent());
         else if(this.darkModeTheme.isSelected())

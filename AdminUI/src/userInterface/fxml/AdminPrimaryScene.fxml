@@ -31,7 +31,7 @@
                         </ImageView>
                         <ImageView fx:id="PrimaryLogo" fitHeight="550.0" fitWidth="609.0" opacity="0.55" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../../resourcers/GPUP%20logo.png" />
+                              <Image url="@../../resourcers/GPUP-logo.png" />
                            </image>
                            <effect>
                               <Bloom />
@@ -49,6 +49,7 @@
                   <Button fx:id="connectionsButton" disable="true" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#connectionsButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Connections" />
                   <Button fx:id="CreateTaskButton" disable="true" layoutX="10.0" layoutY="35.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#CreateTaskButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Create Task" />
                   <Button fx:id="TaskControlButton" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#TaskControlButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Task Control" />
+                  <Button fx:id="ChatButton" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" mnemonicParsing="false" onAction="#ChatButtonPressed" prefHeight="500.0" styleClass="PrimarySidebarButton" text="Chat" />
                </children>
             </VBox>
          </left>
