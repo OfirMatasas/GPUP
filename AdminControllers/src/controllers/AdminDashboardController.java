@@ -379,7 +379,6 @@ public class AdminDashboardController {
                 {
                     String body = Objects.requireNonNull(response.body()).string();
                     File graphFile = new Gson().fromJson(body, File.class);
-                    System.out.println("Just got " +  graphFile.getName() + " file from server!");
                     Platform.runLater(()-> AdminDashboardController.this.primaryController.loadGraph(graphFile));
                 } else //Failed
                 {
@@ -559,7 +558,6 @@ public class AdminDashboardController {
                     if(Objects.equals(response.header("task-type"), "simulation"))
                     {
                         SimulationTaskInformation info = new Gson().fromJson(body, SimulationTaskInformation.class);
-                        System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
                                 (AdminDashboardController.this.chosenMyTask, info.getGraphName()));
@@ -567,7 +565,6 @@ public class AdminDashboardController {
                     else
                     {
                         CompilationTaskInformation info = new Gson().fromJson(body, CompilationTaskInformation.class);
-                        System.out.println("Just got " +  info.getTaskName() + " task from server!");
 
                         Platform.runLater(()-> AdminDashboardController.this.primaryController.TaskPulledFromServer
                                 (AdminDashboardController.this.chosenMyTask, info.getGraphName()));

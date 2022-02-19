@@ -511,12 +511,10 @@ public class AdminCreateTaskController {
 
         HttpClientUtil.runAsyncWithRequest(request, new Callback() {
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                System.out.println("got task response - failed");
                 Platform.runLater(()-> ShowPopUp(Alert.AlertType.ERROR, "Error in uploading task!", null, e.getMessage()));
             }
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-                System.out.println("got task response - success");
                 if(response.code() >= 200 && response.code() < 300)
                     Platform.runLater(() -> ShowPopUp(Alert.AlertType.INFORMATION, "Task uploaded successfully!", null, response.header("message")));
                 else
