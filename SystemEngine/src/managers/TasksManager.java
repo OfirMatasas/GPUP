@@ -126,6 +126,8 @@ public class TasksManager {
 
         this.workersCredits.put(workerNameLow, this.workersCredits.get(workerNameLow) +
                 this.allTaskDetailsMap.get(taskNameLow).getSinglePayment());
+
+        this.workersTasksHistoryMap.get(workerNameLow).get(taskNameLow).newExecutedTarget();
     }
 
     public synchronized void addTargetToWorkerTaskHistory(String workerName, String taskName, String targetName) {
@@ -221,7 +223,7 @@ public class TasksManager {
         String taskNameLow = taskName.toLowerCase();
 
         for(Map<String, WorkerTaskHistory> curr : this.workersTasksHistoryMap.values())
-            if(curr.get(taskNameLow).getTargets().isEmpty())
+            if(curr.get(taskNameLow).getWorkingOnTargets().isEmpty())
                 curr.remove(taskNameLow);
     }
 
@@ -338,7 +340,13 @@ public class TasksManager {
         return this.workerRegisteredTasksMap.get(workerName.toLowerCase());
     }
 
-    public synchronized Integer getWorkerCredits(String workerName) {
+    public synchronized Integer getWorkerTaskCredits(String workerName, String taskName)
+    {
+        WorkerTaskHistory taskHistory = this.workersTasksHistoryMap.get(workerName.toLowerCase()).get(taskName.toLowerCase());
+        return taskHistory.getTotalCreditsFromTask();
+    }
+
+    public synchronized Integer getWorkerTotalCredits(String workerName) {
         if(!this.workersCredits.containsKey(workerName.toLowerCase()))
             this.workersCredits.put(workerName.toLowerCase(), 0);
 
@@ -358,7 +366,12 @@ public class TasksManager {
     }
 
     public synchronized Set<String> getWorkerExecutedTargetsFromTask(String workerName, String taskName) {
-        return getWorkerTaskHistory(workerName).get(taskName.toLowerCase()).getTargets();
+        return getWorkerTaskHistory(workerName).get(taskName.toLowerCase()).getWorkingOnTargets();
+    }
+
+    public synchronized Integer getWorkerFinishedTargetsFromTask(String workerName, String taskName)
+    {
+        return getWorkerTaskHistory(workerName).get(taskName.toLowerCase()).getExecutedTargets();
     }
 
     public String getOriginalTaskName(String taskName) {
@@ -443,7 +456,7 @@ public class TasksManager {
         {
             currTaskLowerCase = currTask.toLowerCase();
             currTaskHistory = this.workersTasksHistoryMap.get(workerNameLowerCase).get(currTaskLowerCase);
-            abortedTargets = this.taskThreadMap.get(currTaskLowerCase).returnTargetsToWaitingList(currTaskHistory.getTargets());
+            abortedTargets = this.taskThreadMap.get(currTaskLowerCase).returnTargetsToWaitingList(currTaskHistory.getWorkingOnTargets());
             currTaskDetails = this.allTaskDetailsMap.get(currTaskLowerCase);
 
             for(String abortedTarget : abortedTargets) //Added abortion log for each aborted target

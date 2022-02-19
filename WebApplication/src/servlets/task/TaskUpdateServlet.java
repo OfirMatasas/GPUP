@@ -96,7 +96,7 @@ public class TaskUpdateServlet extends HttpServlet {
             {
                 Set<String> executedTargets = new HashSet<>();
                 for(String currTask : workerTasksHistory.keySet())
-                    for(String currTarget : workerTasksHistory.get(currTask).getTargets())
+                    for(String currTarget : workerTasksHistory.get(currTask).getWorkingOnTargets())
                         executedTargets.add(currTask + " - " + currTarget);
 
                 resp.getWriter().write(new Gson().toJson(executedTargets, Set.class));
@@ -120,10 +120,11 @@ public class TaskUpdateServlet extends HttpServlet {
         else //Valid request
         {
             AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
-            Integer executedTargets = tasksManager.getWorkerExecutedTargetsFromTask(workerName, taskName).size();
+            Integer finishedTargets = tasksManager.getWorkerFinishedTargetsFromTask(workerName, taskName);
+            Integer taskCredits = tasksManager.getWorkerTaskCredits(workerName, taskName);
 
             WorkerChosenTaskInformationTableItem tableItem = new WorkerChosenTaskInformationTableItem(taskName,
-                    currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), executedTargets , tasksManager.getWorkerCredits(workerName));
+                    currInfo.getTaskStatus(), currInfo.getRegisteredWorkersNumber(), finishedTargets , taskCredits);
 
             WorkerChosenTaskDTO returnedDTO = new WorkerChosenTaskDTO(tableItem, currInfo.getTargetStatusSet().size(), currInfo.getFinishedTargets());
 
@@ -147,9 +148,10 @@ public class TaskUpdateServlet extends HttpServlet {
         {
             AllTaskDetails currInfo = tasksManager.getAllTaskDetails(taskName);
             String targetStatus = tasksManager.getWorkerChosenTargetStatus(taskName, targetName);
+            Integer payment = targetStatus.equalsIgnoreCase("In process") ? 0 : currInfo.getSinglePayment();
 
             WorkerChosenTargetInformationTableItem tableItem = new WorkerChosenTargetInformationTableItem(targetName,
-                    taskName, currInfo.getTaskType(), targetStatus, currInfo.getSinglePayment());
+                    taskName, currInfo.getTaskType(), targetStatus, payment);
             String log = currInfo.getTargetLogHistory(targetName);
             WorkerChosenTargetDTO dto = new WorkerChosenTargetDTO(tableItem, log);
 
@@ -187,7 +189,7 @@ public class TaskUpdateServlet extends HttpServlet {
 
         if(workerName != null && userManager.isUserExists(workerName)) //Valid credit request
         {
-            resp.addHeader("credits", tasksManager.getWorkerCredits(workerName).toString());
+            resp.addHeader("credits", tasksManager.getWorkerTotalCredits(workerName).toString());
             responseMessageAndCode(resp, "Successfully pulled worker's credits!", HttpServletResponse.SC_ACCEPTED);
         }
         else //Invalid request
