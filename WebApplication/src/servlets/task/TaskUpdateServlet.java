@@ -230,6 +230,7 @@ public class TaskUpdateServlet extends HttpServlet {
     @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TasksManager tasksManager = ServletUtils.getTasksManager(getServletContext());
 
+
         if(req.getParameter("start-task") != null) //Requesting to start a task
         {
             try {

@@ -81,7 +81,7 @@
                                 <columns>
                                   <TableColumn fx:id="Target" prefWidth="118.0" text="Target" />
                                   <TableColumn fx:id="Task" prefWidth="119.0" text="Task" />
-                                   <TableColumn fx:id="TaskType" prefWidth="135.0" text="Task type" />
+                                   <TableColumn fx:id="TaskType" prefWidth="135.0" text="Task Type" />
                                    <TableColumn fx:id="SelectedTargetStatus" prefWidth="120.0" text="Status" />
                                    <TableColumn fx:id="SelectedTargetEarnedCredits" prefWidth="152.0" text="Earned Credits" />
                                 </columns>

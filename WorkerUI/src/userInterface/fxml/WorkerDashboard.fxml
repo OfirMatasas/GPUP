@@ -159,11 +159,11 @@
                                  <content>
                                     <TableView fx:id="TaskStatusTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="70.0" minWidth="-Infinity" prefHeight="70.0" prefWidth="307.0">
                                        <columns>
-                                          <TableColumn fx:id="Type" minWidth="30.0" prefWidth="-1.0" text="type" />
-                                          <TableColumn fx:id="Status" minWidth="13.0" prefWidth="-1.0" text="status" />
-                                          <TableColumn fx:id="Workers" minWidth="30.0" prefWidth="-1.0" text="workers" />
-                                          <TableColumn fx:id="Payment" minWidth="30.0" prefWidth="-1.0" text="payment" />
-                                          <TableColumn fx:id="Registered" minWidth="30.0" prefWidth="-1.0" text="registered?" />
+                                          <TableColumn fx:id="Type" minWidth="30.0" prefWidth="-1.0" text="Type" />
+                                          <TableColumn fx:id="Status" minWidth="13.0" prefWidth="-1.0" text="Status" />
+                                          <TableColumn fx:id="Workers" minWidth="30.0" prefWidth="-1.0" text="Workers" />
+                                          <TableColumn fx:id="Payment" minWidth="30.0" prefWidth="-1.0" text="Payment" />
+                                          <TableColumn fx:id="Registered" minWidth="30.0" prefWidth="-1.0" text="Registered?" />
                                        </columns>
                                        <columnResizePolicy>
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

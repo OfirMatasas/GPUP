@@ -131,7 +131,7 @@ public class TasksServlet extends HttpServlet {
                 responseMessageAndCode(resp, "No targets to execute at the moment", HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 
         }
-        else if(tasksManager.isCompilationTask(taskName))//Compilation task
+        else if(tasksManager.isCompilationTask(originalTaskName))//Compilation task
         {
             CompilationTaskInformation taskInfo = tasksManager.getCompilationTaskInformation(originalTaskName);
             String targetName = tasksManager.getTaskThread(taskName).getWaitingTargetToExecute();

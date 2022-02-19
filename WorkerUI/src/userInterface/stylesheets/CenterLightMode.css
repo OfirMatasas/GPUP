@@ -21,7 +21,7 @@
 }
 
 .table-view .column-header .label{
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: Center;
     -fx-font-weight: none;
 }
 
